@@ -1,0 +1,114 @@
+---
+title: Valid Parentheses
+leetcode: { number: 20, url: "https://leetcode.com/problems/valid-parentheses/" }
+difficulty: Easy
+topics: [Stack, String]
+added: 2026-11-06
+summary: Check whether every bracket is closed by the right partner, in the right order. Goes from deleting matched pairs over and over to a single pass with a stack.
+best: { time: "O(n)", space: "O(n)" }
+reel: https://www.instagram.com/reel/DfZc2DIgwV_/
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` made only of the six bracket characters `( ) [ ] { }`. Decide whether it's **valid**,
+meaning:
+
+1. every opening bracket is closed by a bracket of the **same type**, and
+2. brackets close in the **right order**: whatever opened most recently has to close first.
+
+So `"([]{})"` is valid, while `"(]"` (wrong type), `"([)]"` (crossed over) and `"(("` (never closed) are not.
+
+## The key question
+
+Why not just count? Count how many `(` and `)` there are, check they're equal, and do the same for the other
+two types. That fails on `"([)]"`. The counts all balance, but the brackets cross, like a box closed while
+another box inside it is still open. Order matters, not just totals. So the real question is:
+
+> **When I see a closing bracket, which opening bracket is it supposed to close?**
+
+The answer is always *the most recent opener that hasn't been closed yet*. Both approaches below rely on that
+fact; the second one uses it directly.
+
+## Approach 1: Remove pairs until stuck (brute force)
+
+If a string is valid, at least one pair somewhere must sit **side by side** with nothing between: `()`, `[]` or
+`{}`. Deleting that pair leaves a string that's valid exactly when the original was. So: delete every
+side-by-side pair, repeat, and see whether the string disappears.
+
+The catch is that deleting one pair can bring a new pair together (`[{}]` becomes `[]`), so one pass isn't
+enough and you keep scanning until a pass changes nothing. The label under each cell shows the character's
+original position.
+
+<Viz client:visible approach="remove" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** A single pass calls `replace` three times, and each call reads the whole string: **O(n)** per pass.
+How many passes? In the worst case, deeply nested input like `((((…))))`, only the innermost pair is ever side by
+side, so each pass removes just **one** pair. With `n/2` pairs, that's about `n/2` passes, plus one final pass
+that confirms nothing changed.
+
+`n/2 passes × O(n) per pass` = **O(n²)**.
+
+**Space.** Strings can't be edited in place in Python, so each `replace` builds a new string of up to `n`
+characters: **O(n)**.
+
+**What it wastes:** every pass re-reads characters it has already looked at, just to find the one or two
+places where something changed.
+</Complexity>
+
+## Approach 2: Stack (optimal)
+
+Go back to the key question: a closer always belongs to *the most recent unclosed opener*. "Most recent first"
+is exactly what a **stack** does: last in, first out.
+
+- See an **opener**? Push it. It waits for its partner.
+- See a **closer**? The top of the stack must be its matching opener. If it is, pop it. If the stack is empty or
+  the top is the wrong type, stop: invalid.
+- At the end, the stack must be **empty**. Anything left is an opener that was never closed.
+
+Green cells are pairs that have been closed; the stack panel shows the openers still waiting.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass over the string. Each character causes at most one push or one pop, and both are **O(1)**.
+`n × O(1)` = **O(n)**. No character is ever read twice.
+
+**Space.** In the worst case, all openers like `((((((`, every character is pushed and none popped, so the stack
+holds up to `n` items: **O(n)**. On valid input the stack never holds more than `n/2`, which is still O(n).
+
+**The trade-off:** we keep a little memory, the openers still waiting, so that we never have to go back and
+re-scan.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Remove pairs until stuck | O(n²) | O(n) | Delete side-by-side pairs, re-scan until nothing changes |
+| Stack | **O(n)** | O(n) | The most recent unclosed opener must close first |
+
+The chart counts the work on the worst case for pair-removal: fully nested brackets like `((((…))))`. The stack
+reads each character once. Pair-removal re-reads the shrinking string on every pass.
+
+<GrowthChart client:visible series={growth} caption="Characters read on fully nested input. Pair-removal counts three replace scans per pass; the stack counts one read per character." />
+
+## Common mistakes
+
+- **Counting instead of stacking.** Equal counts of each type don't make a string valid. `"([)]"` balances every count and is still invalid.
+- **Popping an empty stack.** A closer with nothing waiting, as in `")"` or `"())"`, has to return `False` *before* you pop. Otherwise the code crashes or reads garbage.
+- **Forgetting the final check.** Getting through the loop isn't enough. `"(("` never hits a mismatch, but the stack isn't empty at the end, so it's invalid.
+- **Matching on the wrong side.** Store `closer → opener` (`")": "("`), so a closer can look up what the top of the stack should be in one step.
+- **A free early exit:** an odd-length string can never be valid, since brackets come in pairs. `if len(s) % 2: return False` skips the work, though it doesn't change the Big-O.
+
+## Related problems
+
+- Min Stack (LeetCode 155). Build the stack itself, with an O(1) "minimum so far".
+- Generate Parentheses (LeetCode 22). Produce every valid string of `n` pairs, using the same "can this still close?" rule.
+- Minimum Remove to Make Valid Parentheses (LeetCode 1249). The stack tells you exactly which brackets are unmatched.
+- Longest Valid Parentheses (LeetCode 32). Push indices instead of characters to measure valid stretches.

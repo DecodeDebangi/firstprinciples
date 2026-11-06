@@ -1,0 +1,238 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import HeroDemo from "../components/HeroDemo.tsx";
+
+const all = await getCollection("dsa");
+const problems = [...all].sort(
+  (a, b) => b.data.added.getTime() - a.data.added.getTime() || (a.data.leetcode?.number ?? 0) - (b.data.leetcode?.number ?? 0),
+);
+
+// The friendliest first problem: the lowest LeetCode number (Two Sum, for now).
+const starter = [...all].sort((a, b) => (a.data.leetcode?.number ?? 9999) - (b.data.leetcode?.number ?? 9999))[0];
+
+// Group by the day each problem was added, newest day first.
+const fmtDay = (d: Date) =>
+  d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const days = new Map<string, typeof problems>();
+for (const p of problems) {
+  const key = p.data.added.toISOString().slice(0, 10);
+  days.set(key, [...(days.get(key) ?? []), p]);
+}
+const latestDay = [...days.keys()][0];
+
+// The learning path. Each stop lights up once a problem tagged with it exists.
+const path = [
+  { name: "Arrays & hashing", tags: ["Array", "Hash map"] },
+  { name: "Binary search", tags: ["Binary search"] },
+  { name: "Two pointers", tags: ["Two pointers"] },
+  { name: "Sliding window", tags: ["Sliding window"] },
+  { name: "Stacks & queues", tags: ["Stack", "Queue"] },
+  { name: "Linked lists", tags: ["Linked list"] },
+  { name: "Trees", tags: ["Tree", "Binary tree", "BST"] },
+  { name: "Graphs", tags: ["Graph", "BFS", "DFS"] },
+  { name: "Dynamic programming", tags: ["Dynamic programming"] },
+].map((s) => ({ ...s, count: all.filter((p) => p.data.topics.some((t) => s.tags.includes(t))).length }));
+
+const how = [
+  { title: "The problem, in plain words", body: "No jargon wall. Just what's being asked, and the one question that unlocks it.",
+    icon: `<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5M8 7h8M8 11h6"/>` },
+  { title: "From brute force to best", body: "Start with the idea anyone would try first, then see exactly what each better approach stops wasting.",
+    icon: `<path d="M3 20h5v-5h5v-5h5V5h3"/>` },
+  { title: "Watch it run", body: "Step forward, step back, slow it down, or type in your own numbers. The code highlights as it goes.",
+    icon: `<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/>` },
+  { title: "Big-O that makes sense", body: "Every time and space complexity is worked out step by step, with a chart of how it grows.",
+    icon: `<path d="M4 20V4M4 20h16"/><path d="M7 16c4 0 7-3 11-10"/>` },
+];
+---
+<Base title="firstprinciples" description="A friendly place to learn data structures and algorithms: watch every solution run step by step, from brute force to optimal, with the reasoning behind each time and space complexity.">
+  <section class="hero">
+    <div class="hero__text">
+      <p class="eyebrow"><span class="dot"></span>A friendly place to learn DSA</p>
+      <h1>Algorithms click when you can <em>watch them think.</em></h1>
+      <p class="lead">
+        Pick a problem and see it solved one step at a time, from the first idea that comes to mind to the
+        fastest one, with the reason behind every Big-O.
+      </p>
+      <div class="cta">
+        <a class="btn btn--primary" href={`/dsa/${starter.id}/`}>Start with {starter.data.title} <span aria-hidden>→</span></a>
+        <a class="btn" href="#problems">Browse problems</a>
+      </div>
+      <p class="reassure">Free · No sign-up · Works on your phone</p>
+    </div>
+    <div class="hero__demo">
+      <HeroDemo client:load />
+      <p class="demo-note">This is running live. Every animation on the site is made by running the real algorithm.</p>
+    </div>
+  </section>
+
+  <section class="how" aria-labelledby="how-title">
+    <h2 id="how-title">What every page gives you</h2>
+    <ul>
+      {how.map((h) => (
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={h.icon} />
+          <h3>{h.title}</h3>
+          <p>{h.body}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="path" aria-labelledby="path-title">
+    <h2 id="path-title">A path you can follow</h2>
+    <p class="sub">The topics, in the order most people learn them. Each one fills in as problems are added.</p>
+    <ol>
+      {path.map((s, i) => (
+        <li class={s.count ? "is-ready" : ""}>
+          <span class="path__n">{i + 1}</span>
+          <span class="path__name">{s.name}</span>
+          <span class="path__count">{s.count ? `${s.count} problem${s.count > 1 ? "s" : ""}` : "coming up"}</span>
+        </li>
+      ))}
+      <li class="is-later">
+        <span class="path__n">→</span>
+        <span class="path__name">System design</span>
+        <span class="path__count">later</span>
+      </li>
+    </ol>
+  </section>
+
+  <section id="problems" class="log" aria-labelledby="log-title">
+    <h2 id="log-title">Recently added</h2>
+    <p class="sub">New problems are added every day, newest first. {problems.length} so far.</p>
+    {[...days].map(([key, list]) => (
+      <div class="day">
+        <h3>{fmtDay(list[0].data.added)}{key === latestDay && <span class="new">New</span>}</h3>
+        <ul class="cards">
+          {list.map((p) => (
+            <li>
+              <a class="card" href={`/dsa/${p.id}/`}>
+                <div class="card__top">
+                  {p.data.leetcode && <span class="num">#{p.data.leetcode.number}</span>}
+                  <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
+                </div>
+                <span class="card__title">{p.data.title}</span>
+                <p>{p.data.summary}</p>
+                <div class="card__meta">
+                  <span class="best">Best <code>{p.data.best.time}</code> time · <code>{p.data.best.space}</code> space</span>
+                  <span class="go" aria-hidden>Open →</span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  <section class="note">
+    <h2>A notebook that grows every day</h2>
+    <p>
+      This isn't a giant course to get through. It's a notebook that grows every day. Come back
+      tomorrow and there'll probably be something new to watch.
+    </p>
+    <a class="btn btn--primary" href={`/dsa/${starter.id}/`}>Start with {starter.data.title} <span aria-hidden>→</span></a>
+  </section>
+</Base>
+
+<style>
+  /* Hero: warm dotted "notebook paper" that bleeds to the window edges. */
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 48px;
+    align-items: center;
+    padding: 24px 0 64px;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -40px calc(50% - 50vw) 0;
+    background:
+      radial-gradient(circle at 1px 1px, rgb(180 83 42 / .16) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(180deg, #f8ead9 0%, var(--bg) 100%);
+    mask-image: linear-gradient(180deg, #000 70%, transparent);
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-bottom: 40px; }
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 0 0 16px; padding: 4px 12px;
+    font-size: 14px; font-weight: 500; color: var(--accent);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .hero h1 { font-size: clamp(36px, 6vw, 56px); }
+  .hero h1 em { color: var(--accent); }
+  .lead { font-size: 19px; color: var(--text-2); max-width: 46ch; margin: 0 0 28px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 16px; text-decoration: none;
+    color: var(--text); background: var(--surface); border: 1px solid var(--border);
+    transition: transform .15s, box-shadow .15s, background-color .15s;
+  }
+  .btn:hover { color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn--primary:hover { background: var(--accent-hover); color: #fff; }
+  .reassure { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+  .demo-note { margin: 12px 4px 0; font-size: 13px; color: var(--muted); text-align: center; }
+
+  .sub { color: var(--text-2); margin: 0 0 20px; max-width: 60ch; }
+
+  .how h2 { margin-top: 24px; }
+  .path { margin-top: 64px; }
+  .path h2 { margin-top: 0; }
+  .how ul { list-style: none; padding: 0; margin: 20px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+  .how li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .how svg { width: 40px; height: 40px; padding: 8px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
+  .how h3 { font-size: 18px; margin: 14px 0 6px; }
+  .how p { margin: 0; font-size: 15px; color: var(--text-2); line-height: 1.55; }
+  @media (max-width: 600px) {
+    .how li { display: grid; grid-template-columns: 40px 1fr; column-gap: 14px; align-items: center; padding: 16px; }
+    .how h3 { margin: 0; }
+    .how p { grid-column: 1 / -1; margin-top: 8px; }
+  }
+
+  .path ol { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+  .path li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px 8px 8px; border-radius: 999px;
+    background: var(--surface); border: 1px dashed var(--border); color: var(--muted);
+  }
+  .path li.is-ready { border-style: solid; border-color: var(--tone-found-border); background: var(--tone-found-bg); color: var(--text); }
+  .path li.is-later { background: transparent; }
+  .path__n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); font: 600 13px var(--font-mono); }
+  .path li.is-ready .path__n { background: var(--tone-found-border); color: #fff; }
+  .path__name { font-weight: 600; font-size: 15px; }
+  .path__count { font-size: 13px; }
+
+  .day h3 { display: flex; align-items: center; gap: 10px; font: 600 15px var(--font-sans); color: var(--muted); margin: 24px 0 12px; }
+  .new { font-size: 12px; font-weight: 600; color: #fff; background: var(--accent); padding: 1px 9px; border-radius: 999px; }
+  .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card {
+    display: flex; flex-direction: column; height: 100%;
+    text-decoration: none; color: inherit;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+  }
+  .card:hover { color: inherit; border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); }
+  .card__top { display: flex; align-items: center; justify-content: space-between; }
+  .num { font: 600 14px var(--font-mono); color: var(--muted); }
+  .card__title { font: 600 24px var(--font-serif); margin: 10px 0 4px; }
+  .card p { margin: 0 0 16px; color: var(--text-2); font-size: 15px; line-height: 1.55; flex: 1; }
+  .card__meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--text-2); }
+  .go { font-weight: 600; color: var(--accent); }
+
+  .note {
+    margin-top: 64px; padding: 36px 32px; text-align: center;
+    background: var(--accent-soft); border-radius: 20px;
+  }
+  .note h2 { margin: 0 0 8px; }
+  .note p { max-width: 52ch; margin: 0 auto 20px; color: var(--text-2); }
+</style>

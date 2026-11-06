@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+
+export async function getStaticPaths() {
+  const problems = await getCollection("dsa");
+  return problems.map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+
+const { p } = Astro.props;
+const { Content, headings } = await render(p);
+const toc = headings.filter((h) => h.depth === 2);
+const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+---
+<Base title={p.data.title} description={p.data.summary}>
+  <article class="prose">
+    <a class="back" href="/#problems">← All problems</a>
+    <h1>{p.data.title}</h1>
+    <div class="meta">
+      <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
+      {p.data.topics.map((t) => <span class="pill">{t}</span>)}
+      <span class="added">Added {added}</span>
+    </div>
+    <div class="actions">
+      <a class="act act--primary" href={p.data.leetcode.url} target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m8 7-5 5 5 5M16 7l5 5-5 5" />
+        </svg>
+        Solve on LeetCode #{p.data.leetcode.number} <span aria-hidden="true">↗</span>
+      </a>
+      {p.data.reel && (
+        <a class="act" href={p.data.reel} target="_blank" rel="noopener" aria-label={`Watch the ${p.data.title} reel on Instagram`}>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+          </svg>
+          Watch the reel
+        </a>
+      )}
+    </div>
+    <nav class="toc" aria-label="On this page">
+      {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+    </nav>
+    <Content />
+    <aside class="your-turn" aria-label="Practice">
+      <h2>Your turn</h2>
+      <p>You've seen every approach run. Now write the optimal one yourself, without looking, and check it against LeetCode's tests.</p>
+      <a class="act act--primary" href={p.data.leetcode.url} target="_blank" rel="noopener">
+        Solve {p.data.title} on LeetCode <span aria-hidden="true">↗</span>
+      </a>
+    </aside>
+  </article>
+</Base>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; }
+  .added { color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .act {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--accent); color: var(--accent); background: var(--surface);
+    font-size: 15px; font-weight: 600; text-decoration: none;
+    transition: background-color .15s, color .15s, box-shadow .15s;
+  }
+  .act:hover { background: var(--accent-soft); color: var(--accent-hover); box-shadow: var(--shadow); }
+  .act--primary { background: var(--accent); color: #fff; }
+  .act--primary:hover { background: var(--accent-hover); color: #fff; }
+  .your-turn {
+    margin-top: 56px; padding: 28px; text-align: center;
+    background: var(--accent-soft); border-radius: 20px;
+  }
+  .your-turn h2 { margin: 0 0 8px; }
+  .your-turn p { margin: 0 auto 18px; max-width: 52ch; color: var(--text-2); }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 20px 0 0; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 14px; }
+  .toc a { text-decoration: none; }
+</style>

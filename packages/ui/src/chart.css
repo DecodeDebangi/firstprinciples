@@ -1,0 +1,41 @@
+.fp-chart {
+  margin: 16px 0 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.fp-chart__legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: var(--text-2); margin-bottom: 8px; }
+.fp-chart__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fp-chart__legend i, .fp-chart__tip-row i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.fp-chart__plot { position: relative; }
+.fp-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.fp-chart__grid { stroke: var(--border); stroke-width: 1; }
+.fp-chart__tick { fill: var(--muted); font: 12px var(--font-sans); }
+.fp-chart__axis { fill: var(--text-2); font: 12px var(--font-sans); }
+.fp-chart__label { fill: var(--text); font: 600 12px var(--font-sans); }
+.fp-chart__leader { stroke: var(--muted); stroke-width: 1; }
+.fp-chart__cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.fp-chart__tip {
+  position: absolute;
+  top: 8px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgb(74 52 30 / .14);
+  white-space: nowrap;
+}
+.fp-chart__tip-title { font-weight: 600; margin-bottom: 4px; }
+.fp-chart__tip-row { display: flex; align-items: center; gap: 6px; }
+.fp-chart__tip-row b { margin-left: auto; padding-left: 12px; font-family: var(--font-mono); }
+.fp-chart figcaption { font-size: 14px; color: var(--text-2); margin-top: 8px; }
+.fp-chart__table { margin-top: 8px; font-size: 14px; }
+.fp-chart__table summary { cursor: pointer; color: var(--accent); }
+.fp-chart__scroll { overflow-x: auto; }
+.fp-chart__table table { border-collapse: collapse; margin-top: 8px; font-family: var(--font-mono); font-size: 13px; }
+.fp-chart__table th, .fp-chart__table td { padding: 4px 12px; border-bottom: 1px solid var(--border); text-align: right; }
+.fp-chart__table th { font-family: var(--font-sans); color: var(--text-2); font-weight: 600; }

@@ -1,0 +1,55 @@
+---
+import "@firstprinciples/ui/tokens.css";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const fullTitle = title === "firstprinciples" ? title : `${title} · firstprinciples`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="color-scheme" content="light" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">first<span>principles</span></a>
+        <nav><a href="/#problems">Problems</a></nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© {new Date().getFullYear()} stacknaut</span>
+        <span class="footer-right">
+          <span>Made with algorithms and <span role="img" aria-label="love">❤️</span></span>
+          <a class="social" href="https://www.instagram.com/stacknaut" target="_blank" rel="noopener" aria-label="stacknaut on Instagram">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+            </svg>
+            <span>@stacknaut</span>
+          </a>
+          <a class="coffee" href="https://buymeacoffee.com/stacknaut" target="_blank" rel="noopener">
+            <span aria-hidden="true">☕</span> Buy me a coffee
+          </a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

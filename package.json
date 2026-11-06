@@ -1,0 +1,10 @@
+{
+  "name": "firstprinciples",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @firstprinciples/site",
+    "build": "npm run build -w @firstprinciples/site",
+    "preview": "npm run preview -w @firstprinciples/site"
+  }
+}

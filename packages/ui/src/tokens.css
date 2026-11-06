@@ -1,0 +1,43 @@
+/* Shared design tokens for every firstprinciples app (site now, dashboard later).
+   Light only, warm palette: cream paper, brown ink, terracotta accent. */
+:root {
+  color-scheme: light;
+  --bg: #faf5ec;
+  --surface: #fffdf8;
+  --surface-2: #f4ecdf;
+  --border: #e6d9c4;
+  --text: #2b2118;
+  --text-2: #5e4e3e;
+  --muted: #7d6a55;
+  --accent: #b4532a;
+  --accent-hover: #9a4422;
+  --accent-soft: #f8e4d6;
+
+  /* Animation cell states */
+  --tone-compare-bg: #fbe8b8;
+  --tone-compare-border: #b07a12;
+  --tone-found-bg: #e1eed6;
+  --tone-found-border: #4d7d35;
+  --tone-active-bg: #f8e4d6;
+  --tone-active-border: #b4532a;
+  --tone-miss-bg: #f6dcd6;
+  --tone-miss-border: #b0413a;
+
+  /* Chart series: validated as a set on --surface (all pairs, CVD-safe) */
+  --series-1: #c2562b; /* terracotta */
+  --series-2: #00879e; /* teal */
+  --series-3: #7d4fb5; /* plum */
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgb(74 52 30 / .06), 0 4px 14px rgb(74 52 30 / .05);
+}
+
+/* Show code exactly as typed: no ligatures turning != into ≠ or == into a joined glyph.
+   !important because component `font:` shorthands would otherwise reset it. */
+code, pre, kbd, samp, .fp-code, .fp-code *, .fp-player *, .fp-demo *, .fp-chart * {
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "calt" 0 !important;
+}

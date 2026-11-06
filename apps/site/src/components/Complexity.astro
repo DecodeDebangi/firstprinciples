@@ -1,0 +1,35 @@
+---
+/** Time/space verdict for one approach, with the reasoning as the slot. */
+interface Props {
+  time: string;
+  space: string;
+}
+const { time, space } = Astro.props;
+---
+<section class="cx" aria-label={`Complexity: time ${time}, space ${space}`}>
+  <div class="cx__badges">
+    <div><span>Time</span><strong>{time}</strong></div>
+    <div><span>Space</span><strong>{space}</strong></div>
+  </div>
+  <div class="cx__why"><slot /></div>
+</section>
+
+<style>
+  .cx {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 16px 18px;
+    margin: 16px 0;
+    border-left: 4px solid var(--accent);
+  }
+  .cx__badges { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .cx__badges div {
+    display: flex; align-items: baseline; gap: 8px;
+    background: var(--accent-soft); border-radius: 8px; padding: 4px 12px;
+  }
+  .cx__badges span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .cx__badges strong { font: 700 18px var(--font-mono); color: #6e3a1f; }
+  .cx__why :global(p) { margin: 8px 0; }
+  .cx__why :global(ul) { margin: 8px 0; padding-left: 20px; }
+</style>

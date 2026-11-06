@@ -1,0 +1,120 @@
+---
+title: Two Sum
+leetcode: { number: 1, url: "https://leetcode.com/problems/two-sum/" }
+difficulty: Easy
+topics: [Array, Hash map, Two pointers]
+added: 2026-11-06
+summary: Find the two positions whose numbers add up to a target. Goes from checking every pair, to sorting, to remembering what you've already seen.
+best: { time: "O(n)", space: "O(n)" }
+reel: https://www.instagram.com/reel/DfZSEoUAptq/
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of integers `nums` and a number `target`. Exactly two positions in the list hold numbers that
+add up to `target`. Return those two **positions (indices)**, not the numbers. You can't use the same position
+twice, but two different positions may hold the same value.
+
+For `nums = [3, 9, 14, 5, 11, 8, 1]` and `target = 13`, the answer is `[3, 5]`, because `nums[3] + nums[5] = 5 + 8 = 13`.
+
+## The key question
+
+For any number `x`, its partner is fixed: it must be `target − x`. So the whole problem comes down to this:
+
+> **When I'm looking at `x`, how quickly can I tell whether `target − x` exists, and where it is?**
+
+Each approach below answers that question faster than the one before.
+
+## Approach 1: Brute force
+
+Check every pair. For each index `i`, try every later index `j` and test whether `nums[i] + nums[j]` equals
+`target`. Starting `j` at `i + 1` means each pair is checked once and an element is never paired with itself.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Count the pairs. The first number is paired with `n − 1` others, the second with `n − 2`, and so on:
+`(n−1) + (n−2) + … + 1 = n(n−1)/2`. That's about `n²/2`. Big-O drops the `½`, so this is **O(n²)**. Doubling the
+input roughly quadruples the work.
+
+**Space.** Only a few variables (`i`, `j`, the sum), however long the list. That's **O(1)** extra space.
+
+**What it wastes:** for every `i` it searches for `target − nums[i]` by scanning the rest of the list again,
+even though it has already seen those numbers.
+</Complexity>
+
+## Approach 2: Sort, then two pointers
+
+If the numbers were sorted, the search could be guided. Put `lo` at the smallest value and `hi` at the largest:
+
+- Sum **too small**? `hi` is already the largest value left, so `nums[lo]` can't pair with anything. Move `lo` right.
+- Sum **too big**? `lo` is already the smallest value left, so `nums[hi]` can't pair with anything. Move `hi` left.
+
+Each check permanently rules out one number. One catch: sorting moves numbers around, and we must return
+**original** indices, so each value keeps its index with it. The small label under each cell shows it.
+
+<Viz client:visible approach="pointers" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Two parts:
+- Sorting takes **O(n log n)** with any good comparison sort.
+- The pointer walk: every step moves `lo` or `hi` one place closer, so after at most `n − 1` steps they meet. That's **O(n)**.
+
+Total: `O(n log n) + O(n)`. Big-O keeps only the largest term, so **O(n log n)**.
+
+**Space.** The `(value, index)` pairs are a new list of `n` items: **O(n)**.
+
+**What it wastes:** it sorts the whole list just to find one pair. Sorting tells us where every number is
+relative to every other, which is far more than we need.
+</Complexity>
+
+## Approach 3: Hash map, one pass (optimal)
+
+Go back to the key question: *does `target − x` exist?* A hash map answers "have I seen this value?" in
+**O(1)** on average. Walk the list once. For each `x`, check whether its partner is already in the map. If not,
+store `x → index` so a later number can find it.
+
+We never need a second pass. Whichever number of the pair comes second will find the first one waiting in the map.
+
+<Viz client:visible approach="hash" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One loop over `n` numbers. Each step does one hash lookup and at most one insert, both **O(1)** on
+average. `n × O(1)` = **O(n)**.
+
+**Space.** In the worst case (the pair is the last two numbers) almost every value gets stored before the
+answer is found. That's up to `n − 1` entries: **O(n)**.
+
+**The trade-off:** we spend O(n) memory to save time, going from O(n²) to O(n). Trading memory for speed like
+this is one of the most common moves in algorithm design.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(1) | Check every pair |
+| Sort + two pointers | O(n log n) | O(n) | Sorted order lets each check rule out one number |
+| Hash map | **O(n)** | O(n) | Remember what you've seen; look the partner up in O(1) |
+
+The chart counts the basic operations each approach really performs on its worst-case input, where the pair is
+the last two numbers. Hover to compare at each size.
+
+<GrowthChart client:visible series={growth} caption="Operations performed on worst-case inputs. Brute force counts pair checks; sort + two pointers counts about n·log₂n sort comparisons plus pointer checks; the hash map counts lookups." />
+
+## Common mistakes
+
+- **Returning values instead of indices.** The problem asks for positions.
+- **Sorting the list in place and then returning indices.** Sorting moves numbers, so the indices no longer point to the original positions. Keep each original index with its value.
+- **Inserting before checking** in the hash map version. If you store `x` first and then look for `target − x`, then when `target = 2x` the number finds *itself* (e.g. `[3, 4]`, target `6` would wrongly return `[0, 0]`). Check first, then insert.
+- **Using a set instead of a map.** A set tells you the partner exists but not *where*. You need the index.
+
+## Related problems
+
+- Two Sum II, input already sorted (LeetCode 167). Approach 2 without the sort: O(n) time and O(1) space.
+- 3Sum (LeetCode 15). Fix one number, then run a two-sum on the rest.
+- Subarray Sum Equals K (LeetCode 560). The same "have I seen the value I need?" idea, applied to running totals.
