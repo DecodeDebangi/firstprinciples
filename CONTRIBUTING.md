@@ -15,6 +15,8 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
 
 1. **`steps.ts`**: `example` input, `fields`, `prepare` (validate/normalise user input), one `Approach` per
    solution, and `growth` (from `measureGrowth` on a worst-case input generator).
+   - Each approach's `id` appears in shareable links (`?approach=<id>&step=<n>`), so never rename it once
+     the page is live, or old links will open at the wrong place.
    - Each approach's `code` is Python. Every `t.step({ line })` must point at the line actually executing.
    - `message` states the *decision* in words, with the real numbers ("27 < 63, so drop the left half"), not just
      what happened.
@@ -35,6 +37,8 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
    - `## Comparing the approaches`: one line introducing the race, `<Compare client:visible />`, a summary
      table, and `<GrowthChart client:visible series={growth} />`.
    - `## Common mistakes`, then `## Related problems`.
+
+   Each problem's link preview image (`/og/<slug>.png`) is generated automatically from the frontmatter.
 
    Frontmatter:
    - `added:` is the date the page goes up. It puts the problem under "Recently added" on the home page.

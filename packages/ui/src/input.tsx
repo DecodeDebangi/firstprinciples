@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type InputValues = Record<string, number | number[] | string>;
 
@@ -15,7 +15,7 @@ export function toText(v: number | number[] | string) {
   return Array.isArray(v) ? v.join(", ") : String(v);
 }
 
-function parseDraft(fields: InputField[], draft: Record<string, string>, maxLength: number): { raw: InputValues } | { error: string } {
+export function parseDraft(fields: InputField[], draft: Record<string, string>, maxLength: number): { raw: InputValues } | { error: string } {
   const raw: InputValues = {};
   for (const f of fields) {
     const text = (draft[f.key] ?? "").trim();
@@ -39,16 +39,21 @@ function parseDraft(fields: InputField[], draft: Record<string, string>, maxLeng
 }
 
 /** The "Try your own input" form, shared by the single player and the compare view. */
-export function InputForm<I extends InputValues>({ fields, initialInput, prepare, maxLength = 14, onApply }: {
+export function InputForm<I extends InputValues>({ fields, initialInput, shown, prepare, maxLength = 14, onApply }: {
   fields: InputField[];
   initialInput: I;
+  /** The input currently running, if different from the example (e.g. opened from a shared link). */
+  shown?: I;
   prepare?: (raw: I) => Prepared<I>;
   maxLength?: number;
   onApply: (input: I) => void;
 }) {
   const fresh = (inp: I) => Object.fromEntries(fields.map((f) => [f.key, toText(inp[f.key])]));
-  const [draft, setDraft] = useState<Record<string, string>>(() => fresh(initialInput));
+  const [draft, setDraft] = useState<Record<string, string>>(() => fresh(shown ?? initialInput));
   const [msg, setMsg] = useState<{ kind: "error" | "note"; text: string } | null>(null);
+  // Follow the running input when it changes from outside (e.g. a shared link), without losing messages.
+  const shownKey = JSON.stringify(shown ?? null);
+  useEffect(() => { if (shown) setDraft(fresh(shown)); }, [shownKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function apply(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();

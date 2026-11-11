@@ -12,7 +12,9 @@ const { Content, headings } = await render(p);
 const toc = headings.filter((h) => h.depth === 2);
 const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 ---
-<Base title={p.data.title} description={p.data.summary} type="article">
+<Base title={p.data.title} description={p.data.summary} type="article"
+  image={`/og/${p.id}.png`}
+  imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`}>
   <article class="prose">
     <a class="back" href="/#problems">← All problems</a>
     <h1>{p.data.title}</h1>

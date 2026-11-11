@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tracer, type Approach, type ArrayStep } from "./trace";
 import { ArrayCells } from "./ArrayCells";
-import { InputForm, type InputField, type InputValues, type Prepared } from "./input";
+import { InputForm, parseDraft, toText, type InputField, type InputValues, type Prepared } from "./input";
 import "./player.css";
 
 export type { InputField, InputValues, Prepared } from "./input";
@@ -33,6 +33,48 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const [asking, setAsking] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ ok: boolean; answer: string } | null>(null);
   const [score, setScore] = useState({ right: 0, total: 0 });
+  // Shareable links
+  const [linked, setLinked] = useState(false);
+  const [shareMsg, setShareMsg] = useState<{ text: string; url?: string } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Open at the step in the URL: ?approach=<id>&step=<n>[&<field>=<value>…]
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("approach") !== approach.id) return;
+    let inp = initialInput;
+    const given = Object.fromEntries(fields.filter((f) => q.has(f.key)).map((f) => [f.key, q.get(f.key)!]));
+    if (Object.keys(given).length === fields.length) {
+      const parsed = parseDraft(fields, given, maxLength);
+      if (!("error" in parsed)) {
+        const res = prepare ? prepare(parsed.raw as I) : { input: parsed.raw as I };
+        if (!("error" in res)) inp = res.input;
+      }
+    }
+    const t = new Tracer();
+    approach.run(inp, t);
+    const n = Number(q.get("step"));
+    setInput(inp);
+    setIdx(Number.isInteger(n) && n >= 1 ? Math.min(n, t.steps.length) - 1 : 0);
+    setLinked(true);
+    if (window.location.hash !== `#viz-${approach.id}`) rootRef.current?.scrollIntoView({ block: "center" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function share() {
+    const enc = (v: string) => encodeURIComponent(v).replace(/%2C/g, ",");
+    const parts = [`approach=${enc(approach.id)}`, `step=${idx + 1}`];
+    if (JSON.stringify(input) !== JSON.stringify(initialInput)) {
+      for (const f of fields) parts.push(`${enc(f.key)}=${enc(toText(input[f.key]).replace(/\s+/g, ""))}`);
+    }
+    const url = `${window.location.origin}${window.location.pathname}?${parts.join("&")}#viz-${approach.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareMsg({ text: `Link to step ${idx + 1} copied.` });
+    } catch {
+      setShareMsg({ text: "Copy this link:", url });
+    }
+  }
 
   const steps = useMemo(() => {
     const t = new Tracer();
@@ -71,6 +113,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   }, [playing, idx, atEnd, speed]);
 
   function go(i: number) {
+    setShareMsg(null);
     setPlaying(false);
     setAsking(null);
     setFeedback(null);
@@ -114,7 +157,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const opsChanged = prev !== undefined && prev.ops !== step.ops;
 
   return (
-    <div className="fp-player" tabIndex={0} onKeyDown={onKey}
+    <div className={`fp-player${linked ? " is-linked" : ""}`} id={`viz-${approach.id}`} ref={rootRef} tabIndex={0} onKeyDown={onKey}
       aria-label={`Animation: ${approach.name}. Use left and right arrow keys to step, space to play.`}>
       <div className="fp-player__top">
         <div className="fp-stage">
@@ -245,7 +288,19 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
               aria-pressed={i === speed} onClick={() => setSpeed(i)}>{s.label}</button>
           ))}
         </div>
+        <button type="button" className="fp-share" onClick={share} title="Copy a link that opens this exact step">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+          </svg>
+          Link to this step
+        </button>
       </div>
+      {shareMsg && (
+        <p className="fp-sharemsg" role="status">
+          {shareMsg.text}
+          {shareMsg.url && <input readOnly value={shareMsg.url} onFocus={(e) => e.currentTarget.select()} aria-label="Link to this step" />}
+        </p>
+      )}
 
       {hasAsks && (
         <div className="fp-predict">
@@ -260,7 +315,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
         </div>
       )}
 
-      <InputForm fields={fields} initialInput={initialInput} prepare={prepare} maxLength={maxLength}
+      <InputForm fields={fields} initialInput={initialInput} shown={input} prepare={prepare} maxLength={maxLength}
         onApply={(inp) => { setInput(inp); go(0); setScore({ right: 0, total: 0 }); }} />
     </div>
   );
