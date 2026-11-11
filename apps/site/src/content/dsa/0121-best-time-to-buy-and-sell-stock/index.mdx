@@ -1,0 +1,80 @@
+---
+title: Best Time to Buy and Sell Stock
+leetcode: { number: 121, url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/" }
+difficulty: Easy
+topics: [Sliding window, Array]
+added: 2026-11-11
+summary: Pick one day to buy and a later day to sell for the biggest profit. Goes from trying every pair of days to one pass that remembers the cheapest day so far.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get `prices`, where `prices[i]` is a stock's price on day `i`. Choose one day to buy and a **later** day to
+sell. Return the largest profit you can make, or `0` if every possible trade loses money.
+
+For `prices = [8, 3, 6, 2, 9, 4]` the answer is `7`: buy at 2 on day 3, sell at 9 on day 4.
+
+## The key question
+
+> **If I sell today, which buy day do I need to know about?**
+
+Only one: the cheapest day before today. Every other earlier day is a worse buy. So instead of remembering all
+past prices, you only need to remember their minimum.
+
+## Approach 1: Brute force
+
+Pair every buy day with every later sell day and keep the best profit.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n(n − 1)/2` pairs: **O(n²)**.
+
+**Space.** Just `best`: **O(1)**.
+
+**What it wastes:** for every sell day it re-scans all earlier days to find what one running minimum already knows.
+</Complexity>
+
+## Approach 2: One pass, cheapest day so far (optimal)
+
+Walk through the days once, keeping `cheapest`, the lowest price seen so far. Each day either becomes the new
+cheapest (a better buy day) or is a candidate sell day: profit `price − cheapest`. The shelf shows the window
+from the current buy day to today; it restarts whenever a cheaper day appears.
+
+<Viz client:visible approach="window" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One look at each day, each O(1): **O(n)**.
+
+**Space.** Two numbers, `cheapest` and `best`: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(1) | Every buy day with every sell day |
+| Cheapest so far | **O(n)** | **O(1)** | Today's best trade only needs the minimum before it |
+
+<GrowthChart client:visible series={growth} caption="Operations for n days. Brute force checks every pair; one pass looks at each day once." />
+
+## Common mistakes
+
+- **Selling before buying.** The minimum must come from an *earlier* day, so update `cheapest` and compute profit in the right order.
+- **Taking max minus min.** In `[9, 2]` the max (9) comes before the min (2): that trade isn't allowed. The answer is 0.
+- **Returning a negative profit.** If prices only fall, the best is not to trade at all: `0`.
+
+## Related problems
+
+- Best Time to Buy and Sell Stock II (LeetCode 122). Unlimited trades: add up every rise.
+- Maximum Subarray (LeetCode 53). The same "best ending here" idea, applied to sums.
+- Longest Substring Without Repeating Characters (LeetCode 3). Another window that restarts when a condition breaks.

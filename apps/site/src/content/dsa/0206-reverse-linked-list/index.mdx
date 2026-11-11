@@ -1,0 +1,99 @@
+---
+title: Reverse Linked List
+leetcode: { number: 206, url: "https://leetcode.com/problems/reverse-linked-list/" }
+difficulty: Easy
+topics: [Linked list]
+added: 2026-11-11
+summary: Turn a singly linked list around so the last node becomes the head. Goes from copying the values out, to flipping every arrow in one pass, to doing it recursively.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the `head` of a singly linked list: each node holds a value and a `next` pointer to the node after it,
+and the last node points to `None`. Reverse the list and return the new head.
+
+`1 → 2 → 3 → 4 → 5` becomes `5 → 4 → 3 → 2 → 1`.
+
+## The key question
+
+> **When I turn one node's arrow around, how do I not lose the rest of the list?**
+
+The moment `curr.next` points backwards, the only path to the remaining nodes is gone. Every in-place solution is
+about saving that path first.
+
+## Approach 1: Copy the values, rebuild backwards
+
+Read every value into an ordinary list, then build a brand-new linked list from the end of that list. It's easy
+to get right, but it duplicates the whole list.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to copy `n` values and one pass to build `n` nodes: `2n` steps, **O(n)**.
+
+**Space.** The copied values plus `n` new nodes: **O(n)**.
+
+**What it wastes:** the nodes already exist. Only their arrows need to change.
+</Complexity>
+
+## Approach 2: Three pointers, in place (optimal)
+
+Walk the list with `prev` (the part already reversed) and `curr` (the node being turned). For each node: save
+`nxt = curr.next`, point `curr.next` at `prev`, then step `prev` and `curr` forward. Watch each arrow flip from
+pointing right to pointing left.
+
+<Viz client:visible approach="iterative" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each node is visited once and its arrow changed once: **O(n)**.
+
+**Space.** Three pointers, whatever the length: **O(1)**.
+</Complexity>
+
+## Approach 3: Recursive
+
+Reverse everything after `head` first, then fix the one arrow between `head` and the node after it:
+`head.next.next = head` makes that node point back, and `head.next = None` cuts the old forward arrow. For a moment
+the two nodes point at each other, shown as a double arrow.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One call per node, O(1) work each: **O(n)**.
+
+**Space.** No call can finish until the one after it returns, so the call stack holds `n` frames at its
+deepest: **O(n)**. A very long list can even overflow the stack, which is why the loop is preferred.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Copy and rebuild | O(n) | O(n) | Make a new list |
+| Three pointers | **O(n)** | **O(1)** | Flip each arrow, saving the way forward first |
+| Recursive | O(n) | O(n) | Reverse the rest, then fix one arrow; costs a stack frame per node |
+
+The recursive version does exactly as much work as the loop, so the chart compares the copy with the loop.
+
+<GrowthChart client:visible series={growth} caption="Operations for a list of n nodes. Copying reads and rebuilds every node; the loop changes each arrow once." />
+
+## Common mistakes
+
+- **Flipping before saving.** Write `nxt = curr.next` before `curr.next = prev`, or the rest of the list is lost.
+- **Returning `head`.** At the end `head` is the new tail; the new head is `prev`.
+- **Forgetting `head.next = None`** in the recursive version, which leaves a two-node cycle at the end.
+
+## Related problems
+
+- Reverse Linked List II (LeetCode 92). Reverse only positions `left` to `right`.
+- Palindrome Linked List (LeetCode 234). Reverse the second half, then compare.
+- Reorder List (LeetCode 143). Find the middle, reverse the second half, then interleave.

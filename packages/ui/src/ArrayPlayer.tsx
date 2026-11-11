@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tracer, type Approach, type ArrayStep } from "./trace";
 import { ArrayCells } from "./ArrayCells";
+import { ListView } from "./ListView";
 import { InputForm, parseDraft, toText, type InputField, type InputValues, type Prepared } from "./input";
 import "./player.css";
 
@@ -161,7 +162,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
       aria-label={`Animation: ${approach.name}. Use left and right arrow keys to step, space to play.`}>
       <div className="fp-player__top">
         <div className="fp-stage">
-          <ArrayCells step={step} />
+          {step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
 
           {question ? (
             <div className="fp-ask" role="group" aria-label="Predict the next step">

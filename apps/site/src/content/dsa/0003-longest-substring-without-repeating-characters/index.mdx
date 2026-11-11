@@ -1,0 +1,101 @@
+---
+title: Longest Substring Without Repeating Characters
+leetcode: { number: 3, url: "https://leetcode.com/problems/longest-substring-without-repeating-characters/" }
+difficulty: Medium
+topics: [Sliding window, Hash map, String]
+added: 2026-11-11
+summary: Find the longest stretch of a string with no repeated character. Goes from growing a run from every start, to a sliding window, to a window that jumps using each character's last position.
+best: { time: "O(n)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s`. Return the length of the longest **substring** (a contiguous stretch, not any subset of
+letters) in which no character appears twice.
+
+For `s = "dvdfab"` the answer is `5`: `"vdfab"`.
+
+## The key question
+
+> **When a repeat appears, how much of the current stretch can I keep?**
+
+Everything after the earlier copy of that character. The stretch before it can't be extended any more, but the
+part after it is still repeat-free, so there's no need to start over.
+
+## Approach 1: Brute force, grow from every start
+
+From each start position, extend right until a character repeats, and keep the longest run.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(k)">
+**Time.** Each of the `n` starts can extend up to `n` characters before it hits a repeat or the end: about
+`n²/2` checks, **O(n²)**. (With `k` possible characters a run can't be longer than `k`, but for long strings of
+distinct characters that's still quadratic.)
+
+**Space.** The `seen` set holds one run: at most `k` characters, **O(k)**.
+
+**What it wastes:** after a repeat it starts over one position later and re-checks letters it has just seen.
+</Complexity>
+
+## Approach 2: Sliding window with a set
+
+Keep a window `[left, right]` with no repeats. Move `right` forward one character at a time. If the new character
+is already in the window, drop characters from the left until it isn't, then add it.
+
+<Viz client:visible approach="window" />
+
+<Complexity time="O(n)" space="O(k)">
+**Time.** `right` moves `n` times and `left` moves at most `n` times in total, because each character enters and
+leaves the window at most once: at most `2n` steps, **O(n)**.
+
+**Space.** The set holds the window: at most `k` characters, **O(k)**.
+
+**What it wastes:** on a repeat it shrinks one character at a time, even though it could know exactly where to cut.
+</Complexity>
+
+## Approach 3: Jump with each character's last index (optimal)
+
+Store the last index of every character. When a repeat lands inside the window, move `left` straight to one past
+the earlier copy in a single step.
+
+<Viz client:visible approach="jump" />
+
+<Complexity time="O(n)" space="O(k)">
+**Time.** One pass over `s`, each step O(1): exactly `n` steps, **O(n)**.
+
+**Space.** The map holds one entry per distinct character: **O(k)**, where `k` is the alphabet size (128 for ASCII).
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Grow from every start | O(n²) | O(k) | Restart after every repeat |
+| Sliding window | O(n) | O(k) | Shrink from the left until the repeat is gone |
+| Jump with last index | **O(n)** | **O(k)** | Cut straight past the earlier copy |
+
+The chart uses a string of all-distinct characters, the worst case for the brute force. The jump version does the
+same `n` steps as the window here, so it's left out.
+
+<GrowthChart client:visible series={growth} caption="Character checks on a string of n distinct characters. Brute force grows like n²/2; the window like n." />
+
+## Common mistakes
+
+- **Substring vs subsequence.** The characters must be contiguous: in `"pwwkew"`, `"pwke"` doesn't count.
+- **Jumping left backwards.** In `"abba"`, the second `a` was last seen at 0, which is already outside the window. Only jump when `last[ch] >= left`.
+- **Forgetting the update.** Record `last[ch] = right` on every step, repeat or not.
+
+## Related problems
+
+- Longest Repeating Character Replacement (LeetCode 424). A window that may contain up to `k` changes.
+- Minimum Window Substring (LeetCode 76). Grow until the window is valid, then shrink as far as it stays valid.
+- Best Time to Buy and Sell Stock (LeetCode 121). A window that restarts when a cheaper day appears.

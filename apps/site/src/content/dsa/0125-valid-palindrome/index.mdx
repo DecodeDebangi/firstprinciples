@@ -1,0 +1,88 @@
+---
+title: Valid Palindrome
+leetcode: { number: 125, url: "https://leetcode.com/problems/valid-palindrome/" }
+difficulty: Easy
+topics: [Two pointers, String]
+added: 2026-11-11
+summary: Decide whether a sentence reads the same backwards once you ignore case, spaces and punctuation. Goes from building a cleaned, reversed copy to two pointers that skip as they go.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s`. Keep only its letters and digits, lower-case the letters, and check whether what's left
+reads the same forwards and backwards. Return `True` or `False`.
+
+`"Top spot!"` cleans to `"topspot"`, which is a palindrome. `"race a car"` cleans to `"raceacar"`, which isn't.
+
+## The key question
+
+> **Do I need a cleaned copy at all, or can I compare the original string from both ends?**
+
+A palindrome check only ever compares the first unchecked character with the last unchecked one. Both
+approaches below do that comparison; the second does it without making any copies.
+
+## Approach 1: Clean, reverse, compare
+
+Build the cleaned string, build its reverse, and compare them position by position. It's short to write, but it
+makes two new strings and compares every pair twice: position 1 with position n, and later position n with
+position 1.
+
+<Viz client:visible approach="reverse" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Cleaning reads `n` characters, reversing reads them again, and the comparison reads them a third
+time: about `3n` steps, **O(n)**.
+
+**Space.** The cleaned copy and the reversed copy each hold up to `n` characters: **O(n)**.
+
+**What it wastes:** two copies of the string, and a second pass over pairs it has already compared.
+</Complexity>
+
+## Approach 2: Two pointers, in place (optimal)
+
+Put `i` at the start and `j` at the end. If either sits on a space or a punctuation mark, step past it. Otherwise
+compare the two characters, ignoring case: a mismatch means `False`, a match moves both inward. When the
+pointers meet, every pair has matched.
+
+<Viz client:visible approach="pointers" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Every step moves `i` right or `j` left (or both), and they stop when they meet, so there are at most
+`n` steps, each O(1): **O(n)**. On a clean palindrome that's only `n/2` comparisons.
+
+**Space.** Two indices, whatever the length of `s`: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Clean, reverse, compare | O(n) | O(n) | Make copies, then compare everything |
+| Two pointers | **O(n)** | **O(1)** | Compare from both ends, skipping as you go |
+
+Both are O(n); the difference is the constant and the memory. The chart counts work on a palindrome of `a`s, where
+nothing stops early.
+
+<GrowthChart client:visible series={growth} caption="Operations on a palindrome of length n. The copy approach reads every character three times; two pointers compare half of them once." />
+
+## Common mistakes
+
+- **Forgetting digits.** `"0P"` is not a palindrome: `0` counts as a character.
+- **Comparing before skipping.** Skip non-alphanumeric characters first, then compare, or `"a."` fails.
+- **Case.** Compare `s[i].lower()` with `s[j].lower()`; `"Aa"` is a palindrome.
+- **Running past each other.** The loop condition is `i < j`; skipping can push one pointer past the other.
+
+## Related problems
+
+- Valid Palindrome II (LeetCode 680). Allowed to delete one character: on the first mismatch, try skipping either side.
+- Palindromic Substrings (LeetCode 647). Expand outwards from every centre instead of inwards from the ends.
+- Two Sum II (LeetCode 167). The same two-pointer squeeze, on a sorted list of numbers.

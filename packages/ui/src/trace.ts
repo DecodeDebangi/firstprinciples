@@ -8,6 +8,18 @@
 /** Lifted: compare, found, active, miss. Sunk: discard. Coloured but resting: settled, visited, side-a, side-b. */
 export type Tone = "compare" | "found" | "active" | "miss" | "discard" | "settled" | "visited" | "side-a" | "side-b";
 
+/** One linked list for ListView: nodes left to right, and the arrow between each neighbour pair. */
+export interface ListRow {
+  label?: string;
+  /** `kind: "null"` draws a None end marker; `"dummy"` a dashed placeholder head. */
+  nodes: { id: string; val: number | string; kind?: "null" | "dummy" }[];
+  /** arrows[i] sits between nodes[i] and nodes[i + 1]: "right" = i.next is i+1, "left" = (i+1).next is i. */
+  /** "both" = the two nodes point at each other (a brief 2-cycle, e.g. mid-way through a recursive reversal). */
+  arrows: ("right" | "left" | "both" | null)[];
+  pointers?: Record<string, string | null>;
+  tones?: Record<string, Tone>;
+}
+
 export interface ArrayStep {
   /** 1-based line in the approach's `code` to highlight. */
   line: number;
@@ -16,6 +28,8 @@ export interface ArrayStep {
   array: (number | string)[];
   /** Text under each cell. Defaults to the index. */
   labels?: string[];
+  /** Linked lists drawn instead of the array (pass `array: []`). */
+  lists?: ListRow[];
   /** Named pointers, e.g. { lo: 0, hi: 7 }. */
   pointers?: Record<string, number>;
   tones?: Record<number, Tone>;

@@ -1,0 +1,85 @@
+---
+title: Merge Two Sorted Lists
+leetcode: { number: 21, url: "https://leetcode.com/problems/merge-two-sorted-lists/" }
+difficulty: Easy
+topics: [Linked list]
+added: 2026-11-11
+summary: Combine two sorted linked lists into one sorted list by relinking their nodes. Goes from copying and sorting every value to splicing nodes from the two heads with a dummy node.
+best: { time: "O(n + m)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the heads of two linked lists, `list1` and `list2`, each sorted in increasing order. Merge them into one
+sorted list made by linking together the existing nodes, and return its head.
+
+`1 → 4 → 7` and `2 → 3 → 8 → 9` merge into `1 → 2 → 3 → 4 → 7 → 8 → 9`.
+
+## The key question
+
+> **Where is the smallest value I haven't placed yet?**
+
+Always at one of the two heads. Both lists are sorted, so nothing further down either list can be smaller than
+its own head. One comparison picks the next node.
+
+## Approach 1: Collect, sort, rebuild
+
+Copy every value into a plain list, sort it, and build a new linked list. It works, but it throws away the order
+the lists already have and builds every node again.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O((n + m) log(n + m))" space="O(n + m)">
+**Time.** Copying is `n + m` steps and rebuilding another `n + m`, but sorting dominates:
+**O((n + m) log(n + m))**.
+
+**Space.** The copied values and `n + m` new nodes: **O(n + m)**.
+
+**What it wastes:** sorting rediscovers an order both lists already had, and every node is built twice.
+</Complexity>
+
+## Approach 2: Splice with a dummy head (optimal)
+
+Start the result with a placeholder `dummy` node and keep a `tail` pointer. Compare the two heads, link the smaller
+one after `tail`, and advance that list. When one list runs out, attach the rest of the other in one link. The
+dummy saves a special case for "the result is still empty".
+
+<Viz client:visible approach="splice" />
+
+<Complexity time="O(n + m)" space="O(1)">
+**Time.** Each comparison places one node, so at most `n + m − 1` comparisons, plus one link for the leftover
+run: **O(n + m)**.
+
+**Space.** The existing nodes are relinked, not copied; the only extra is the dummy node: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Collect, sort, rebuild | O((n + m) log(n + m)) | O(n + m) | Copy everything and sort it |
+| Splice with a dummy | **O(n + m)** | **O(1)** | The smallest is always at a head |
+
+The chart uses perfectly interleaved lists, the worst case for splicing, since every node needs a comparison.
+
+<GrowthChart client:visible series={growth} caption="Operations for n total nodes. Sorting adds about n·log₂n comparisons; splicing needs at most one per node." />
+
+## Common mistakes
+
+- **Losing the head.** Without a dummy node you need a special case for the first node. Return `dummy.next`, not `dummy`.
+- **Forgetting the leftovers.** When one list runs out, the other may still have nodes: `tail.next = list1 or list2`.
+- **Creating new nodes.** The problem asks you to splice the existing nodes together, not copy their values.
+
+## Related problems
+
+- Merge k Sorted Lists (LeetCode 23). The same idea with k heads, using a heap to find the smallest.
+- Sort List (LeetCode 148). Merge sort on a linked list: split in half, sort each, merge with this exact routine.
+- Merge Sorted Array (LeetCode 88). The same merge on arrays, filled from the back to stay in place.
