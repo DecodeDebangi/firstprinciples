@@ -62,15 +62,15 @@ const carry: Approach<Input> = {
       t.op();
       const d = digits[i];
       const ask = (answer: number) => ({ q: `digits[${i}] = ${d}. What happens?`, options: ["Add 1 and stop", "Write 0 and carry 1 left"], answer });
-      const done: Record<number, Tone> = Object.fromEntries(Array.from({ length: digits.length - 1 - i }, (_, k) => [i + 1 + k, "compare" as const]));
+      const done: Record<number, Tone> = Object.fromEntries(Array.from({ length: digits.length - 1 - i }, (_, k) => [i + 1 + k, "visited" as const]));
       if (digits[i] < 9) {
         digits[i] += 1;
-        t.step({ ask: ask(0), line: 5, array: [...digits], pointers: { i }, tones: { ...done, [i]: "found" }, vars: { i, carry: 0 }, done: "found",
+        t.step({ ask: ask(0), badge: { at: i, text: `${d} + 1 = ${d + 1}` }, line: 5, array: [...digits], pointers: { i }, tones: { ...done, [i]: "found" }, vars: { i, carry: 0 }, done: "found",
           message: `${digits[i] - 1} < 9, so it becomes ${digits[i]} and nothing carries. Stop here; every digit to the left stays as it is.` });
         return;
       }
       digits[i] = 0;
-      t.step({ ask: ask(1), line: 6, array: [...digits], pointers: { i }, tones: { ...done, [i]: "compare" }, vars: { i, carry: 1 },
+      t.step({ ask: ask(1), badge: { at: i, text: "9 + 1 = 10, carry 1" }, line: 6, array: [...digits], pointers: { i }, tones: { ...done, [i]: "compare" }, vars: { i, carry: 1 },
         message: `9 + 1 = 10: write 0 and carry 1 to the left.` });
     }
     const out = [1, ...digits];

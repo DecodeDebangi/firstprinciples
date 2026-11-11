@@ -10,10 +10,10 @@ export function prepare(raw: Input): Prepared<Input> {
   return { input: raw };
 }
 
-/** Left part, the candidate, and the right part, each with its own tone. */
-function sides(n: number, i: number): Record<number, Tone> {
+/** Left part and right part rest in two tints; only the candidate lifts. */
+function sides(n: number, i: number, hit = false): Record<number, Tone> {
   const t: Record<number, Tone> = {};
-  for (let k = 0; k < n; k++) t[k] = k < i ? "active" : k > i ? "compare" : "found";
+  for (let k = 0; k < n; k++) t[k] = k < i ? "side-a" : k > i ? "side-b" : hit ? "found" : "compare";
   return t;
 }
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
@@ -40,11 +40,11 @@ const bruteForce: Approach<Input> = {
       t.op(n - 1); // every other element is added once
       const vars = { i, left, right };
       if (left === right) {
-        t.step({ line: 7, array: nums, pointers: { i }, tones: sides(n, i), vars, done: "found",
+        t.step({ badge: { at: i, text: `${left} = ${right} ✓` }, line: 7, array: nums, pointers: { i }, tones: sides(n, i, true), vars, done: "found",
           message: `Left of ${i} adds to ${left}, right adds to ${right}. They match, so ${i} is the pivot.` });
         return;
       }
-      t.step({ line: 6, array: nums, pointers: { i }, tones: sides(n, i), vars,
+      t.step({ badge: { at: i, text: `${left} ≠ ${right}` }, line: 6, array: nums, pointers: { i }, tones: sides(n, i), vars,
         message: `Left of ${i} adds to ${left}, right adds to ${right}. Not equal. Re-add both sides for the next index.` });
     }
     t.step({ line: 8, array: nums, vars: { i: null, left: null, right: null }, done: "notfound",
@@ -92,11 +92,11 @@ const prefixSums: Approach<Input> = {
       const vars = { total, i, left, right };
       const ask = (yes: boolean) => ({ q: `left = prefix[${i}] = ${left}; right = ${total} − prefix[${i + 1}]. Is index ${i} the pivot?`, options: ["Yes: both sides are equal", "No: move on"], answer: yes ? 0 : 1 });
       if (left === right) {
-        t.step({ ask: ask(true), line: 10, array: nums, pointers: { i }, tones: sides(n, i), map: entries(i), vars, done: "found",
+        t.step({ ask: ask(true), badge: { at: i, text: `${left} = ${right} ✓` }, line: 10, array: nums, pointers: { i }, tones: sides(n, i, true), map: entries(i), vars, done: "found",
           message: `left = prefix[${i}] = ${left}, right = ${total} − prefix[${i + 1}] = ${right}. Equal, so ${i} is the pivot.` });
         return;
       }
-      t.step({ ask: ask(false), line: 9, array: nums, pointers: { i }, tones: sides(n, i), map: entries(i), vars,
+      t.step({ ask: ask(false), badge: { at: i, text: `${left} ≠ ${right}` }, line: 9, array: nums, pointers: { i }, tones: sides(n, i), map: entries(i), vars,
         message: `left = prefix[${i}] = ${left}, right = ${total} − prefix[${i + 1}] = ${right}. Two lookups instead of re-adding.` });
     }
     t.step({ line: 11, array: nums, map: entries(), vars: { total }, done: "notfound", message: "No index balances. Return -1." });
@@ -129,11 +129,11 @@ const runningTotal: Approach<Input> = {
       const vars = { total, i, left, right };
       const ask = (yes: boolean) => ({ q: `total = ${total}, left = ${left}, nums[${i}] = ${x}. Is index ${i} the pivot?`, options: ["Yes: both sides are equal", "No: move on"], answer: yes ? 0 : 1 });
       if (left === right) {
-        t.step({ ask: ask(true), line: 6, array: nums, pointers: { i }, tones: sides(n, i), vars, done: "found",
+        t.step({ ask: ask(true), badge: { at: i, text: `${left} = ${right} ✓` }, line: 6, array: nums, pointers: { i }, tones: sides(n, i, true), vars, done: "found",
           message: `right = ${total} − ${left} − ${x} = ${right}, which equals left. ${i} is the pivot.` });
         return;
       }
-      t.step({ ask: ask(false), line: 5, array: nums, pointers: { i }, tones: sides(n, i), vars,
+      t.step({ ask: ask(false), badge: { at: i, text: `${left} ≠ ${right}` }, line: 5, array: nums, pointers: { i }, tones: sides(n, i), vars,
         message: `right = ${total} − ${left} − ${x} = ${right}, left = ${left}. Not equal. Add ${x} to left and move on.` });
       left += x;
     }

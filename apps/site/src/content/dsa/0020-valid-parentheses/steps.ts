@@ -92,7 +92,7 @@ const stackApproach: Approach<Input> = {
     const stackTitle = "Stack (top first)";
     const frames = () => stack.map((k) => `${chars[k]}  from i=${k}`);
     const tonesFor = (extra: Record<number, Tone> = {}) => ({
-      ...Object.fromEntries([...matched].map((k) => [k, "found" as const])),
+      ...Object.fromEntries([...matched].map((k) => [k, "settled" as const])),
       ...extra,
     });
     t.step({ array: chars, line: 3, stack: [], stackTitle, vars: { ch: null },
@@ -105,7 +105,7 @@ const stackApproach: Approach<Input> = {
       if (ch in match) {
         const top = stack.length ? chars[stack[stack.length - 1]] : null;
         if (top !== match[ch]) {
-          t.step({ ask: ask(2), array: chars, line: 7, pointers: { i }, tones: tonesFor({ [i]: "miss", ...(stack.length ? { [stack[stack.length - 1]]: "miss" } : {}) }),
+          t.step({ ask: ask(2), badge: { at: i, text: top === null ? "nothing to close" : `${top} ${ch} ✗` }, array: chars, line: 7, pointers: { i }, tones: tonesFor({ [i]: "miss", ...(stack.length ? { [stack[stack.length - 1]]: "miss" } : {}) }),
             stack: frames(), stackTitle, vars: { ch, top, needs: match[ch] }, done: "notfound",
             message: top === null
               ? `"${ch}" is a closer, but nothing is waiting on the stack. It has no partner, so the string is invalid.`
@@ -114,12 +114,12 @@ const stackApproach: Approach<Input> = {
         }
         const j = stack.pop()!;
         matched.add(i).add(j);
-        t.step({ ask: ask(1), array: chars, line: 8, pointers: { i }, tones: tonesFor({ [i]: "found", [j]: "found" }), stack: frames(), stackTitle,
+        t.step({ ask: ask(1), badge: { at: i, text: `${top}${ch} ✓ pop` }, array: chars, line: 8, pointers: { i }, tones: tonesFor({ [i]: "found", [j]: "found" }), stack: frames(), stackTitle,
           vars: { ch, top, needs: match[ch] },
           message: `"${ch}" matches the "${top}" on top (from i=${j}). Pop it: that pair is closed.` });
       } else {
         stack.push(i);
-        t.step({ ask: ask(0), array: chars, line: 10, pointers: { i }, tones: tonesFor({ [i]: "active" }), stack: frames(), stackTitle,
+        t.step({ ask: ask(0), badge: { at: i, text: "push" }, array: chars, line: 10, pointers: { i }, tones: tonesFor({ [i]: "active" }), stack: frames(), stackTitle,
           vars: { ch, top: ch, needs: null },
           message: `"${ch}" is an opener. Push it and wait for its closer.` });
       }

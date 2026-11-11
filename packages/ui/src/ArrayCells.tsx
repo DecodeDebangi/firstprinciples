@@ -5,14 +5,17 @@ import "./player.css";
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 const PTR_ROW = 18;
 
+type Geo = { x: number; w: number; top: number; h: number };
+
 /**
- * The array row: cells, indices (or labels) and pointer tags.
- * Pointers live in their own layer and are keyed by name, so when `lo` moves
- * from index 0 to 5 the same tag slides across instead of jumping.
+ * The array row in the "lift and settle" style: the cell being examined lifts off the
+ * page, ruled-out cells sink and grey out, and the range still in play sits on a shelf
+ * that shrinks. Pointers ride a rail underneath and slide between cells (they're keyed
+ * by name, so `lo` moving from 0 to 5 is one element gliding across).
  */
 export function ArrayCells({ step }: { step: ArrayStep }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [cols, setCols] = useState<{ x: number; w: number }[]>([]);
+  const [cols, setCols] = useState<Geo[]>([]);
   const n = step.array.length;
 
   useIsoLayoutEffect(() => {
@@ -20,7 +23,11 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
     if (!el) return;
     const measure = () => {
       const nodes = el.querySelectorAll<HTMLElement>(":scope > .fp-cells > .fp-col");
-      setCols([...nodes].map((c) => ({ x: c.offsetLeft, w: c.offsetWidth })));
+      setCols([...nodes].map((c) => {
+        const cell = c.querySelector<HTMLElement>(".fp-cell")!;
+        // Columns and cells are both positioned relative to the track (the nearest positioned ancestor).
+        return { x: c.offsetLeft, w: c.offsetWidth, top: cell.offsetTop, h: cell.offsetHeight };
+      }));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -39,8 +46,17 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
     });
   const rows = Math.max(1, ...ptrs.map((p) => p.row + 1));
 
+  // The shelf spans the range still in play.
+  const r = step.range;
+  const a = r ? cols[r[0]] : undefined, b = r ? cols[r[1]] : undefined;
+  const shelf = a && b ? { left: a.x - 3, width: b.x + b.w - a.x + 6, top: a.top - 6, height: a.h + 12 } : null;
+
+  const badgeCol = step.badge ? cols[step.badge.at] : undefined;
+
   return (
     <div className="fp-track" ref={trackRef}>
+      <div className={`fp-shelf${shelf ? "" : " is-off"}`} aria-hidden="true"
+        style={shelf ? { transform: `translateX(${shelf.left}px)`, width: shelf.width, top: shelf.top, height: shelf.height } : undefined} />
       <div className="fp-cells" role="img" aria-label={`Array: ${step.array.join(", ")}`}>
         {step.array.map((v, i) => {
           const outside = step.range ? i < step.range[0] || i > step.range[1] : false;
@@ -56,20 +72,29 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
           );
         })}
       </div>
-      <div className="fp-ptr-layer" style={{ height: rows * PTR_ROW + 4 }} aria-hidden="true">
+      {step.badge && badgeCol && (
+        <div className="fp-badge" key={`${step.badge.at}-${step.badge.text}`}
+          style={{ left: badgeCol.x + badgeCol.w / 2, top: Math.max(0, badgeCol.top - 40) }}>
+          {step.badge.text}
+        </div>
+      )}
+      <div className="fp-ptr-layer" style={{ height: rows * PTR_ROW + 10 }} aria-hidden="true">
         {ptrs.map(({ name, i, row }) => {
           const c = cols[i];
           if (!c) return null;
           return (
             <span className="fp-ptr" key={name}
               style={{ width: c.w, transform: `translate(${c.x}px, ${row * PTR_ROW}px)` }}>
-              ↑ {name}
+              {name}
             </span>
           );
         })}
       </div>
-      {ptrs.length > 0 && (
-        <span className="fp-sr">Pointers: {ptrs.map((p) => `${p.name} at ${p.i}`).join(", ")}</span>
+      {(ptrs.length > 0 || step.badge) && (
+        <span className="fp-sr">
+          {step.badge ? `${step.badge.text}. ` : ""}
+          {ptrs.length > 0 ? `Pointers: ${ptrs.map((p) => `${p.name} at ${p.i}`).join(", ")}` : ""}
+        </span>
       )}
     </div>
   );

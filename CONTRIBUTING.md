@@ -21,6 +21,11 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
    - `message` states the *decision* in words, with the real numbers ("27 < 63, so drop the left half"), not just
      what happened.
    - Call `t.op()` once per basic operation (comparison, lookup) so the chart counts real work.
+   - **Tones** follow "lift and settle": only the cell(s) being looked at *right now* should lift
+     (`compare`, `active`, `found`, `miss`). Ruled-out cells use `discard` (they sink and grey). States that
+     persist across steps must rest without lifting: `settled` (confirmed/matched), `visited` (already
+     handled), `side-a` / `side-b` (two regions, e.g. left and right of a pivot). A `range` draws the shelf.
+   - On each key comparison, set `badge: { at, text }` (e.g. `"27 < 63 →"`) to float it above that cell.
    - Pick an example that takes 6–20 steps and makes every branch run at least once.
    - **Predict mode:** on each key decision step of the optimal approach (and any other approach where it
      helps), set `ask: { q, options, answer }`. It's asked *before* that step is shown, so the question must

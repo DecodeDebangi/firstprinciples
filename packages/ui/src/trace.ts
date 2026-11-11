@@ -5,7 +5,8 @@
  * snapshots, so stepping backwards is free and no animation is hand-drawn.
  */
 
-export type Tone = "compare" | "found" | "active" | "miss" | "discard";
+/** Lifted: compare, found, active, miss. Sunk: discard. Coloured but resting: settled, visited, side-a, side-b. */
+export type Tone = "compare" | "found" | "active" | "miss" | "discard" | "settled" | "visited" | "side-a" | "side-b";
 
 export interface ArrayStep {
   /** 1-based line in the approach's `code` to highlight. */
@@ -18,6 +19,8 @@ export interface ArrayStep {
   /** Named pointers, e.g. { lo: 0, hi: 7 }. */
   pointers?: Record<string, number>;
   tones?: Record<number, Tone>;
+  /** The comparison being made, floated above one cell, e.g. { at: 4, text: "27 < 63 →" }. */
+  badge?: { at: number; text: string };
   /** Inclusive window still being considered; cells outside are dimmed. */
   range?: [number, number] | null;
   vars?: Record<string, string | number | boolean | null>;

@@ -39,12 +39,12 @@ const bruteForce: Approach<Input> = {
         t.op();
         const tones: Record<number, Tone> = { [i]: "active", [j]: "compare" };
         if (nums[i] < 2 * nums[j]) {
-          t.step({ line: 6, array: nums, pointers: { i, j }, tones: { [i]: "miss", [j]: "compare" }, vars: { i, j, double: 2 * nums[j] },
+          t.step({ badge: { at: j, text: `${nums[i]} < 2×${nums[j]}` }, line: 6, array: nums, pointers: { i, j }, tones: { [i]: "miss", [j]: "compare" }, vars: { i, j, double: 2 * nums[j] },
             message: `${nums[i]} < 2 × ${nums[j]} = ${2 * nums[j]}. Candidate ${nums[i]} fails. Throw away its checks and try the next one.` });
           ok = false;
           break;
         }
-        t.step({ line: 5, array: nums, pointers: { i, j }, tones, vars: { i, j, double: 2 * nums[j] },
+        t.step({ badge: { at: j, text: `${nums[i]} ≥ 2×${nums[j]}` }, line: 5, array: nums, pointers: { i, j }, tones, vars: { i, j, double: 2 * nums[j] },
           message: `${nums[i]} ≥ 2 × ${nums[j]} = ${2 * nums[j]}. So far so good.` });
       }
       if (ok) {
@@ -91,11 +91,11 @@ const twoPasses: Approach<Input> = {
       t.op();
       const ask = (yes: boolean) => ({ q: `Is ${nums[best]} at least 2 × ${nums[i]} = ${2 * nums[i]}?`, options: ["Yes: keep checking", "No: return -1"], answer: yes ? 0 : 1 });
       if (nums[best] < 2 * nums[i]) {
-        t.step({ ask: ask(false), line: 8, array: nums, pointers: { best, i }, tones: { [best]: "miss", [i]: "compare" }, vars: { best, i }, done: "notfound",
+        t.step({ ask: ask(false), badge: { at: i, text: `${nums[best]} < 2×${nums[i]}` }, line: 8, array: nums, pointers: { best, i }, tones: { [best]: "miss", [i]: "compare" }, vars: { best, i }, done: "notfound",
           message: `${nums[best]} < 2 × ${nums[i]} = ${2 * nums[i]}. Even the largest fails, so nothing can pass. Return -1.` });
         return;
       }
-      t.step({ ask: ask(true), line: 7, array: nums, pointers: { best, i }, tones: { [best]: "active", [i]: "compare" }, vars: { best, i },
+      t.step({ ask: ask(true), badge: { at: i, text: `${nums[best]} ≥ 2×${nums[i]}` }, line: 7, array: nums, pointers: { best, i }, tones: { [best]: "active", [i]: "compare" }, vars: { best, i },
         message: `${nums[best]} ≥ 2 × ${nums[i]} = ${2 * nums[i]}. Check the next one.` });
     }
     t.step({ line: 9, array: nums, pointers: { best }, tones: { [best]: "found" }, vars: { best, i: null }, done: "found",
@@ -131,11 +131,11 @@ const onePass: Approach<Input> = {
         second = first;
         first = x;
         best = i;
-        t.step({ ask: ask(0), line: 7, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { first, second: show(second), best },
+        t.step({ ask: ask(0), badge: { at: i, text: "new largest" }, line: 7, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { first, second: show(second), best },
           message: `${x} is the new largest. The old largest${second < 0 ? " (none yet)" : `, ${second},`} becomes the runner-up.` });
       } else if (x > second) {
         second = x;
-        t.step({ ask: ask(1), line: 9, array: nums, pointers: { i }, tones: { [best]: "active", [i]: "compare" }, vars: { first, second, best },
+        t.step({ ask: ask(1), badge: { at: i, text: "new runner-up" }, line: 9, array: nums, pointers: { i }, tones: { [best]: "active", [i]: "compare" }, vars: { first, second, best },
           message: `${x} isn't the largest but beats the runner-up. New runner-up: ${x}.` });
       } else {
         t.step({ ask: ask(2), line: 8, array: nums, pointers: { i }, tones: { [best]: "active" }, vars: { first, second: show(second), best },

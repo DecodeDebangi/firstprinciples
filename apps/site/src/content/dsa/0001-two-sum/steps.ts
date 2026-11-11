@@ -34,13 +34,15 @@ const bruteForce: Approach<Input> = {
         const sum = nums[i] + nums[j];
         if (sum === target) {
           t.step({
-            line: 6, array: nums, pointers: { i, j }, tones: { [i]: "found", [j]: "found" },
+            badge: { at: j, text: `${nums[i]} + ${nums[j]} = ${target} ✓` },
+          line: 6, array: nums, pointers: { i, j }, tones: { [i]: "found", [j]: "found" },
             vars: { i, j, sum, target }, done: "found",
             message: `${nums[i]} + ${nums[j]} = ${target}. Found it: return [${i}, ${j}].`,
           });
           return;
         }
         t.step({
+          badge: { at: j, text: `${nums[i]} + ${nums[j]} = ${sum}` },
           line: 5, array: nums, pointers: { i, j }, tones: { [i]: "active", [j]: "compare" },
           vars: { i, j, sum, target },
           message: `nums[${i}] + nums[${j}] = ${nums[i]} + ${nums[j]} = ${sum}, not ${target}. Move j on.`,
@@ -87,20 +89,20 @@ const twoPointers: Approach<Input> = {
       const base = { array: vals, labels, pointers: { lo, hi }, range: [lo, hi] as [number, number], vars: { lo, hi, s, target } };
       if (s === target) {
         t.step({
-          ...base, ask: ask(0), line: 7, tones: { [lo]: "found", [hi]: "found" }, done: "found",
+          ...base, ask: ask(0), badge: { at: lo, text: `${vals[lo]} + ${vals[hi]} = ${target} ✓` }, line: 7, tones: { [lo]: "found", [hi]: "found" }, done: "found",
           message: `${vals[lo]} + ${vals[hi]} = ${target}. Return their original indices [${pairs[lo][1]}, ${pairs[hi][1]}].`,
         });
         return;
       }
       if (s < target) {
         t.step({
-          ...base, ask: ask(1), line: 9, tones: { [lo]: "compare", [hi]: "compare" },
+          ...base, ask: ask(1), badge: { at: lo, text: `${vals[lo]} + ${vals[hi]} = ${s} < ${target}` }, line: 9, tones: { [lo]: "compare", [hi]: "compare" },
           message: `${vals[lo]} + ${vals[hi]} = ${s} is too small. ${vals[hi]} is already the biggest value left, so ${vals[lo]} can't be in the answer. Move lo right.`,
         });
         lo++;
       } else {
         t.step({
-          ...base, ask: ask(2), line: 11, tones: { [lo]: "compare", [hi]: "compare" },
+          ...base, ask: ask(2), badge: { at: hi, text: `${vals[lo]} + ${vals[hi]} = ${s} > ${target}` }, line: 11, tones: { [lo]: "compare", [hi]: "compare" },
           message: `${vals[lo]} + ${vals[hi]} = ${s} is too big. ${vals[lo]} is already the smallest value left, so ${vals[hi]} can't be in the answer. Move hi left.`,
         });
         hi--;
@@ -132,6 +134,7 @@ const hashMap: Approach<Input> = {
       const need = target - x;
       const ask = (yes: boolean) => ({ q: `need = ${need}. Is ${need} already in seen?`, options: ["Yes: return the pair", `No: store ${x} → ${i} and move on`], answer: yes ? 0 : 1 });
       t.step({
+        badge: { at: i, text: `need ${need}` },
         line: 4, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { i, x, need, target },
         map: { title, entries: entries() },
         message: `x = ${x}. To reach ${target} it needs ${target} − ${x} = ${need}.`,
@@ -140,7 +143,7 @@ const hashMap: Approach<Input> = {
       if (seen.has(need)) {
         const j = seen.get(need)!;
         t.step({
-          ask: ask(true), line: 6, array: nums, pointers: { i }, tones: { [j]: "found", [i]: "found" }, vars: { i, x, need, target },
+          ask: ask(true), badge: { at: i, text: `${need} is in seen ✓` }, line: 6, array: nums, pointers: { i }, tones: { [j]: "found", [i]: "found" }, vars: { i, x, need, target },
           map: { title, entries: entries(), highlight: String(need) }, done: "found",
           message: `${need} is already in seen, at index ${j}. One lookup found the pair: return [${j}, ${i}].`,
         });
