@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { roadmap } from "../data/roadmap";
+import { roadmap, homeTopic, practisedTopics, topicSlug } from "../data/roadmap";
 
 interface Props {
   problems: CollectionEntry<"dsa">[];
@@ -8,27 +8,19 @@ interface Props {
 const { problems } = Astro.props;
 
 const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
-const allTopics = roadmap.flatMap((s) => s.topics);
-// Tags nearly every problem carries; they decide a problem's home only when nothing more specific does.
-const GENERIC = new Set(["Array", "String", "Math"]);
-const topicOf = (tag: string) => allTopics.find((t) => t.tags.includes(tag));
-/** Each problem lives under ONE topic: its first specific tag, else its first generic one. */
-const home = (p: CollectionEntry<"dsa">) => {
-  const tags = p.data.topics;
-  const specific = tags.find((tag) => !GENERIC.has(tag) && topicOf(tag));
-  return topicOf(specific ?? tags.find((tag) => topicOf(tag)) ?? "")?.name;
-};
+/** Each card shows at most this many; the rest are one click away on /problems/. */
+const SHOW = 3;
 const order = (a: CollectionEntry<"dsa">, b: CollectionEntry<"dsa">) =>
   rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number;
 const steps = roadmap.map((step) => ({
   ...step,
   topics: step.topics.map((t) => {
-    const list = problems.filter((p) => home(p) === t.name).sort(order);
+    const list = problems.filter((p) => homeTopic(p.data.topics) === t).sort(order);
     // Problems that live elsewhere but also practise this topic (specific tags only).
     const also = problems
-      .filter((p) => home(p) !== t.name && p.data.topics.some((tag) => !GENERIC.has(tag) && t.tags.includes(tag)))
+      .filter((p) => homeTopic(p.data.topics) !== t && practisedTopics(p.data.topics).includes(t))
       .sort(order);
-    return { ...t, list, also };
+    return { ...t, list, also, slug: topicSlug(t.name) };
   }),
 }));
 ---
@@ -48,7 +40,7 @@ const steps = roadmap.map((step) => ({
               <p class="rm__blurb">{t.blurb}</p>
               {t.list.length > 0 && (
                 <ul class="rm__problems">
-                  {t.list.map((p) => (
+                  {t.list.slice(0, SHOW).map((p) => (
                     <li>
                       <a href={`/dsa/${p.id}/`}>
                         <span class={`rm__diff rm__diff--${p.data.difficulty}`} title={p.data.difficulty} aria-label={p.data.difficulty}></span>
@@ -58,6 +50,9 @@ const steps = roadmap.map((step) => ({
                     </li>
                   ))}
                 </ul>
+              )}
+              {t.list.length > SHOW && (
+                <a class="rm__more" href={`/problems/?topic=${t.slug}`}>+ {t.list.length - SHOW} more in {t.name} →</a>
               )}
               {t.also.length > 0 && (
                 <p class="rm__also">Also used in {t.also.map((p, k) => (
@@ -117,6 +112,7 @@ const steps = roadmap.map((step) => ({
   }
   .rm__problems a:hover { background: var(--accent-soft); color: var(--accent); }
   .rm__num { font: 500 12px var(--font-mono); color: var(--muted); min-width: 3.4em; }
+  .rm__more { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600; text-decoration: none; }
   .rm__also { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
   .rm__also a { font-weight: 500; }
   .rm__diff { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; }

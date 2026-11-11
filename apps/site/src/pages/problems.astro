@@ -1,0 +1,175 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { allTopics, GENERIC, homeTopic, practisedTopics, topicSlug } from "../data/roadmap";
+
+const problems = (await getCollection("dsa")).sort(
+  (a, b) => b.data.added.getTime() - a.data.added.getTime() || a.data.leetcode.number - b.data.leetcode.number,
+);
+const rows = problems.map((p, i) => ({
+  p,
+  newest: i, // position in the default "newest first" order
+  slugs: practisedTopics(p.data.topics).map((t) => topicSlug(t.name)),
+}));
+/** "Arrays & hashing · Hash map, Two pointers": the home topic, then techniques it doesn't already name. */
+const subtitle = (tags: string[]) => {
+  const home = homeTopic(tags);
+  const extra = tags.filter((t) => !GENERIC.has(t) && !home?.tags.includes(t));
+  return [home?.name, extra.join(", ")].filter(Boolean).join(" · ");
+};
+// Only topics that have at least one problem are worth filtering by.
+const topics = allTopics
+  .map((t) => ({ name: t.name, slug: topicSlug(t.name), count: rows.filter((r) => r.slugs.includes(topicSlug(t.name))).length }))
+  .filter((t) => t.count > 0);
+const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+---
+<Base title="All problems" description={`Every problem on firstprinciples, ${problems.length} so far: search by name or LeetCode number, filter by topic and difficulty.`}>
+  <section class="pl">
+    <a class="back" href="/">← Home</a>
+    <h1>All problems</h1>
+    <p class="lead">{problems.length} problems, each explained from brute force to optimal with step-by-step animations.</p>
+
+    <form class="filters" role="search" onsubmit="return false">
+      <label class="search">
+        <span class="sr">Search problems</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search by name or number, e.g. two sum or 704" autocomplete="off" />
+      </label>
+      <label class="sel">
+        <span>Topic</span>
+        <select id="topic">
+          <option value="">All topics</option>
+          {topics.map((t) => <option value={t.slug}>{t.name} ({t.count})</option>)}
+        </select>
+      </label>
+      <div class="seg" role="group" aria-label="Difficulty">
+        {["All", "Easy", "Medium", "Hard"].map((d) => (
+          <button type="button" data-diff={d === "All" ? "" : d} aria-pressed={d === "All" ? "true" : "false"}>{d}</button>
+        ))}
+      </div>
+      <label class="sel">
+        <span>Sort</span>
+        <select id="sort">
+          <option value="newest">Newest first</option>
+          <option value="number">LeetCode number</option>
+          <option value="difficulty">Difficulty</option>
+        </select>
+      </label>
+    </form>
+
+    <p class="count" id="count" aria-live="polite">Showing all {problems.length}</p>
+
+    <ol class="list" id="list">
+      {rows.map(({ p, newest, slugs }) => (
+        <li class="row" data-search={`${p.data.title} ${p.data.leetcode.number} ${p.data.topics.join(" ")}`.toLowerCase()}
+          data-diff={p.data.difficulty} data-topics={slugs.join(" ")} data-newest={newest}
+          data-number={p.data.leetcode.number} data-rank={{ Easy: 0, Medium: 1, Hard: 2 }[p.data.difficulty]}>
+          <a href={`/dsa/${p.id}/`}>
+            <span class="num">#{p.data.leetcode.number}</span>
+            <span class="main">
+              <span class="title">{p.data.title}</span>
+              <span class="meta">{subtitle(p.data.topics)}</span>
+            </span>
+            <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
+            <span class="best"><code>{p.data.best.time}</code></span>
+            <span class="added">{fmt(p.data.added)}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <p class="empty" id="empty" hidden>No problems match. <button type="button" id="clear">Clear filters</button></p>
+  </section>
+</Base>
+
+<script>
+  const q = document.getElementById("q") as HTMLInputElement;
+  const topic = document.getElementById("topic") as HTMLSelectElement;
+  const sort = document.getElementById("sort") as HTMLSelectElement;
+  const list = document.getElementById("list")!;
+  const count = document.getElementById("count")!;
+  const empty = document.getElementById("empty")!;
+  const diffBtns = [...document.querySelectorAll<HTMLButtonElement>(".seg button")];
+  const rows = [...list.querySelectorAll<HTMLLIElement>(".row")];
+  let diff = "";
+
+  // Start from the URL, so roadmap links like /problems/?topic=binary-search open pre-filtered.
+  const params = new URLSearchParams(location.search);
+  q.value = params.get("q") ?? "";
+  if ([...topic.options].some((o) => o.value === params.get("topic"))) topic.value = params.get("topic")!;
+  diff = ["Easy", "Medium", "Hard"].includes(params.get("difficulty") ?? "") ? params.get("difficulty")! : "";
+  if (["newest", "number", "difficulty"].includes(params.get("sort") ?? "")) sort.value = params.get("sort")!;
+
+  function apply() {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const r of rows) {
+      const ok = words.every((w) => r.dataset.search!.includes(w))
+        && (!diff || r.dataset.diff === diff)
+        && (!topic.value || r.dataset.topics!.split(" ").includes(topic.value));
+      r.hidden = !ok;
+      if (ok) shown++;
+    }
+    const by = sort.value;
+    const key = (r: HTMLLIElement) => by === "number" ? +r.dataset.number! : by === "difficulty" ? +r.dataset.rank! * 1e5 + +r.dataset.number! : +r.dataset.newest!;
+    [...rows].sort((a, b) => key(a) - key(b)).forEach((r) => list.append(r));
+    diffBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.diff === diff)));
+    count.textContent = shown === rows.length ? `Showing all ${rows.length}` : `Showing ${shown} of ${rows.length}`;
+    empty.hidden = shown > 0;
+    // Keep the URL shareable without adding history entries.
+    const next = new URLSearchParams();
+    if (q.value.trim()) next.set("q", q.value.trim());
+    if (topic.value) next.set("topic", topic.value);
+    if (diff) next.set("difficulty", diff);
+    if (sort.value !== "newest") next.set("sort", sort.value);
+    const qs = next.toString();
+    history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
+  }
+
+  q.addEventListener("input", apply);
+  topic.addEventListener("change", apply);
+  sort.addEventListener("change", apply);
+  diffBtns.forEach((b) => b.addEventListener("click", () => { diff = b.dataset.diff ?? ""; apply(); }));
+  document.getElementById("clear")!.addEventListener("click", () => { q.value = ""; topic.value = ""; diff = ""; apply(); q.focus(); });
+  apply();
+</script>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .lead { color: var(--text-2); margin: 0 0 24px; }
+  .filters {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  }
+  .search { flex: 1 1 100%; display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border);
+    border-radius: 10px; background: var(--bg); color: var(--muted); }
+  .search:focus-within { border-color: var(--accent); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: 10px 0; font: 15px var(--font-sans); color: var(--text); }
+  .sel { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); }
+  .sel select { font: 500 14px var(--font-sans); padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .seg button { font: 500 14px var(--font-sans); padding: 8px 12px; border: 0; background: var(--bg); color: var(--text-2); cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .seg button:focus-visible, .sel select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .count { font-size: 14px; color: var(--muted); margin: 16px 0 8px; }
+  .list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .row + .row { border-top: 1px solid var(--border); }
+  .row a {
+    display: grid; grid-template-columns: 4.5em minmax(0, 1fr) auto 6.5em 7.5em; align-items: center; gap: 12px;
+    padding: 12px 16px; color: var(--text); text-decoration: none;
+  }
+  .row a:hover { background: var(--accent-soft); }
+  .num { font: 500 13px var(--font-mono); color: var(--muted); }
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .title { font: 600 17px var(--font-serif); }
+  .meta { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .best code { font-size: 13px; }
+  .added { font-size: 13px; color: var(--muted); text-align: right; }
+  .empty { margin-top: 16px; color: var(--text-2); }
+  .empty button { font: inherit; color: var(--accent); background: none; border: 0; text-decoration: underline; cursor: pointer; }
+  @media (max-width: 640px) {
+    .row a { grid-template-columns: 3.6em minmax(0, 1fr) auto; row-gap: 2px; }
+    .best, .added { display: none; }
+  }
+</style>

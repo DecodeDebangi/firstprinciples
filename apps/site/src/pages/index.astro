@@ -12,15 +12,11 @@ const problems = [...all].sort(
 // The friendliest first problem: the lowest LeetCode number (Two Sum, for now).
 const starter = [...all].sort((a, b) => (a.data.leetcode?.number ?? 9999) - (b.data.leetcode?.number ?? 9999))[0];
 
-// Group by the day each problem was added, newest day first.
-const fmtDay = (d: Date) =>
-  d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
-const days = new Map<string, typeof problems>();
-for (const p of problems) {
-  const key = p.data.added.toISOString().slice(0, 10);
-  days.set(key, [...(days.get(key) ?? []), p]);
-}
-const latestDay = [...days.keys()][0];
+// The home page shows only the newest few; the full list lives at /problems/.
+const RECENT = 6;
+const recent = problems.slice(0, RECENT);
+const latestDay = problems[0]?.data.added.toISOString().slice(0, 10);
+const fmtDay = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 
 
 const how = [
@@ -45,7 +41,7 @@ const how = [
       </p>
       <div class="cta">
         <a class="btn btn--primary" href={`/dsa/${starter.id}/`}>Start with {starter.data.title} <span aria-hidden>→</span></a>
-        <a class="btn" href="#problems">Browse problems</a>
+        <a class="btn" href="/problems/">Browse problems</a>
       </div>
       <p class="reassure">Free · No sign-up · Works on your phone</p>
     </div>
@@ -74,32 +70,36 @@ const how = [
     <StudyRoadmap problems={all} />
   </section>
 
-  <section id="problems" class="log" aria-labelledby="log-title">
-    <h2 id="log-title">Recently added</h2>
-    <p class="sub">New problems are added every day, newest first. {problems.length} so far.</p>
-    {[...days].map(([key, list]) => (
-      <div class="day">
-        <h3>{fmtDay(list[0].data.added)}{key === latestDay && <span class="new">New</span>}</h3>
-        <ul class="cards">
-          {list.map((p) => (
-            <li>
-              <a class="card" href={`/dsa/${p.id}/`}>
-                <div class="card__top">
-                  {p.data.leetcode && <span class="num">#{p.data.leetcode.number}</span>}
-                  <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
-                </div>
-                <span class="card__title">{p.data.title}</span>
-                <p>{p.data.summary}</p>
-                <div class="card__meta">
-                  <span class="best">Best <code>{p.data.best.time}</code> time · <code>{p.data.best.space}</code> space</span>
-                  <span class="go" aria-hidden>Open →</span>
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))}
+  <section id="recent" class="log" aria-labelledby="log-title">
+    <div class="log__head">
+      <h2 id="log-title">Recently added</h2>
+      <a class="all" href="/problems/">Browse all {problems.length} problems <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="sub">New problems are added every day. Here are the latest {recent.length}.</p>
+    <ul class="cards">
+      {recent.map((p) => (
+        <li>
+          <a class="card" href={`/dsa/${p.id}/`}>
+            <div class="card__top">
+              <span class="num">#{p.data.leetcode.number}</span>
+              <span class="card__date">
+                {p.data.added.toISOString().slice(0, 10) === latestDay && <span class="new">New</span>}
+                Added {fmtDay(p.data.added)}
+              </span>
+            </div>
+            <span class="card__title">{p.data.title}</span>
+            <p>{p.data.summary}</p>
+            <div class="card__meta">
+              <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
+              <span class="best">Best <code>{p.data.best.time}</code> time</span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+    {problems.length > recent.length && (
+      <a class="btn more" href="/problems/">See all {problems.length} problems, with search and filters <span aria-hidden="true">→</span></a>
+    )}
   </section>
 
   <section class="note">
@@ -176,6 +176,11 @@ const how = [
   }
 
 
+  .log__head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; }
+  .log__head h2 { margin-bottom: 0; }
+  .all { font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .card__date { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .more { margin-top: 20px; }
   .day h3 { display: flex; align-items: center; gap: 10px; font: 600 15px var(--font-sans); color: var(--muted); margin: 24px 0 12px; }
   .new { font-size: 12px; font-weight: 600; color: #fff; background: var(--accent); padding: 1px 9px; border-radius: 999px; }
   .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }

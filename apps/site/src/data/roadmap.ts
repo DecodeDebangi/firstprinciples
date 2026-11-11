@@ -54,3 +54,22 @@ export const roadmap: RoadmapStep[] = [
     ],
   },
 ];
+
+/** Tags nearly every problem carries; they decide a problem's home only when nothing more specific does. */
+export const GENERIC = new Set(["Array", "String", "Math"]);
+export const allTopics = roadmap.flatMap((s) => s.topics);
+export const topicSlug = (name: string) =>
+  name.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const topicOf = (tag: string) => allTopics.find((t) => t.tags.includes(tag));
+
+/** The ONE topic a problem lives under: its first specific tag, else its first generic one. */
+export function homeTopic(tags: string[]): RoadmapTopic | undefined {
+  const specific = tags.find((tag) => !GENERIC.has(tag) && topicOf(tag));
+  return topicOf(specific ?? tags.find((tag) => topicOf(tag)) ?? "");
+}
+
+/** Every topic a problem practises: its home plus any topic matched by a specific tag. */
+export function practisedTopics(tags: string[]): RoadmapTopic[] {
+  const home = homeTopic(tags);
+  return allTopics.filter((t) => t === home || tags.some((tag) => !GENERIC.has(tag) && t.tags.includes(tag)));
+}

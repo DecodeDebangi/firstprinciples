@@ -16,7 +16,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
   image={`/og/${p.id}.png`}
   imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`}>
   <article class="prose">
-    <a class="back" href="/#problems">← All problems</a>
+    <a class="back" href="/problems/">← All problems</a>
     <h1>{p.data.title}</h1>
     <div class="meta">
       <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
