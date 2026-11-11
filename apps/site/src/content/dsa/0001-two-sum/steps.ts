@@ -83,23 +83,24 @@ const twoPointers: Approach<Input> = {
     while (lo < hi) {
       t.op();
       const s = vals[lo] + vals[hi];
+      const ask = (answer: number) => ({ q: `${vals[lo]} + ${vals[hi]} = ${s}, and the target is ${target}. What next?`, options: ["Found it: return their original indices", "Too small: move lo right", "Too big: move hi left"], answer });
       const base = { array: vals, labels, pointers: { lo, hi }, range: [lo, hi] as [number, number], vars: { lo, hi, s, target } };
       if (s === target) {
         t.step({
-          ...base, line: 7, tones: { [lo]: "found", [hi]: "found" }, done: "found",
+          ...base, ask: ask(0), line: 7, tones: { [lo]: "found", [hi]: "found" }, done: "found",
           message: `${vals[lo]} + ${vals[hi]} = ${target}. Return their original indices [${pairs[lo][1]}, ${pairs[hi][1]}].`,
         });
         return;
       }
       if (s < target) {
         t.step({
-          ...base, line: 9, tones: { [lo]: "compare", [hi]: "compare" },
+          ...base, ask: ask(1), line: 9, tones: { [lo]: "compare", [hi]: "compare" },
           message: `${vals[lo]} + ${vals[hi]} = ${s} is too small. ${vals[hi]} is already the biggest value left, so ${vals[lo]} can't be in the answer. Move lo right.`,
         });
         lo++;
       } else {
         t.step({
-          ...base, line: 11, tones: { [lo]: "compare", [hi]: "compare" },
+          ...base, ask: ask(2), line: 11, tones: { [lo]: "compare", [hi]: "compare" },
           message: `${vals[lo]} + ${vals[hi]} = ${s} is too big. ${vals[lo]} is already the smallest value left, so ${vals[hi]} can't be in the answer. Move hi left.`,
         });
         hi--;
@@ -129,6 +130,7 @@ const hashMap: Approach<Input> = {
     for (let i = 0; i < nums.length; i++) {
       const x = nums[i];
       const need = target - x;
+      const ask = (yes: boolean) => ({ q: `need = ${need}. Is ${need} already in seen?`, options: ["Yes: return the pair", `No: store ${x} → ${i} and move on`], answer: yes ? 0 : 1 });
       t.step({
         line: 4, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { i, x, need, target },
         map: { title, entries: entries() },
@@ -138,7 +140,7 @@ const hashMap: Approach<Input> = {
       if (seen.has(need)) {
         const j = seen.get(need)!;
         t.step({
-          line: 6, array: nums, pointers: { i }, tones: { [j]: "found", [i]: "found" }, vars: { i, x, need, target },
+          ask: ask(true), line: 6, array: nums, pointers: { i }, tones: { [j]: "found", [i]: "found" }, vars: { i, x, need, target },
           map: { title, entries: entries(), highlight: String(need) }, done: "found",
           message: `${need} is already in seen, at index ${j}. One lookup found the pair: return [${j}, ${i}].`,
         });
@@ -146,7 +148,7 @@ const hashMap: Approach<Input> = {
       }
       seen.set(x, i);
       t.step({
-        line: 7, array: nums, pointers: { i }, tones: { [i]: "compare" }, vars: { i, x, need, target },
+        ask: ask(false), line: 7, array: nums, pointers: { i }, tones: { [i]: "compare" }, vars: { i, x, need, target },
         map: { title, entries: entries(), highlight: String(x) },
         message: `${need} isn't in seen yet. Store ${x} → ${i} in case a later number needs it.`,
       });

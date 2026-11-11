@@ -8,7 +8,7 @@ summary: Find a number in a sorted list by halving the search range each step, f
 best: { time: "O(log n)", space: "O(1)" }
 reel: https://www.instagram.com/reel/DfZTXjVNSfz/
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -91,6 +91,10 @@ still a common interview follow-up: *"what's the space complexity of your recurs
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Space | Idea |
 |---|---|---|---|

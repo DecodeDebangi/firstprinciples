@@ -8,7 +8,7 @@ summary: Find the two positions whose numbers add up to a target. Goes from chec
 best: { time: "O(n)", space: "O(n)" }
 reel: https://www.instagram.com/reel/DfZSEoUAptq/
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -94,6 +94,10 @@ this is one of the most common moves in algorithm design.
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Space | Idea |
 |---|---|---|---|

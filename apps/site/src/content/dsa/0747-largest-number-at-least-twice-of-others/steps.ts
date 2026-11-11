@@ -89,12 +89,13 @@ const twoPasses: Approach<Input> = {
     for (let i = 0; i < n; i++) {
       if (i === best) continue;
       t.op();
+      const ask = (yes: boolean) => ({ q: `Is ${nums[best]} at least 2 × ${nums[i]} = ${2 * nums[i]}?`, options: ["Yes: keep checking", "No: return -1"], answer: yes ? 0 : 1 });
       if (nums[best] < 2 * nums[i]) {
-        t.step({ line: 8, array: nums, pointers: { best, i }, tones: { [best]: "miss", [i]: "compare" }, vars: { best, i }, done: "notfound",
+        t.step({ ask: ask(false), line: 8, array: nums, pointers: { best, i }, tones: { [best]: "miss", [i]: "compare" }, vars: { best, i }, done: "notfound",
           message: `${nums[best]} < 2 × ${nums[i]} = ${2 * nums[i]}. Even the largest fails, so nothing can pass. Return -1.` });
         return;
       }
-      t.step({ line: 7, array: nums, pointers: { best, i }, tones: { [best]: "active", [i]: "compare" }, vars: { best, i },
+      t.step({ ask: ask(true), line: 7, array: nums, pointers: { best, i }, tones: { [best]: "active", [i]: "compare" }, vars: { best, i },
         message: `${nums[best]} ≥ 2 × ${nums[i]} = ${2 * nums[i]}. Check the next one.` });
     }
     t.step({ line: 9, array: nums, pointers: { best }, tones: { [best]: "found" }, vars: { best, i: null }, done: "found",
@@ -124,23 +125,25 @@ const onePass: Approach<Input> = {
     for (let i = 0; i < nums.length; i++) {
       const x = nums[i];
       t.op();
+      const [f0, s0] = [show(first), show(second)]; // captured before this step updates them
+      const ask = (answer: number) => ({ q: `x = ${x}. Largest so far: ${f0}, runner-up: ${s0}. What changes?`, options: [`${x} becomes the new largest`, `${x} becomes the new runner-up`, "Nothing changes"], answer });
       if (x > first) {
         second = first;
         first = x;
         best = i;
-        t.step({ line: 7, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { first, second: show(second), best },
+        t.step({ ask: ask(0), line: 7, array: nums, pointers: { i }, tones: { [i]: "active" }, vars: { first, second: show(second), best },
           message: `${x} is the new largest. The old largest${second < 0 ? " (none yet)" : `, ${second},`} becomes the runner-up.` });
       } else if (x > second) {
         second = x;
-        t.step({ line: 9, array: nums, pointers: { i }, tones: { [best]: "active", [i]: "compare" }, vars: { first, second, best },
+        t.step({ ask: ask(1), line: 9, array: nums, pointers: { i }, tones: { [best]: "active", [i]: "compare" }, vars: { first, second, best },
           message: `${x} isn't the largest but beats the runner-up. New runner-up: ${x}.` });
       } else {
-        t.step({ line: 8, array: nums, pointers: { i }, tones: { [best]: "active" }, vars: { first, second: show(second), best },
+        t.step({ ask: ask(2), line: 8, array: nums, pointers: { i }, tones: { [best]: "active" }, vars: { first, second: show(second), best },
           message: `${x} is neither the largest nor the runner-up. Nothing changes.` });
       }
     }
     const ok = first >= 2 * second;
-    t.step({ line: 10, array: nums, pointers: { best }, tones: { [best]: ok ? "found" : "miss" }, vars: { first, second, best },
+    t.step({ ask: { q: `Done. Largest ${first}, runner-up ${second}. What is the answer?`, options: [`Return ${best}`, "Return -1"], answer: ok ? 0 : 1 }, line: 10, array: nums, pointers: { best }, tones: { [best]: ok ? "found" : "miss" }, vars: { first, second, best },
       done: ok ? "found" : "notfound",
       message: ok
         ? `${first} ≥ 2 × ${second} = ${2 * second}. Beating the runner-up means beating everyone. Return ${best}.`

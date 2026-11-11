@@ -7,7 +7,7 @@ added: 2026-11-11
 summary: Add one to a number stored as a list of digits. Goes from converting to a real number, to carrying from the right the way you would on paper.
 best: { time: "O(n)", space: "O(1)" }
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -60,6 +60,10 @@ needs a new list one digit longer. That's O(n), but it's the output itself, not 
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Space | Idea |
 |---|---|---|---|

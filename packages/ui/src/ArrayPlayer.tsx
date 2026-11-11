@@ -1,18 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tracer, type Approach, type ArrayStep } from "./trace";
 import { ArrayCells } from "./ArrayCells";
+import { InputForm, type InputField, type InputValues, type Prepared } from "./input";
 import "./player.css";
 
-export type InputValues = Record<string, number | number[] | string>;
-
-export interface InputField {
-  key: string;
-  label: string;
-  kind: "numbers" | "number" | "text";
-  hint?: string;
-}
-
-export type Prepared<I> = { input: I; note?: string } | { error: string };
+export type { InputField, InputValues, Prepared } from "./input";
 
 export interface ArrayPlayerProps<I extends InputValues> {
   approach: Approach<I>;
@@ -23,32 +15,24 @@ export interface ArrayPlayerProps<I extends InputValues> {
   maxLength?: number;
 }
 
-const SPEEDS = [
+export const SPEEDS = [
   { label: "0.5×", ms: 1800 },
   { label: "1×", ms: 1100 },
   { label: "2×", ms: 550 },
 ];
 
-function toText(v: number | number[] | string) {
-  return Array.isArray(v) ? v.join(", ") : String(v);
-}
+const show = (v: unknown) => (v === null || v === undefined ? "—" : String(v));
 
-export function ArrayPlayer<I extends InputValues>({
-  approach,
-  initialInput,
-  fields,
-  prepare,
-  maxLength = 14,
-}: ArrayPlayerProps<I>) {
+export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fields, prepare, maxLength = 14 }: ArrayPlayerProps<I>) {
   const [input, setInput] = useState<I>(initialInput);
-  const [draft, setDraft] = useState<Record<string, string>>(() =>
-    Object.fromEntries(fields.map((f) => [f.key, toText(initialInput[f.key])])),
-  );
-  const [formMsg, setFormMsg] = useState<{ kind: "error" | "note"; text: string } | null>(null);
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const rootRef = useRef<HTMLDivElement>(null);
+  // Predict mode
+  const [predict, setPredict] = useState(false);
+  const [asking, setAsking] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<{ ok: boolean; answer: string } | null>(null);
+  const [score, setScore] = useState({ right: 0, total: 0 });
 
   const steps = useMemo(() => {
     const t = new Tracer();
@@ -57,109 +41,127 @@ export function ArrayPlayer<I extends InputValues>({
   }, [approach, input]);
 
   const step: ArrayStep = steps[Math.min(idx, steps.length - 1)];
+  const prev = idx > 0 ? steps[idx - 1] : undefined;
   const atEnd = idx >= steps.length - 1;
+  const hasAsks = steps.some((s) => s.ask);
+  const question = asking !== null ? steps[asking].ask! : null;
+
+  /** Move forward one step, stopping first to ask if predict mode is on. */
+  function next() {
+    const target = idx + 1;
+    if (target >= steps.length) return;
+    if (predict && steps[target].ask && asking !== target) {
+      setPlaying(false);
+      setFeedback(null);
+      setAsking(target);
+      return;
+    }
+    setAsking(null);
+    setFeedback(null);
+    setIdx(target);
+  }
+  const nextRef = useRef(next);
+  nextRef.current = next;
 
   useEffect(() => {
     if (!playing) return;
-    if (atEnd) {
-      setPlaying(false);
-      return;
-    }
-    const id = setTimeout(() => setIdx((i) => i + 1), SPEEDS[speed].ms);
+    if (atEnd) { setPlaying(false); return; }
+    const id = setTimeout(() => nextRef.current(), SPEEDS[speed].ms);
     return () => clearTimeout(id);
   }, [playing, idx, atEnd, speed]);
 
   function go(i: number) {
     setPlaying(false);
+    setAsking(null);
+    setFeedback(null);
     setIdx(Math.max(0, Math.min(steps.length - 1, i)));
   }
 
   function togglePlay() {
-    if (atEnd) setIdx(0);
-    setPlaying((p) => !p || atEnd);
+    if (asking !== null) return;
+    if (atEnd) { go(0); setPlaying(true); return; }
+    setPlaying((p) => !p);
+  }
+
+  function choose(option: number | null) {
+    if (asking === null || !question) return;
+    if (option !== null) {
+      const ok = option === question.answer;
+      setScore((s) => ({ right: s.right + (ok ? 1 : 0), total: s.total + 1 }));
+      setFeedback({ ok, answer: question.options[question.answer] });
+    } else {
+      setFeedback(null);
+    }
+    setIdx(asking);
+    setAsking(null);
+  }
+
+  function togglePredict(on: boolean) {
+    setPredict(on);
+    setScore({ right: 0, total: 0 });
+    go(0);
   }
 
   function onKey(e: React.KeyboardEvent) {
-    if ((e.target as HTMLElement).tagName === "INPUT") return;
-    if (e.key === "ArrowRight") { e.preventDefault(); go(idx + 1); }
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || (tag === "BUTTON" && e.key === " ")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); go(idx - 1); }
     else if (e.key === " ") { e.preventDefault(); togglePlay(); }
   }
 
-  function apply(e: React.SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const raw: InputValues = {};
-    for (const f of fields) {
-      const text = (draft[f.key] ?? "").trim();
-      if (f.kind === "text") {
-        const compact = text.replace(/\s+/g, "");
-        if (compact.length > maxLength) {
-          setFormMsg({ kind: "error", text: `${f.label} can be at most ${maxLength} characters so the animation fits.` });
-          return;
-        }
-        raw[f.key] = compact;
-      } else if (f.kind === "number") {
-        const n = Number(text);
-        if (text === "" || !Number.isInteger(n)) {
-          setFormMsg({ kind: "error", text: `${f.label} must be a whole number.` });
-          return;
-        }
-        raw[f.key] = n;
-      } else {
-        const parts = text.split(/[\s,]+/).filter(Boolean);
-        const nums = parts.map(Number);
-        if (parts.length === 0 || nums.some((n) => !Number.isInteger(n))) {
-          setFormMsg({ kind: "error", text: `${f.label} must be whole numbers separated by commas.` });
-          return;
-        }
-        if (nums.length > maxLength) {
-          setFormMsg({ kind: "error", text: `${f.label} can have at most ${maxLength} numbers so the animation fits.` });
-          return;
-        }
-        raw[f.key] = nums;
-      }
-    }
-    const res = prepare ? prepare(raw as I) : { input: raw as I };
-    if ("error" in res) {
-      setFormMsg({ kind: "error", text: res.error });
-      return;
-    }
-    setFormMsg(res.note ? { kind: "note", text: res.note } : null);
-    setDraft(Object.fromEntries(fields.map((f) => [f.key, toText(res.input[f.key])])));
-    setInput(res.input);
-    setIdx(0);
-    setPlaying(false);
-  }
-
-  function reset() {
-    setDraft(Object.fromEntries(fields.map((f) => [f.key, toText(initialInput[f.key])])));
-    setFormMsg(null);
-    setInput(initialInput);
-    setIdx(0);
-    setPlaying(false);
-  }
-
   const codeLines = approach.code.replace(/\n$/, "").split("\n");
+  const opsChanged = prev !== undefined && prev.ops !== step.ops;
 
   return (
-    <div className="fp-player" ref={rootRef} tabIndex={0} onKeyDown={onKey}
+    <div className="fp-player" tabIndex={0} onKeyDown={onKey}
       aria-label={`Animation: ${approach.name}. Use left and right arrow keys to step, space to play.`}>
       <div className="fp-player__top">
         <div className="fp-stage">
           <ArrayCells step={step} />
 
-          <p className={`fp-message${step.done ? ` fp-message--${step.done}` : ""}`} aria-live="polite">
-            {step.message}
-          </p>
+          {question ? (
+            <div className="fp-ask" role="group" aria-label="Predict the next step">
+              <p className="fp-ask__q"><span className="fp-ask__tag">Your call</span> {question.q}</p>
+              <div className="fp-ask__options">
+                {question.options.map((o, k) => (
+                  <button type="button" key={k} onClick={() => choose(k)}>{o}</button>
+                ))}
+              </div>
+              <button type="button" className="fp-link" onClick={() => choose(null)}>Skip, just show me</button>
+            </div>
+          ) : (
+            <>
+              {feedback && (
+                <p className={`fp-feedback ${feedback.ok ? "is-right" : "is-wrong"}`} role="status">
+                  {feedback.ok ? "✓ Right." : `✗ Not quite. It's: ${feedback.answer}`}
+                </p>
+              )}
+              <p className={`fp-message${step.done ? ` fp-message--${step.done}` : ""}`} aria-live="polite">
+                {step.message}
+              </p>
+            </>
+          )}
 
           <div className="fp-panels">
             {step.vars && Object.keys(step.vars).length > 0 && (
               <div className="fp-panel">
                 <div className="fp-panel__title">Variables</div>
                 <dl className="fp-vars">
-                  {Object.entries(step.vars).map(([k, v]) => (
-                    <div key={k}><dt>{k}</dt><dd>{v === null ? "—" : String(v)}</dd></div>
-                  ))}
+                  {Object.entries(step.vars).map(([k, v]) => {
+                    const had = prev?.vars !== undefined && k in prev.vars;
+                    const old = had ? prev!.vars![k] : undefined;
+                    const changed = had && old !== v && !question;
+                    return (
+                      <div key={k} className={changed ? "is-changed" : ""}>
+                        <dt>{k}</dt>
+                        <dd key={changed ? `c${idx}` : "same"}>
+                          {changed && <><span className="fp-old">{show(old)}</span><span className="fp-arrow" aria-label="changed to"> → </span></>}
+                          {show(v)}
+                        </dd>
+                      </div>
+                    );
+                  })}
                 </dl>
               </div>
             )}
@@ -185,7 +187,7 @@ export function ArrayPlayer<I extends InputValues>({
                 {step.stack.length === 0 && <div className="fp-empty">empty</div>}
                 <ol className="fp-stack">
                   {[...step.stack].reverse().map((f, i) => (
-                    <li key={i} className={i === 0 ? "is-top" : ""}>{f}</li>
+                    <li key={`${step.stack!.length - i}-${f}`} className={i === 0 ? "is-top" : ""}>{f}</li>
                   ))}
                 </ol>
               </div>
@@ -210,16 +212,16 @@ export function ArrayPlayer<I extends InputValues>({
                 )}
               </div>
             )}
-            <div className="fp-panel fp-panel--ops">
+            <div className={`fp-panel fp-panel--ops${opsChanged ? " is-changed" : ""}`}>
               <div className="fp-panel__title">Operations</div>
-              <div className="fp-ops">{step.ops}</div>
+              <div className="fp-ops" key={opsChanged ? `o${idx}` : "same"}>{step.ops}</div>
             </div>
           </div>
         </div>
 
         <pre className="fp-code" aria-label="Code, current line highlighted">
           {codeLines.map((l, i) => (
-            <div key={i} className={`fp-line${step.line === i + 1 ? " is-current" : ""}`}>
+            <div key={i} className={`fp-line${step.line === i + 1 && !question ? " is-current" : ""}`}>
               <span className="fp-ln">{i + 1}</span>
               <code>{l || " "}</code>
             </div>
@@ -228,12 +230,12 @@ export function ArrayPlayer<I extends InputValues>({
       </div>
 
       <div className="fp-controls">
-        <button type="button" onClick={() => go(0)} disabled={idx === 0} aria-label="First step">⏮</button>
+        <button type="button" onClick={() => go(0)} disabled={idx === 0 && asking === null} aria-label="First step">⏮</button>
         <button type="button" onClick={() => go(idx - 1)} disabled={idx === 0} aria-label="Previous step">◀</button>
-        <button type="button" className="fp-play" onClick={togglePlay}>
+        <button type="button" className="fp-play" onClick={togglePlay} disabled={asking !== null}>
           {playing ? "Pause" : atEnd ? "Replay" : "Play"}
         </button>
-        <button type="button" onClick={() => go(idx + 1)} disabled={atEnd} aria-label="Next step">▶</button>
+        <button type="button" onClick={next} disabled={atEnd || asking !== null} aria-label="Next step">▶</button>
         <input className="fp-scrub" type="range" min={0} max={steps.length - 1} value={idx}
           onChange={(e) => go(Number(e.target.value))} aria-label="Step" />
         <span className="fp-count">Step {idx + 1} / {steps.length}</span>
@@ -245,20 +247,21 @@ export function ArrayPlayer<I extends InputValues>({
         </div>
       </div>
 
-      <form className="fp-input" onSubmit={apply}>
-        <span className="fp-input__lead">Try your own input:</span>
-        {fields.map((f) => (
-          <label key={f.key}>
-            <span>{f.label}</span>
-            <input value={draft[f.key] ?? ""} inputMode={f.kind === "number" ? "numeric" : "text"}
-              className={f.kind === "number" ? "" : "is-wide"}
-              onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))} />
+      {hasAsks && (
+        <div className="fp-predict">
+          <label className="fp-toggle">
+            <input type="checkbox" checked={predict} onChange={(e) => togglePredict(e.target.checked)} />
+            <span className="fp-toggle__track" aria-hidden="true"><span /></span>
+            <span><strong>Predict mode</strong>: pause before each decision and guess what happens</span>
           </label>
-        ))}
-        <button type="submit">Run</button>
-        <button type="button" className="fp-link" onClick={reset}>Reset example</button>
-        {formMsg && <p className={`fp-formmsg fp-formmsg--${formMsg.kind}`} role="status">{formMsg.text}</p>}
-      </form>
+          {predict && score.total > 0 && (
+            <span className="fp-score">{score.right} / {score.total} right</span>
+          )}
+        </div>
+      )}
+
+      <InputForm fields={fields} initialInput={initialInput} prepare={prepare} maxLength={maxLength}
+        onApply={(inp) => { setInput(inp); go(0); setScore({ right: 0, total: 0 }); }} />
     </div>
   );
 }

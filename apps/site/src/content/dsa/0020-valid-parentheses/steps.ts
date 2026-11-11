@@ -100,10 +100,12 @@ const stackApproach: Approach<Input> = {
     for (let i = 0; i < chars.length; i++) {
       const ch = chars[i];
       t.op();
+      const top0 = stack.length ? chars[stack[stack.length - 1]] : null;
+      const ask = (answer: number) => ({ q: `Next character: "${ch}". Top of the stack: ${top0 ? `"${top0}"` : "empty"}. What happens?`, options: ["Push it onto the stack", "Pop: it closes the opener on top", "Invalid: return False"], answer });
       if (ch in match) {
         const top = stack.length ? chars[stack[stack.length - 1]] : null;
         if (top !== match[ch]) {
-          t.step({ array: chars, line: 7, pointers: { i }, tones: tonesFor({ [i]: "miss", ...(stack.length ? { [stack[stack.length - 1]]: "miss" } : {}) }),
+          t.step({ ask: ask(2), array: chars, line: 7, pointers: { i }, tones: tonesFor({ [i]: "miss", ...(stack.length ? { [stack[stack.length - 1]]: "miss" } : {}) }),
             stack: frames(), stackTitle, vars: { ch, top, needs: match[ch] }, done: "notfound",
             message: top === null
               ? `"${ch}" is a closer, but nothing is waiting on the stack. It has no partner, so the string is invalid.`
@@ -112,18 +114,18 @@ const stackApproach: Approach<Input> = {
         }
         const j = stack.pop()!;
         matched.add(i).add(j);
-        t.step({ array: chars, line: 8, pointers: { i }, tones: tonesFor({ [i]: "found", [j]: "found" }), stack: frames(), stackTitle,
+        t.step({ ask: ask(1), array: chars, line: 8, pointers: { i }, tones: tonesFor({ [i]: "found", [j]: "found" }), stack: frames(), stackTitle,
           vars: { ch, top, needs: match[ch] },
           message: `"${ch}" matches the "${top}" on top (from i=${j}). Pop it: that pair is closed.` });
       } else {
         stack.push(i);
-        t.step({ array: chars, line: 10, pointers: { i }, tones: tonesFor({ [i]: "active" }), stack: frames(), stackTitle,
+        t.step({ ask: ask(0), array: chars, line: 10, pointers: { i }, tones: tonesFor({ [i]: "active" }), stack: frames(), stackTitle,
           vars: { ch, top: ch, needs: null },
           message: `"${ch}" is an opener. Push it and wait for its closer.` });
       }
     }
     const ok = stack.length === 0;
-    t.step({ array: chars, line: 11, tones: tonesFor(Object.fromEntries(stack.map((k) => [k, "miss" as const]))), stack: frames(), stackTitle,
+    t.step({ ask: { q: "That was the last character. Is the string valid?", options: ["Valid", "Invalid"], answer: ok ? 0 : 1 }, array: chars, line: 11, tones: tonesFor(Object.fromEntries(stack.map((k) => [k, "miss" as const]))), stack: frames(), stackTitle,
       vars: { ch: null }, done: ok ? "found" : "notfound",
       message: ok
         ? "Reached the end with an empty stack: every opener was closed in the right order. Valid."

@@ -65,17 +65,18 @@ const iterative: Approach<Input> = {
       const mid = Math.floor((lo + hi) / 2);
       t.op();
       const base = { array: nums, range: [lo, hi] as [number, number], vars: { lo, hi, mid, target } };
+      const ask = (answer: number) => ({ q: `nums[mid] = ${nums[mid]} and the target is ${target}. What happens next?`, options: ["Found it: return mid", "Search the right half: lo = mid + 1", "Search the left half: hi = mid − 1"], answer });
       t.step({ ...base, line: 4, pointers: { lo, mid, hi }, tones: { [mid]: "compare" }, message: `Look at the middle: mid = (${lo} + ${hi}) // 2 = ${mid}, and nums[${mid}] = ${nums[mid]}.` });
       if (nums[mid] === target) {
-        t.step({ ...base, line: 6, pointers: { mid }, tones: { [mid]: "found" }, done: "found", message: `nums[${mid}] = ${target}. Found at index ${mid}.` });
+        t.step({ ...base, ask: ask(0), line: 6, pointers: { mid }, tones: { [mid]: "found" }, done: "found", message: `nums[${mid}] = ${target}. Found at index ${mid}.` });
         return;
       }
       const size = hi - lo + 1;
       if (nums[mid] < target) {
-        t.step({ ...base, line: 8, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, message: `${nums[mid]} < ${target}. Everything at or left of mid is even smaller, so drop it: lo = ${mid + 1}.` });
+        t.step({ ...base, ask: ask(1), line: 8, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, message: `${nums[mid]} < ${target}. Everything at or left of mid is even smaller, so drop it: lo = ${mid + 1}.` });
         lo = mid + 1;
       } else {
-        t.step({ ...base, line: 10, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, message: `${nums[mid]} > ${target}. Everything at or right of mid is even bigger, so drop it: hi = ${mid - 1}.` });
+        t.step({ ...base, ask: ask(2), line: 10, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, message: `${nums[mid]} > ${target}. Everything at or right of mid is even bigger, so drop it: hi = ${mid - 1}.` });
         hi = mid - 1;
       }
       const left = Math.max(0, hi - lo + 1);
@@ -115,16 +116,17 @@ def go(nums, target, lo, hi):
       }
       const mid = Math.floor((lo + hi) / 2);
       t.op();
+      const ask = (answer: number) => ({ q: `nums[mid] = ${nums[mid]} and the target is ${target}. What does this call do?`, options: ["Found it: return mid", "Recurse on the right half", "Recurse on the left half"], answer });
       t.step({ line: 7, array: nums, range, pointers: { lo, mid, hi }, tones: { [mid]: "compare" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `New call with lo=${lo}, hi=${hi}. mid = ${mid}, nums[mid] = ${nums[mid]}.` });
       let result: number;
       if (nums[mid] === target) {
-        t.step({ line: 9, array: nums, range, pointers: { mid }, tones: { [mid]: "found" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `Found ${target} at ${mid}. The stack is ${stack.length} call${stack.length > 1 ? "s" : ""} deep; now the answer is passed back down it.` });
+        t.step({ ask: ask(0), line: 9, array: nums, range, pointers: { mid }, tones: { [mid]: "found" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `Found ${target} at ${mid}. The stack is ${stack.length} call${stack.length > 1 ? "s" : ""} deep; now the answer is passed back down it.` });
         result = mid;
       } else if (nums[mid] < target) {
-        t.step({ line: 11, array: nums, range, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `${nums[mid]} < ${target}: recurse on the right half. This call waits on the stack for the answer.` });
+        t.step({ ask: ask(1), line: 11, array: nums, range, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `${nums[mid]} < ${target}: recurse on the right half. This call waits on the stack for the answer.` });
         result = go(mid + 1, hi, 11);
       } else {
-        t.step({ line: 12, array: nums, range, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `${nums[mid]} > ${target}: recurse on the left half. This call waits on the stack for the answer.` });
+        t.step({ ask: ask(2), line: 12, array: nums, range, pointers: { lo, mid, hi }, tones: { [mid]: "miss" }, stack: [...stack], vars: { lo, hi, mid, target }, message: `${nums[mid]} > ${target}: recurse on the left half. This call waits on the stack for the answer.` });
         result = go(lo, mid - 1, 12);
       }
       stack.pop();

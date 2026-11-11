@@ -7,7 +7,7 @@ added: 2026-11-11
 summary: Find the position where everything on the left adds up to everything on the right. Goes from re-adding both sides every time, to prefix sums, to one running total.
 best: { time: "O(n)", space: "O(1)" }
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -81,6 +81,10 @@ It's the same arithmetic as prefix sums. We just never keep the parts of the tab
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Space | Idea |
 |---|---|---|---|

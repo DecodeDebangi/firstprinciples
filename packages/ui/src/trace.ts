@@ -29,6 +29,11 @@ export interface ArrayStep {
   stackTitle?: string;
   /** A 2D panel (e.g. Pascal's triangle). Tones are keyed "row,col". Rows are centred. */
   grid?: { title: string; rows: (number | string)[][]; tones?: Record<string, Tone> };
+  /**
+   * Predict mode: asked *before* this step is shown, while the learner still sees the previous one.
+   * `answer` is the index of the correct option; this step's message explains it.
+   */
+  ask?: { q: string; options: string[]; answer: number };
   /** Basic operations counted so far (filled in by the tracer). */
   ops: number;
   done?: "found" | "notfound";

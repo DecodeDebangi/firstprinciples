@@ -7,7 +7,7 @@ added: 2026-11-11
 summary: Build the first rows of Pascal's triangle. Goes from computing every number with factorials, to building each row from the one above with a single addition per number.
 best: { time: "O(n²)", space: "O(1) extra" }
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -72,6 +72,10 @@ down. No approach can beat O(n²).
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Extra space | Idea |
 |---|---|---|---|

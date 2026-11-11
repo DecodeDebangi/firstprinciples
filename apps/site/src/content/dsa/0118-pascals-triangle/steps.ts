@@ -77,9 +77,12 @@ const buildRows: Approach<Input> = {
         message: `Row ${r} has ${r + 1} slots. Both ends are always 1${r > 1 ? "; fill the inside from row " + (r - 1) : ""}.` });
       for (let c = 1; c < r; c++) {
         t.op();
+        const [pa, pb] = [prev[c - 1], prev[c]];
+        const opts = [...new Set([pa + pb, pa * pb, Math.max(pa, pb), pa + pb + 1])].slice(0, 3).sort((x, y) => x - y);
+        const ask = { q: `What goes in row ${r}, position ${c}? Look at the row above.`, options: opts.map(String), answer: opts.indexOf(pa + pb) };
         row[c] = prev[c - 1] + prev[c];
         const gt: Record<string, Tone> = { [`${r - 1},${c - 1}`]: "compare", [`${r - 1},${c}`]: "compare" };
-        t.step({ line: 7, array: [...row], pointers: { c }, tones: { [c]: "active" }, grid: { title: TITLE, rows: [...rows], tones: gt },
+        t.step({ ask, line: 7, array: [...row], pointers: { c }, tones: { [c]: "active" }, grid: { title: TITLE, rows: [...rows], tones: gt },
           vars: { r, c, value: row[c] as number },
           message: `row[${c}] = ${prev[c - 1]} + ${prev[c]} = ${row[c]}: the two numbers just above it. One addition.` });
       }

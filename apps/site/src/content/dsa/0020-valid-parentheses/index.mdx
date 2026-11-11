@@ -8,7 +8,7 @@ summary: Check whether every bracket is closed by the right partner, in the righ
 best: { time: "O(n)", space: "O(n)" }
 reel: https://www.instagram.com/reel/DfZc2DIgwV_/
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
@@ -87,6 +87,10 @@ re-scan.
 </Complexity>
 
 ## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
 
 | Approach | Time | Space | Idea |
 |---|---|---|---|

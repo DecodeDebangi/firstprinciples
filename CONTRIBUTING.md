@@ -20,14 +20,20 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
      what happened.
    - Call `t.op()` once per basic operation (comparison, lookup) so the chart counts real work.
    - Pick an example that takes 6–20 steps and makes every branch run at least once.
-2. **`Viz.tsx`**: the 5-line wrapper; copy it unchanged.
+   - **Predict mode:** on each key decision step of the optimal approach (and any other approach where it
+     helps), set `ask: { q, options, answer }`. It's asked *before* that step is shown, so the question must
+     use values from before the step changes anything. Capture them first, e.g.
+     `const [f0, s0] = [first, second]`. The step's `message` then explains the answer.
+2. **`Viz.tsx`**: copy it unchanged. It exports the single-approach player (default) and `Compare`, the
+   side-by-side race.
 3. **`index.mdx`**, with sections in this order:
    - `## The problem`, **in our own words**. Never paste LeetCode's statement, examples or images. Use our own example.
    - `## The key question`: the one question every approach answers faster.
    - `## Approach N: …`, brute force first, then each improvement. Each gets `<Viz client:visible approach="…" />`
      and a `<Complexity time space>` box that **derives** both bounds and ends with what the approach wastes
      (which motivates the next one).
-   - `## Comparing the approaches`: a summary table and `<GrowthChart client:visible series={growth} />`.
+   - `## Comparing the approaches`: one line introducing the race, `<Compare client:visible />`, a summary
+     table, and `<GrowthChart client:visible series={growth} />`.
    - `## Common mistakes`, then `## Related problems`.
 
    Frontmatter:
@@ -38,7 +44,7 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
      Strip share-tracking queries like `?srtk=` or `?igsh=`; the schema rejects them.
 
 Before finishing: run each approach's tracer on the example plus edge cases (no answer, smallest input,
-duplicates). Run `npm run build` (it type-checks first). Screenshot a mid-animation step at 1280px and 390px
+duplicates), and check every `ask` has a valid `answer` index and no duplicate options. Run `npm run build` (it type-checks first). Screenshot a mid-animation step at 1280px and 390px
 wide.
 
 Use topic tags that the home page's learning path (`path` in `apps/site/src/pages/index.astro`) recognises,
