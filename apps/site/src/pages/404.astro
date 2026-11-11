@@ -1,0 +1,22 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Page not found" description="This page doesn't exist." noindex>
+  <section class="nf">
+    <p class="nf__code">404</p>
+    <h1>This page doesn't exist.</h1>
+    <p>The link may be old, or the problem may have a different name now.</p>
+    <a class="nf__btn" href="/#problems">See all problems →</a>
+  </section>
+</Base>
+
+<style>
+  .nf { text-align: center; padding: 48px 0; }
+  .nf__code { font: 600 64px var(--font-serif); color: var(--accent); margin: 0; }
+  .nf p { color: var(--text-2); }
+  .nf__btn {
+    display: inline-block; margin-top: 12px; padding: 12px 20px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 600; text-decoration: none;
+  }
+  .nf__btn:hover { background: var(--accent-hover); color: #fff; }
+</style>
