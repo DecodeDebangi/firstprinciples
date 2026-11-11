@@ -1,0 +1,100 @@
+---
+title: Largest Number At Least Twice of Others
+leetcode: { number: 747, url: "https://leetcode.com/problems/largest-number-at-least-twice-of-others/" }
+difficulty: Easy
+topics: [Array]
+added: 2026-11-11
+summary: Decide whether the biggest number is at least double every other one. Goes from testing every candidate against everyone, to two passes, to tracking just the top two.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of non-negative integers `nums` in which the largest value appears exactly once. If that largest
+number is **at least twice** every other number in the list, return its **index**. Otherwise return `-1`.
+
+For `nums = [4, 1, 9, 3, 2]` the answer is `2`: `9` is at least double `4`, `1`, `3` and `2`. For
+`[1, 2, 3, 4]` it's `-1`, because `4` is less than `2 × 3`.
+
+## The key question
+
+> **Which numbers actually decide the answer?**
+
+Only the largest number can ever be "at least twice everything else". And it passes against everyone exactly
+when it passes against the **runner-up**, since that's the hardest number to beat. Each approach below uses a
+bit more of this.
+
+## Approach 1: Brute force
+
+Treat every number as a candidate and compare it against every other number. Stop a candidate at its first
+failure and move on to the next.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** In the worst case each of the `n` candidates scans a large part of the list before failing. On
+`[1, 2, 3, …, n]` a candidate `v` survives until it meets a number bigger than `v/2`, about `v/2` checks. Summed
+over all candidates that's about `n²/4`: **O(n²)**.
+
+**Space.** A few loop variables: **O(1)**.
+
+**What it wastes:** it tests numbers that can't possibly win. Any number smaller than the maximum loses the moment
+it meets the maximum.
+</Complexity>
+
+## Approach 2: Find the largest, then check it
+
+Only the largest can win, so find it first (one pass), then check it against everyone else (a second pass).
+
+<Viz client:visible approach="two" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Two passes of `n − 1` comparisons each: about `2n`, **O(n)**.
+
+**Space.** Just the index `best` and the loop variable: **O(1)**.
+
+**What it wastes:** the second pass checks everyone, but only one comparison matters: the one against the runner-up.
+</Complexity>
+
+## Approach 3: One pass, largest and runner-up (optimal)
+
+Walk once, keeping the largest value, its index, and the runner-up. A new largest pushes the old largest down to
+runner-up. At the end, a single comparison decides: `largest ≥ 2 × runner-up`.
+
+<Viz client:visible approach="one" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass of `n` steps, each with at most two comparisons: **O(n)**. It's the same Big-O as Approach 2,
+but one pass instead of two, which matters when the data is streamed and can't be read twice.
+
+**Space.** Three variables (`first`, `second`, `best`): **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(1) | Every number vs every number |
+| Find max, then check | O(n) | O(1) | Only the largest can win |
+| Largest and runner-up | **O(n)** | **O(1)** | Beat the runner-up and you beat everyone, in one pass |
+
+The chart counts comparisons on `[1, 2, 3, …, n]`, a worst case for the brute force.
+
+<GrowthChart client:visible series={growth} caption="Comparisons on [1, 2, …, n]. Both O(n) approaches grow in a straight line; the one-pass version does fewer comparisons." />
+
+## Common mistakes
+
+- **Using `>` instead of `≥`.** "At least twice" includes exactly twice: in `[8, 4]`, `8` qualifies.
+- **Returning the value instead of the index.**
+- **Forgetting to demote the old largest.** When a new largest arrives, the previous largest becomes the runner-up. If you skip that, `[4, 6]` checks `6` against nothing and wrongly returns `1`; the right answer is `-1`, since `6 < 2 × 4`.
+- **Comparing against the second element instead of the second-largest.** The runner-up has to be tracked; it isn't simply `nums[1]`.
+
+## Related problems
+
+- Third Maximum Number (LeetCode 414). Track the top three in one pass.
+- Maximum Product of Two Elements in an Array (LeetCode 1464). Track the top two again.
+- Majority Element (LeetCode 169). Another "one pass, a couple of variables" problem.

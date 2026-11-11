@@ -1,0 +1,109 @@
+---
+title: Find Pivot Index
+leetcode: { number: 724, url: "https://leetcode.com/problems/find-pivot-index/" }
+difficulty: Easy
+topics: [Array, Prefix sum]
+added: 2026-11-11
+summary: Find the position where everything on the left adds up to everything on the right. Goes from re-adding both sides every time, to prefix sums, to one running total.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of integers `nums`. Find the **pivot index**: the position where the sum of all numbers strictly
+to its left equals the sum of all numbers strictly to its right. The pivot itself belongs to neither side. If
+the pivot is the first or last position, the empty side counts as `0`. If there are several pivots, return the
+**leftmost**. If there are none, return `-1`.
+
+For `nums = [2, 5, 1, 4, 3, 2, 3]` the answer is `3`: left of it, `2 + 5 + 1 = 8`; right of it, `3 + 2 + 3 = 8`.
+
+## The key question
+
+Checking one index means comparing two sums. The expensive part is getting those sums. So:
+
+> **If I already know the sum of everything to the left of `i`, can I get the right side without adding it up?**
+
+Yes: the right side is everything minus the left side minus `nums[i]`. Each approach below gets closer to using
+that fact directly.
+
+## Approach 1: Brute force
+
+Try every index. For each one, add up the left side and the right side from scratch and compare. In the
+animation, the left side and the right side are shaded in different colours around the candidate.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** For each of the `n` candidates, the two sums together touch the other `n − 1` numbers. That's
+`n × (n − 1)` additions, about `n²`: **O(n²)**.
+
+**Space.** In Python, `nums[:i]` and `nums[i + 1:]` *copy* their part of the list, so up to `n` numbers sit in
+temporary lists: **O(n)**. Summing with index loops instead would make it O(1), but the time stays O(n²).
+
+**What it wastes:** moving from index `i` to `i + 1` changes the left sum by exactly one number, yet it gets
+re-added from zero every time.
+</Complexity>
+
+## Approach 2: Prefix sums
+
+Do the adding once, up front. Build `prefix`, where `prefix[k]` is the sum of the first `k` numbers. Then the sum
+left of `i` is `prefix[i]`, and the sum right of `i` is `total − prefix[i + 1]`. Each check becomes two lookups.
+
+<Viz client:visible approach="prefix" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Building `prefix` is one pass of `n` additions. Checking every index is a second pass of `n` O(1)
+lookups. `n + n = 2n`, so **O(n)**.
+
+**Space.** `prefix` holds `n + 1` numbers: **O(n)**.
+
+**What it wastes:** the check walks left to right, and at each step it only ever reads `prefix[i]`, the left sum
+so far. Storing the whole table isn't needed. One running number would do.
+</Complexity>
+
+## Approach 3: Running total (optimal)
+
+Keep just two numbers: `total`, the sum of everything (one pass), and `left`, the sum so far as you walk. At each
+index, `right = total − left − nums[i]`. Compare, then add `nums[i]` to `left` and move on.
+
+<Viz client:visible approach="running" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass for `total`, one pass for the check, each step O(1): `2n` steps, **O(n)**.
+
+**Space.** Three integers (`total`, `left`, `right`), whatever the size of `n`: **O(1)**.
+
+It's the same arithmetic as prefix sums. We just never keep the parts of the table we've already used.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(n) | Re-add both sides for every index |
+| Prefix sums | O(n) | O(n) | Add once, then look sums up |
+| Running total | **O(n)** | **O(1)** | right = total − left − nums[i] |
+
+The chart counts numbers read on the worst case, an even-length list of `1`s with no pivot, so every index gets
+checked.
+
+<GrowthChart client:visible series={growth} caption="Numbers read on worst-case inputs. Prefix sums reads exactly as many as the running total, so its line would sit on top and is left out." />
+
+## Common mistakes
+
+- **Counting `nums[i]` on one side.** The pivot belongs to neither side. That's why it's `total − left − nums[i]`, not `total − left`.
+- **Updating `left` before comparing.** Add `nums[i]` to `left` *after* the check, or every comparison is off by one position.
+- **Forgetting the edges.** Index `0` can be the pivot, with left sum `0`. So can the last index.
+- **Returning a later pivot.** With several pivots (e.g. `[0, 0, 0]`), return the leftmost. Stopping at the first match does that.
+- **Trying two pointers.** Numbers can be negative, so "move the side with the smaller sum" doesn't work. The running total does.
+
+## Related problems
+
+- Find the Middle Index in Array (LeetCode 1991). The same problem under another name.
+- Range Sum Query – Immutable (LeetCode 303). Prefix sums answer any range sum in O(1).
+- Product of Array Except Self (LeetCode 238). The same left-and-right idea, with products.
+- Subarray Sum Equals K (LeetCode 560). Prefix sums plus a hash map.

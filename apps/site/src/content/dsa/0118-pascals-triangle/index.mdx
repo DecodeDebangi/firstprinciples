@@ -1,0 +1,97 @@
+---
+title: Pascal's Triangle
+leetcode: { number: 118, url: "https://leetcode.com/problems/pascals-triangle/" }
+difficulty: Easy
+topics: [Array, Dynamic programming]
+added: 2026-11-11
+summary: Build the first rows of Pascal's triangle. Goes from computing every number with factorials, to building each row from the one above with a single addition per number.
+best: { time: "O(n²)", space: "O(1) extra" }
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given `numRows`, return the first `numRows` rows of **Pascal's triangle** as a list of lists. Each row starts and
+ends with `1`, and every number inside a row is the sum of the two numbers directly above it.
+
+For `numRows = 5`:
+
+```
+        [1]
+       [1, 1]
+      [1, 2, 1]
+     [1, 3, 3, 1]
+    [1, 4, 6, 4, 1]
+```
+
+## The key question
+
+> **Can each number be built from numbers I've already built?**
+
+Yes, and the problem statement itself says how: every inside number is the sum of the two above it. The
+alternative is to compute each number on its own, from a formula, without using any of the others.
+
+## Approach 1: Formula with factorials
+
+The number in row `r`, position `c` is "r choose c": `r! ÷ (c! × (r − c)!)`. Compute that for every position. It
+works, but each number is computed from nothing, using three factorials.
+
+<Viz client:visible approach="formula" />
+
+<Complexity time="O(n³)" space="O(1) extra">
+**Time.** Computing `k!` takes about `k` multiplications, so one entry in row `r` costs about `r + c + (r − c) = 2r`.
+Row `r` has `r + 1` entries, so it costs about `2r²`. Adding that up over `n` rows gives about `(2/3)·n³`:
+**O(n³)**. (The factorials are also huge numbers, which makes each multiplication slower still.)
+
+**Space.** The output has about `n²/2` numbers, which any approach has to produce. Beyond that, only a few
+variables: **O(1) extra**.
+
+**What it wastes:** it never reuses anything. The number above-left and the number above-right were already
+computed, and adding them would give the answer in one step.
+</Complexity>
+
+## Approach 2: Build each row from the one above (optimal)
+
+Start with `[1]`. For each new row, set both ends to `1` and fill each inside slot with the two numbers above
+it: `row[c] = prev[c − 1] + prev[c]`. In the animation, the triangle panel highlights the two parent numbers for
+each addition.
+
+<Viz client:visible approach="build" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** The triangle has `1 + 2 + … + n = n(n + 1)/2` numbers, and each costs at most **one** addition:
+**O(n²)**.
+
+**Why this is the best possible:** the answer itself contains about `n²/2` numbers, and you have to write each one
+down. No approach can beat O(n²).
+
+**Space.** Again O(n²) for the output, and **O(1) extra**: `prev` is just a reference to the last row, not a copy.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Formula with factorials | O(n³) | O(1) | Compute each number from scratch |
+| Build from the row above | **O(n²)** | **O(1)** | One addition per number, reusing the last row |
+
+The chart counts the arithmetic for each number of rows: multiplications for the formula, additions for building
+row by row.
+
+<GrowthChart client:visible series={growth} caption="Arithmetic operations to build numRows rows. The formula grows like n³; building from the row above grows like n²." />
+
+## Common mistakes
+
+- **Overflowing factorials.** Outside Python, `21!` already exceeds a 64-bit integer, even though the triangle's numbers are much smaller. Building by addition avoids huge intermediates entirely.
+- **Writing into the ends.** The inner loop runs from `1` to `r − 1`. Positions `0` and `r` stay `1`.
+- **Off-by-one on row count.** Row `0` is `[1]`, so `numRows = 1` returns `[[1]]`.
+- **Aliasing rows in Python.** `[[1] * k] * n` makes `n` references to the *same* list. Create each row fresh, as `row = [1] * (r + 1)` does inside the loop.
+
+## Related problems
+
+- Pascal's Triangle II (LeetCode 119). Return only row `k`, using O(k) space by updating one row in place, from right to left.
+- Unique Paths (LeetCode 62). The same "sum of the two cells you came from" rule, on a grid.
+- Climbing Stairs (LeetCode 70). Build each answer from the previous ones: the core idea of dynamic programming.

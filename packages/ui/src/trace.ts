@@ -27,6 +27,8 @@ export interface ArrayStep {
   stack?: string[];
   /** Heading for the stack panel. Defaults to "Call stack". */
   stackTitle?: string;
+  /** A 2D panel (e.g. Pascal's triangle). Tones are keyed "row,col". Rows are centred. */
+  grid?: { title: string; rows: (number | string)[][]; tones?: Record<string, Tone> };
   /** Basic operations counted so far (filled in by the tracer). */
   ops: number;
   done?: "found" | "notfound";

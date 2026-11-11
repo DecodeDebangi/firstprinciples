@@ -69,6 +69,17 @@
   flex: 1 1 140px;
 }
 .fp-panel--ops { flex: 0 1 140px; }
+.fp-panel--wide { flex-basis: 100%; }
+.fp-grid { display: grid; gap: 4px; justify-items: center; overflow-x: auto; padding: 2px; }
+.fp-grid__row { display: flex; gap: 4px; }
+.fp-gcell {
+  min-width: 30px; height: 28px; padding: 0 4px;
+  display: grid; place-items: center;
+  font: 600 13px var(--font-mono);
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: var(--surface-2);
+  transition: background-color .25s, border-color .25s;
+}
 .fp-panel__title { font-size: 12px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
 .fp-vars { margin: 0; display: grid; gap: 2px; }
 .fp-vars div { display: flex; justify-content: space-between; gap: 12px; font: 14px var(--font-mono); }
@@ -143,3 +154,8 @@
 .fp-formmsg { flex-basis: 100%; margin: 0; font-size: 14px; }
 .fp-formmsg--error { color: var(--tone-miss-border); }
 .fp-formmsg--note { color: var(--text-2); }
+/* Tones on grid cells (must beat .fp-gcell's own background). */
+.fp-gcell.fp-cell--compare { background: var(--tone-compare-bg); border-color: var(--tone-compare-border); }
+.fp-gcell.fp-cell--found { background: var(--tone-found-bg); border-color: var(--tone-found-border); }
+.fp-gcell.fp-cell--active { background: var(--tone-active-bg); border-color: var(--tone-active-border); }
+.fp-gcell.fp-cell--miss { background: var(--tone-miss-bg); border-color: var(--tone-miss-border); }

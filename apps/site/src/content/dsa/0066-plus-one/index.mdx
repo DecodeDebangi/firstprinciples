@@ -1,0 +1,86 @@
+---
+title: Plus One
+leetcode: { number: 66, url: "https://leetcode.com/problems/plus-one/" }
+difficulty: Easy
+topics: [Array, Math]
+added: 2026-11-11
+summary: Add one to a number stored as a list of digits. Goes from converting to a real number, to carrying from the right the way you would on paper.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A non-negative integer is stored as a list `digits`, most significant digit first, with no leading zeros (except
+for the number `0` itself). Add one to the number and return the result in the same digit-list form. The list can
+be up to 100 digits long.
+
+For `digits = [4, 2, 9, 9]` (the number 4299) the answer is `[4, 3, 0, 0]`. For `[9, 9]` it's `[1, 0, 0]`.
+
+## The key question
+
+> **How far to the left can adding 1 actually change anything?**
+
+Only as far as the run of **9s at the end**. A 9 becomes 0 and passes a carry left; the first digit that isn't a
+9 just goes up by one, and everything left of it is untouched.
+
+## Approach 1: Convert to a number
+
+Turn the digits into an integer, add 1, and split the result back into digits.
+
+<Viz client:visible approach="convert" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Building the number is `n` steps, and splitting it back is about `n` more: **O(n)**. (Each step works on
+a big integer, so the true cost is higher than that; this is already the best case.)
+
+**Space.** The integer and its string form both hold about `n` digits: **O(n)**.
+
+**The real problem isn't speed.** It's that this only works in Python, whose integers never overflow. In Java or
+C++, the largest built-in integer holds about 19 digits, and the input can have 100. It also always does the full
+amount of work, even when only the last digit changes.
+</Complexity>
+
+## Approach 2: Carry from the right (optimal)
+
+Do it on paper. Start at the last digit. If it's below 9, add 1 and stop. If it's 9, write 0 and carry left. If
+the carry runs off the front (all 9s), the number gets one digit longer: put a `1` in front.
+
+<Viz client:visible approach="carry" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** In the worst case, all 9s, every digit is visited once: **O(n)**. But in the usual case (the last digit
+isn't 9) it stops after **one** step: **O(1)**. Most inputs never come close to the worst case.
+
+**Space.** The digits are changed in place: **O(1)** extra. The one exception is the all-9s case, where the answer
+needs a new list one digit longer. That's O(n), but it's the output itself, not working space.
+</Complexity>
+
+## Comparing the approaches
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Convert to a number | O(n), always | O(n) | Do real arithmetic; overflows outside Python |
+| Carry from the right | **O(n) worst, O(1) usually** | **O(1)** | Only trailing 9s can change |
+
+Both are O(n) in the worst case, so the chart shows the **usual** case instead, where the last digit isn't 9.
+That's where the difference is.
+
+<GrowthChart client:visible series={growth} caption="Steps when the last digit isn't 9. Converting always reads every digit twice; carrying stops after one step." />
+
+## Common mistakes
+
+- **Converting to an `int`/`long` in Java or C++.** It overflows past about 19 digits. Work on the digits directly.
+- **Forgetting the all-9s case.** `[9, 9, 9]` needs a brand-new list `[1, 0, 0, 0]`; there's no slot to put the carry in.
+- **Walking left to right.** Carries move right to left, so start at the end.
+- **Continuing after the carry stops.** As soon as a digit is below 9, add 1 and return. Nothing to its left changes.
+
+## Related problems
+
+- Add Binary (LeetCode 67). The same carry loop in base 2, on two numbers.
+- Add Strings (LeetCode 415). Add two numbers given as digit strings.
+- Add to Array-Form of Integer (LeetCode 989). Add any integer, not just 1, to a digit list.
+- Add Two Numbers (LeetCode 2). The same carrying, on linked lists.

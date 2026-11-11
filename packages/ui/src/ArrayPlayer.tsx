@@ -190,6 +190,26 @@ export function ArrayPlayer<I extends InputValues>({
                 </ol>
               </div>
             )}
+            {step.grid && (
+              <div className="fp-panel fp-panel--wide">
+                <div className="fp-panel__title">{step.grid.title}</div>
+                {step.grid.rows.length === 0 ? (
+                  <div className="fp-empty">empty</div>
+                ) : (
+                  <div className="fp-grid" role="img"
+                    aria-label={`${step.grid.title}: ${step.grid.rows.map((r) => r.join(" ")).join(" / ")}`}>
+                    {step.grid.rows.map((row, r) => (
+                      <div className="fp-grid__row" key={r}>
+                        {row.map((v, c) => {
+                          const tone = step.grid!.tones?.[`${r},${c}`];
+                          return <span key={c} className={`fp-gcell${tone ? ` fp-cell--${tone}` : ""}`}>{v}</span>;
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="fp-panel fp-panel--ops">
               <div className="fp-panel__title">Operations</div>
               <div className="fp-ops">{step.ops}</div>
