@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import HeroDemo from "../components/HeroDemo.tsx";
+import StudyRoadmap from "../components/StudyRoadmap.astro";
 
 const all = await getCollection("dsa");
 const problems = [...all].sort(
@@ -21,18 +22,6 @@ for (const p of problems) {
 }
 const latestDay = [...days.keys()][0];
 
-// The learning path. Each stop lights up once a problem tagged with it exists.
-const path = [
-  { name: "Arrays & hashing", tags: ["Array", "Hash map"] },
-  { name: "Binary search", tags: ["Binary search"] },
-  { name: "Two pointers", tags: ["Two pointers"] },
-  { name: "Sliding window", tags: ["Sliding window"] },
-  { name: "Stacks & queues", tags: ["Stack", "Queue"] },
-  { name: "Linked lists", tags: ["Linked list"] },
-  { name: "Trees", tags: ["Tree", "Binary tree", "BST"] },
-  { name: "Graphs", tags: ["Graph", "BFS", "DFS"] },
-  { name: "Dynamic programming", tags: ["Dynamic programming"] },
-].map((s) => ({ ...s, count: all.filter((p) => p.data.topics.some((t) => s.tags.includes(t))).length }));
 
 const how = [
   { title: "The problem, in plain words", body: "No jargon wall. Just what's being asked, and the one question that unlocks it.",
@@ -79,23 +68,10 @@ const how = [
     </ul>
   </section>
 
-  <section class="path" aria-labelledby="path-title">
-    <h2 id="path-title">A path you can follow</h2>
-    <p class="sub">The topics, in the order most people learn them. Each one fills in as problems are added.</p>
-    <ol>
-      {path.map((s, i) => (
-        <li class={s.count ? "is-ready" : ""}>
-          <span class="path__n">{i + 1}</span>
-          <span class="path__name">{s.name}</span>
-          <span class="path__count">{s.count ? `${s.count} problem${s.count > 1 ? "s" : ""}` : "coming up"}</span>
-        </li>
-      ))}
-      <li class="is-later">
-        <span class="path__n">→</span>
-        <span class="path__name">System design</span>
-        <span class="path__count">later</span>
-      </li>
-    </ol>
+  <section id="roadmap" class="path" aria-labelledby="path-title">
+    <h2 id="path-title">Study roadmap</h2>
+    <p class="sub">A suggested order: each step builds on the ones before it. Every topic links to its problems, and new ones appear here as they're added.</p>
+    <StudyRoadmap problems={all} />
   </section>
 
   <section id="problems" class="log" aria-labelledby="log-title">
@@ -199,18 +175,6 @@ const how = [
     .how p { grid-column: 1 / -1; margin-top: 8px; }
   }
 
-  .path ol { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-  .path li {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 14px 8px 8px; border-radius: 999px;
-    background: var(--surface); border: 1px dashed var(--border); color: var(--muted);
-  }
-  .path li.is-ready { border-style: solid; border-color: var(--tone-found-border); background: var(--tone-found-bg); color: var(--text); }
-  .path li.is-later { background: transparent; }
-  .path__n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); font: 600 13px var(--font-mono); }
-  .path li.is-ready .path__n { background: var(--tone-found-border); color: #fff; }
-  .path__name { font-weight: 600; font-size: 15px; }
-  .path__count { font-size: 13px; }
 
   .day h3 { display: flex; align-items: center; gap: 10px; font: 600 15px var(--font-sans); color: var(--muted); margin: 24px 0 12px; }
   .new { font-size: 12px; font-weight: 600; color: #fff; background: var(--accent); padding: 1px 9px; border-radius: 999px; }

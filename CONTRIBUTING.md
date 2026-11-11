@@ -56,9 +56,11 @@ Before finishing: run each approach's tracer on the example plus edge cases (no 
 duplicates), and check every `ask` has a valid `answer` index and no duplicate options. Run `npm run build` (it type-checks first). Screenshot a mid-animation step at 1280px and 390px
 wide.
 
-Use topic tags that the home page's learning path (`path` in `apps/site/src/pages/index.astro`) recognises,
-e.g. "Sliding window", "Stack", "Linked list", "Tree", "Graph", "Dynamic programming". If you add a new tag,
-map it to a stop there so that stop lights up.
+Use topic tags that the home page's study roadmap (`apps/site/src/data/roadmap.ts`) recognises, e.g.
+"Sliding window", "Stack", "Linked list", "Tree", "Graph", "Dynamic programming". A problem is listed under ONE topic: its
+first specific tag (generic tags like "Array", "String" and "Math" count only when nothing else matches), and
+other topics it practises show it as "Also used in". Put the main technique first in `topics`. If you use a new
+tag, add it to a topic there.
 
 A new data structure (linked list, tree, graph, DP table) needs a new renderer in `packages/ui` alongside
 `ArrayPlayer`, with its own step type in `trace.ts`.

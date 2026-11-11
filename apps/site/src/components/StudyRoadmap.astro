@@ -1,0 +1,131 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { roadmap } from "../data/roadmap";
+
+interface Props {
+  problems: CollectionEntry<"dsa">[];
+}
+const { problems } = Astro.props;
+
+const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
+const allTopics = roadmap.flatMap((s) => s.topics);
+// Tags nearly every problem carries; they decide a problem's home only when nothing more specific does.
+const GENERIC = new Set(["Array", "String", "Math"]);
+const topicOf = (tag: string) => allTopics.find((t) => t.tags.includes(tag));
+/** Each problem lives under ONE topic: its first specific tag, else its first generic one. */
+const home = (p: CollectionEntry<"dsa">) => {
+  const tags = p.data.topics;
+  const specific = tags.find((tag) => !GENERIC.has(tag) && topicOf(tag));
+  return topicOf(specific ?? tags.find((tag) => topicOf(tag)) ?? "")?.name;
+};
+const order = (a: CollectionEntry<"dsa">, b: CollectionEntry<"dsa">) =>
+  rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number;
+const steps = roadmap.map((step) => ({
+  ...step,
+  topics: step.topics.map((t) => {
+    const list = problems.filter((p) => home(p) === t.name).sort(order);
+    // Problems that live elsewhere but also practise this topic (specific tags only).
+    const also = problems
+      .filter((p) => home(p) !== t.name && p.data.topics.some((tag) => !GENERIC.has(tag) && t.tags.includes(tag)))
+      .sort(order);
+    return { ...t, list, also };
+  }),
+}));
+---
+<ol class="rm">
+  {steps.map((step, i) => (
+    <li class="rm__step">
+      <div class="rm__rail" aria-hidden="true"><span class="rm__dot">{i + 1}</span></div>
+      <div class="rm__body">
+        <h3 class="rm__title"><span class="rm__k">Step {i + 1}</span>{step.title}</h3>
+        <ul class="rm__topics">
+          {step.topics.map((t) => (
+            <li class={`rm__topic${t.list.length || t.also.length ? " is-ready" : ""}`}>
+              <div class="rm__head">
+                <span class="rm__name">{t.name}</span>
+                <span class="rm__count">{t.list.length ? `${t.list.length} problem${t.list.length > 1 ? "s" : ""}` : t.also.length ? `${t.also.length} related` : "Coming soon"}</span>
+              </div>
+              <p class="rm__blurb">{t.blurb}</p>
+              {t.list.length > 0 && (
+                <ul class="rm__problems">
+                  {t.list.map((p) => (
+                    <li>
+                      <a href={`/dsa/${p.id}/`}>
+                        <span class={`rm__diff rm__diff--${p.data.difficulty}`} title={p.data.difficulty} aria-label={p.data.difficulty}></span>
+                        <span class="rm__num">#{p.data.leetcode.number}</span>
+                        {p.data.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {t.also.length > 0 && (
+                <p class="rm__also">Also used in {t.also.map((p, k) => (
+                  <>{k > 0 && ", "}<a href={`/dsa/${p.id}/`}>{p.data.title}</a></>
+                ))}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </li>
+  ))}
+  <li class="rm__step rm__step--later">
+    <div class="rm__rail" aria-hidden="true"><span class="rm__dot">→</span></div>
+    <div class="rm__body">
+      <h3 class="rm__title"><span class="rm__k">After DSA</span>System design</h3>
+      <p class="rm__blurb">Load balancers, caches, queues and databases, animated the same way. Coming later.</p>
+    </div>
+  </li>
+</ol>
+
+<style>
+  .rm { list-style: none; margin: 0; padding: 0; }
+  .rm__step { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; }
+  /* The rail: a dot per step joined by a line down to the next. */
+  .rm__rail { position: relative; display: flex; justify-content: center; }
+  .rm__rail::after {
+    content: ""; position: absolute; top: 40px; bottom: 0; left: 50%; width: 2px; margin-left: -1px;
+    background: repeating-linear-gradient(to bottom, var(--border) 0 6px, transparent 6px 11px);
+  }
+  .rm__step:last-child .rm__rail::after { display: none; }
+  .rm__dot {
+    position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; font: 600 16px var(--font-serif);
+    background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent);
+  }
+  .rm__step--later .rm__dot { background: var(--surface); color: var(--muted); border: 2px dashed var(--border); }
+  .rm__body { padding-bottom: 28px; min-width: 0; }
+  .rm__title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 4px 0 12px; font-size: 20px; }
+  .rm__k { font: 600 12px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .rm__topics { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .rm__topic {
+    padding: 14px 16px; border-radius: var(--radius);
+    background: var(--surface); border: 1.5px dashed var(--border); color: var(--muted);
+  }
+  .rm__topic.is-ready { border-style: solid; border-color: var(--border); color: var(--text); box-shadow: var(--shadow); }
+  .rm__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .rm__name { font: 600 17px var(--font-serif); }
+  .rm__count { font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .rm__topic.is-ready .rm__count { color: var(--tone-found-border); }
+  .rm__blurb { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+  .rm__topic:not(.is-ready) .rm__blurb { color: var(--muted); }
+  .rm__problems { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--border); display: grid; gap: 4px; }
+  .rm__problems a {
+    display: flex; align-items: center; gap: 8px; padding: 4px 6px; margin: 0 -6px; border-radius: 6px;
+    font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none;
+  }
+  .rm__problems a:hover { background: var(--accent-soft); color: var(--accent); }
+  .rm__num { font: 500 12px var(--font-mono); color: var(--muted); min-width: 3.4em; }
+  .rm__also { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .rm__also a { font-weight: 500; }
+  .rm__diff { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; }
+  .rm__diff--Easy { background: var(--tone-found-border); }
+  .rm__diff--Medium { background: var(--tone-compare-border); }
+  .rm__diff--Hard { background: var(--tone-miss-border); }
+  @media (max-width: 600px) {
+    .rm__step { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+    .rm__dot { width: 28px; height: 28px; font-size: 14px; }
+    .rm__rail::after { top: 32px; }
+  }
+</style>
