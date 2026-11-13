@@ -1,0 +1,88 @@
+---
+title: Subsets
+leetcode: { number: 78, url: "https://leetcode.com/problems/subsets/" }
+difficulty: Medium
+topics: [Backtracking, Array]
+added: 2026-11-13
+summary: List every subset of a set of distinct numbers. Goes from doubling a list of subsets one number at a time to backtracking, where every call in the recursion tree is one subset.
+best: { time: "O(n · 2ⁿ)", space: "O(n) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given a list of **distinct** numbers, return every possible subset: every way of choosing some of them (including
+none and all). Order doesn't matter, inside a subset or in the list of subsets, but no subset may appear twice.
+
+For `[1, 2, 3]` there are 8: `[]`, `[1]`, `[2]`, `[3]`, `[1, 2]`, `[1, 3]`, `[2, 3]`, `[1, 2, 3]`.
+
+## The key question
+
+> **For each number, there are exactly two choices: in or out. How do I walk through every combination of choices
+> exactly once?**
+
+With n numbers that's 2 × 2 × … × 2 = **2ⁿ** subsets, so no approach can be faster than O(2ⁿ): the answer itself is
+that big. The goal is to generate each subset once, with no duplicates and no wasted work.
+
+## Approach 1: Iterative, copy and add
+
+Start with only the empty subset. For each number `x`, copy every subset you have so far and add `x` to the copy.
+The originals are the subsets without `x`, the copies are the ones with it, so the count doubles each time.
+
+<Viz client:visible approach="iterative" />
+
+<Complexity time="O(n · 2ⁿ)" space="O(n · 2ⁿ)">
+**Time.** There are 2ⁿ subsets and building each one copies up to `n` numbers: **O(n · 2ⁿ)**.
+
+**Space.** The output itself holds 2ⁿ subsets of average size n/2: **O(n · 2ⁿ)**. Nothing extra beyond it.
+</Complexity>
+
+## Approach 2: Backtracking
+
+Build one subset at a time in a single `path` list. Each call:
+
+1. **records** the current path (every call is a valid subset),
+2. **chooses** each later number in turn: append it,
+3. **explores**: recurse,
+4. **undoes** the choice: pop it, before trying the next.
+
+Only numbers **after** the last one chosen may be added. That's what stops `[1, 2]` and `[2, 1]` from both
+appearing. The tree below has one node per call; the note under each node is its subset.
+
+<Viz client:visible approach="backtrack" />
+
+<Complexity time="O(n · 2ⁿ)" space="O(n) extra">
+**Time.** One call per subset, 2ⁿ calls, and each copies a path of up to `n` items into the result: **O(n · 2ⁿ)**.
+
+**Space.** Beyond the output, only `path` and the call stack, both at most `n` deep: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Copy and add | O(n · 2ⁿ) | O(n · 2ⁿ) (it's the output) | Each number doubles the list |
+| Backtracking | O(n · 2ⁿ) | **O(n)** | Choose, explore, undo |
+
+Both make the same 2ⁿ subsets with the same copying, so there's no growth chart: the lines would match. The
+backtracking version is the one to learn, because the same choose-explore-undo shape solves permutations,
+combinations, N-Queens and Sudoku, where the iterative trick doesn't fit.
+
+## Common mistakes
+
+- **Appending `path` instead of `path[:]`.** Every entry would point to the same list, which ends up empty after
+  all the undoing.
+- **Looping from 0 instead of `start`.** Then `[2, 1]` is generated as well as `[1, 2]`.
+- **Forgetting to undo.** Without `path.pop()`, choices from one branch leak into the next.
+- **Recording only at the leaves.** Every call is a subset here, not just the deepest ones.
+
+## Related problems
+
+- Permutations (LeetCode 46). The same backtracking, but order matters and every unused number can go next.
+- Subsets II (LeetCode 90). Duplicates in the input: sort, then skip equal neighbours at the same depth.
+- Combination Sum (LeetCode 39). Backtracking with a running total, and pruning when it gets too big.

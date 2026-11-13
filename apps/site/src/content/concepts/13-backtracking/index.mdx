@@ -1,0 +1,127 @@
+---
+title: "Backtracking: choose, explore, undo, and prune"
+topic: Backtracking
+kind: Explainer
+order: 1
+summary: The one template behind subsets, permutations, combinations and puzzles, watched as a tree of calls. Why each call undoes its choice, how pruning cuts whole branches before they start, and how to estimate the cost.
+added: 2026-11-13
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The idea
+
+Some problems ask for **every** answer: every subset, every ordering, every way to fill a board. There's no clever
+formula; you have to try the possibilities. **Backtracking** tries them in an organised way:
+
+1. **Choose**: make one choice and add it to the answer you're building.
+2. **Explore**: recurse to make the next choice.
+3. **Undo**: take the choice back, so the next option starts from a clean state.
+
+Drawn out, the calls form a **tree**: the root is "nothing chosen yet", each branch is one choice, and each path
+from the root is one partial answer. Backtracking is a depth-first walk of that tree.
+
+## The template
+
+```python
+def backtrack(state):
+    if is_answer(state):
+        record(state)          # copy it!
+        return
+    for choice in choices(state):
+        if not allowed(state, choice):
+            continue           # prune
+        make(state, choice)    # choose
+        backtrack(state)       # explore
+        unmake(state, choice)  # undo
+```
+
+Every backtracking problem fills in the same four blanks: **what's a choice, when is it allowed, when is the answer
+complete, and how do you undo it.** [Subsets](/dsa/subsets/) and [Permutations](/dsa/permutations/) are the two
+purest examples.
+
+## Watching it work
+
+The example here: find every way to add up numbers from `[2, 3, 5]` to reach 6, reusing numbers as often as you
+like. Each call adds one more number. To avoid finding `2 + 3` and `3 + 2` as different answers, a call only
+tries candidates from its own position onwards. The faded tree shows every call the search will make; the number
+under a call is how much is still needed.
+
+<Viz client:visible approach="explore" />
+
+Notice the dead ends marked ✗: calls that only discovered they'd overshot **after** choosing. Each one is a wasted call,
+and in a bigger search, each could be the root of a whole wasted subtree.
+
+## Pruning: reject early
+
+**Pruning** means checking a choice **before** making the call, and skipping it if it can't lead to an answer.
+Here, sort the candidates first. Then, the moment one is bigger than what's still needed, every later one is too,
+so the loop can stop.
+
+<Viz client:visible approach="prune" />
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Calls to find every way to reach a target with candidates 2, 3 and 5, as the target grows." />
+
+Pruning doesn't change the worst case on paper, but it often decides whether a search finishes in milliseconds
+or never. N-Queens, Sudoku and word search all live or die by how early they prune.
+
+## Why "undo" matters
+
+All the calls share **one** `path` list. A choice made deep in one branch would otherwise still be there when the
+search backs up and tries the next branch. Undoing restores the exact state the parent had, so siblings don't see
+each other's choices.
+
+The other half of the same bug: when you record an answer, append a **copy** (`path[:]`), not `path` itself. The
+list keeps changing after you record it, and ends empty.
+
+## What it costs
+
+A rough estimate: **(choices per call) ^ (depth)** calls, times the work per call.
+
+| Problem | Tree | Calls | Time |
+|---|---|---|---|
+| Subsets of n | 2 choices (in or out), n deep | 2ⁿ | O(n · 2ⁿ) |
+| Permutations of n | n, then n − 1, … choices | about e · n! | O(n · n!) |
+| Combinations of k from n | like subsets, stopping at size k | C(n, k) leaves | O(k · C(n, k)) |
+
+That's exponential, and unavoidable when the output itself is exponential. But if a problem only asks **how many**
+answers there are, or the **best** one, and the same sub-question keeps coming back, it's probably
+[dynamic programming](/concepts/memoisation-vs-tabulation/) instead.
+
+## Interview theory
+
+<QA q="Subsets vs combinations vs permutations: what changes in the code?">
+Subsets record at every call and loop from `start`. Combinations of size k are the same, but record only when the
+path has k items. Permutations loop over every unused item (order matters), usually with a `used` list, and record
+only at full length.
+</QA>
+
+<QA q="How do you avoid duplicate answers when the input has duplicates?">
+Sort the input. Then, in the loop, skip a value if it equals the previous one at the **same depth**
+(`if i > start and nums[i] == nums[i - 1]: continue`). Equal values can still be used at different depths.
+</QA>
+
+<QA q="Is backtracking the same as DFS?">
+It's DFS over the tree of partial answers, built on the fly instead of stored. The difference from graph DFS is
+the undo step: state is shared and restored, and there's no visited set, because each path is a different state.
+</QA>
+
+<QA q="How would you solve N-Queens?">
+Place one queen per row. For each row, try each column; skip it if a queen already uses that column or either
+diagonal (track them in three sets: column, row − col, row + col). Recurse to the next row, then remove the queen.
+Pruning by sets keeps each check O(1).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "What are the three steps inside a backtracking loop?", options: ["Choose, explore, undo", "Sort, search, return", "Push, pop, peek"], answer: 0, why: "Make a choice, recurse, then take the choice back before trying the next one." },
+  { q: "Why record path[:] instead of path?", options: ["path keeps changing; you need a snapshot", "path[:] is faster", "Python requires it"], answer: 0, why: "Every recorded entry would point at the same list, which ends up empty after all the undoing." },
+  { q: "In combination sum with sorted candidates, why can the loop break (not just skip) when c[i] > remaining?", options: ["Every later candidate is even bigger", "The answer is already found", "Breaking is just faster syntax"], answer: 0, why: "Sorted order means nothing after c[i] can fit either." },
+  { q: "How many subsets does a set of 4 distinct numbers have?", options: ["16", "8", "24"], answer: 0, why: "Each number is in or out: 2⁴ = 16." },
+  { q: "A problem asks only for the number of ways to reach a target, and sub-questions repeat. What's likely better than backtracking?", options: ["Dynamic programming", "A heap", "Binary search"], answer: 0, why: "Counting with repeated subproblems is DP's territory; listing every answer is backtracking's." },
+]} />

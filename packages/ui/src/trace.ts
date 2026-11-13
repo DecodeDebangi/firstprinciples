@@ -23,7 +23,11 @@ export interface ListRow {
 }
 
 /** One binary-tree node. Children are node ids (or null). */
-export interface TreeNodeData { id: string; val: number | string; left: string | null; right: string | null }
+export interface TreeNodeData {
+  id: string; val: number | string; left: string | null; right: string | null;
+  /** Any number of children, for call trees (e.g. backtracking). Used instead of left/right; needs layout "compact". */
+  kids?: string[];
+}
 
 /** One tree for TreeView. Node ids stay stable across steps, so moved subtrees slide instead of jumping. */
 export interface TreeData {

@@ -1,0 +1,81 @@
+---
+title: Permutations
+leetcode: { number: 46, url: "https://leetcode.com/problems/permutations/" }
+difficulty: Medium
+topics: [Backtracking, Array]
+added: 2026-11-13
+summary: List every ordering of a set of distinct numbers. Goes from inserting each new number into every gap to backtracking, filling one position at a time and undoing each choice.
+best: { time: "O(n · n!)", space: "O(n) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given a list of **distinct** numbers, return every possible ordering of all of them, in any order.
+
+For `[1, 2, 3]` there are 6: `[1, 2, 3]`, `[1, 3, 2]`, `[2, 1, 3]`, `[2, 3, 1]`, `[3, 1, 2]`, `[3, 2, 1]`.
+
+## The key question
+
+> **The first position can hold any of n numbers, the next any of the n − 1 left, and so on. How do I try every
+> sequence of choices without reusing a number?**
+
+That's n × (n − 1) × … × 1 = **n!** orderings, so the answer alone is O(n · n!) to write out. As with subsets, the
+aim is to generate each one exactly once.
+
+## Approach 1: Iterative, insert into every gap
+
+Start with one empty arrangement. For each new number, slot it into every gap of every arrangement so far. An
+arrangement of k numbers has k + 1 gaps, so the count multiplies by 1, then 2, then 3…
+
+<Viz client:visible approach="insert" />
+
+<Complexity time="O(n · n!)" space="O(n · n!)">
+**Time.** The final step builds n! arrangements of n items each, and the earlier steps are smaller: **O(n · n!)**.
+
+**Space.** The output itself: **O(n · n!)**.
+</Complexity>
+
+## Approach 2: Backtracking with a used list
+
+Fill the positions one at a time. Each call tries every number that isn't **used** yet: mark it used and append it
+(choose), recurse (explore), then un-mark it and pop it (undo). When the path holds all n numbers, record it.
+
+Unlike [subsets](/dsa/subsets/), order matters, so a call may pick an **earlier** number too, as long as it's unused.
+Only the leaves are answers here.
+
+<Viz client:visible approach="backtrack" />
+
+<Complexity time="O(n · n!)" space="O(n) extra">
+**Time.** There are n! leaves and fewer than e · n! calls in total, and each leaf copies n items: **O(n · n!)**.
+
+**Space.** Beyond the output: `path`, `used` and the call stack, each n long: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Insert into every gap | O(n · n!) | O(n · n!) (it's the output) | Each number multiplies the list |
+| Backtracking | O(n · n!) | **O(n)** | Choose an unused number, explore, undo |
+
+Both produce the same n! orderings at the same cost, so there's no growth chart. The backtracking version extends
+to constraints (no two equal neighbours, N-Queens) by skipping choices early, which the iterative one can't do.
+
+## Common mistakes
+
+- **Using `x in path` to check if a number is used.** That's O(n) per check; a `used` list (or set) is O(1).
+- **Appending `path` instead of `path[:]`.** All entries would share one list.
+- **Forgetting to un-mark `used[i]`.** Later branches would think the number is still taken and find nothing.
+- **Starting the loop at a `start` index, like subsets.** Then `[2, 1, 3]` is never produced: order matters here.
+
+## Related problems
+
+- Subsets (LeetCode 78). The same choose-explore-undo, where every call is an answer.
+- Permutations II (LeetCode 47). Duplicates in the input: sort and skip an equal number if its twin isn't used.
+- N-Queens (LeetCode 51). Permutations of column positions, pruned when two queens share a diagonal.

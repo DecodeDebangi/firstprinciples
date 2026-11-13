@@ -32,15 +32,21 @@ function Tree({ tree }: { tree: TreeData }) {
     walk(n.right, d + 1);
   };
   // Compact: only leaves get their own column and each parent sits over its children. Narrower,
-  // and clear for trees where every node has 0 or 2 children (e.g. a recursion's call tree).
+  // and clear for call trees, where nodes have 0 or 2 children, or any number via `kids`.
   const walkCompact = (id: string | null, d: number): number | null => {
     if (!id || !byId.has(id) || pos.has(id)) return null;
     const n = byId.get(id)!;
     depth = Math.max(depth, d);
     pos.set(id, { x: 0, d });
-    const l = walkCompact(n.left, d + 1);
-    const r = walkCompact(n.right, d + 1);
-    const x = l === null && r === null ? order++ : l === null ? r! - 0.5 : r === null ? l + 0.5 : (l + r) / 2;
+    let x: number;
+    if (n.kids) {
+      const xs = n.kids.map((k) => walkCompact(k, d + 1)).filter((v): v is number => v !== null);
+      x = xs.length ? (xs[0] + xs[xs.length - 1]) / 2 : order++;
+    } else {
+      const l = walkCompact(n.left, d + 1);
+      const r = walkCompact(n.right, d + 1);
+      x = l === null && r === null ? order++ : l === null ? r! - 0.5 : r === null ? l + 0.5 : (l + r) / 2;
+    }
     pos.set(id, { x, d });
     return x;
   };
@@ -52,7 +58,7 @@ function Tree({ tree }: { tree: TreeData }) {
   const edges: { a: string; b: string }[] = [];
   for (const id of pos.keys()) {
     const n = byId.get(id)!;
-    for (const c of [n.left, n.right]) if (c && pos.has(c)) edges.push({ a: id, b: c });
+    for (const c of n.kids ?? [n.left, n.right]) if (c && pos.has(c)) edges.push({ a: id, b: c });
   }
   const labels = new Map<string, string[]>();
   for (const [name, id] of Object.entries(tree.pointers ?? {})) if (id && pos.has(id)) labels.set(id, [...(labels.get(id) ?? []), name]);
