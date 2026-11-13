@@ -80,8 +80,8 @@ export interface ArrayStep {
   /** Heading for the stack panel. Defaults to "Call stack". */
   stackTitle?: string;
   /** A 2D panel (e.g. Pascal's triangle). Tones are keyed "row,col". Rows are centred. */
-  /** A 2D panel. Optional row/column labels draw as a header row and a leading column (tones keys stay "r,c" of `rows`). */
-  grid?: { title: string; rows: (number | string)[][]; tones?: Record<string, Tone>; rowLabels?: (number | string)[]; colLabels?: (number | string)[] };
+  /** A 2D panel. Optional row/column labels draw as a header row and a leading column (tones keys stay "r,c" of `rows`); `dense` narrows the cells (e.g. a timeline). */
+  grid?: { title: string; rows: (number | string)[][]; tones?: Record<string, Tone>; rowLabels?: (number | string)[]; colLabels?: (number | string)[]; dense?: boolean };
   /**
    * Predict mode: asked *before* this step is shown, while the learner still sees the previous one.
    * `answer` is the index of the correct option; this step's message explains it.

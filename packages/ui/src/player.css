@@ -340,5 +340,8 @@
 .fp-gcell[class*="fp-cell--"] { transform: none; box-shadow: none; filter: none; opacity: 1; }
 .fp-gcell.fp-cell--settled { background: var(--tone-found-bg); border-color: var(--tone-found-border); }
 .fp-gcell.fp-cell--discard { opacity: .35; background: transparent; border-style: dashed; color: var(--muted); }
-.fp-gcell.fp-glabel { background: transparent; border-color: transparent; color: var(--muted); font-weight: 500; font-size: 12px; }
+.fp-gcell.fp-glabel { background: transparent; border-color: transparent; color: var(--muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
+.fp-grid.is-dense, .fp-grid.is-dense .fp-grid__row { gap: 3px; }
+.fp-grid.is-dense .fp-gcell { min-width: 22px; padding: 0 2px; }
+.fp-grid.is-dense .fp-gcell.is-rowlabel { min-width: 34px; }
 .fp-gcell:empty:not(.fp-glabel) { background: transparent; border-color: transparent; }

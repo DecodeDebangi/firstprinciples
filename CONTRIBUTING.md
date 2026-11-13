@@ -70,7 +70,8 @@ Trees: use the `"tree"` input kind (LeetCode's level order with `null`), build w
 draw with `trees: [{ root, nodes, tones, notes, pointers }]` on a step. For a recursion's call tree, set
 `layout: "compact"` (columns only for leaves, parents centred), which is far narrower than the default in-order layout. If an approach changes the tree, snapshot
 the nodes for every step (`nodes.map((n) => ({ ...n }))`). Linked lists use `lists`, 2D answers use `grid` (optional
-`rowLabels`/`colLabels` draw headers; empty-string cells are invisible, which suits triangular tables).
+`rowLabels`/`colLabels` draw headers; empty-string cells are invisible, which suits triangular tables; `dense: true`
+narrows the cells, e.g. for a timeline).
 
 The growth chart may be left out when every approach does the same amount of work (e.g. two O(n) tree walks):
 say so in one sentence under the comparison table instead of drawing identical lines.

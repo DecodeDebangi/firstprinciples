@@ -1,0 +1,128 @@
+---
+title: "Greedy: when the locally best choice is safe"
+topic: Greedy & intervals
+kind: Explainer
+order: 1
+summary: Three sensible-looking rules for fitting meetings into one room, two of which fail, and the exchange argument that proves the third. Plus the interval patterns that come up again and again, and how to tell greedy problems from DP ones.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## What "greedy" means
+
+A **greedy** algorithm builds its answer one choice at a time, always taking whatever looks best **right now**, and
+never goes back. That makes greedy algorithms short and fast, usually a sort and one pass.
+
+The catch: "looks best right now" is often wrong. A greedy rule is only correct if you can **prove** that the local
+choice never blocks a better overall answer. The best way to feel this is to watch two plausible rules fail.
+
+## The problem: one room, many meetings
+
+You have one meeting room and a list of requested meetings, each from a start hour to an end hour. Meetings can't
+overlap, but one can start the moment another ends. **What's the largest number of meetings you can fit?**
+
+Each animation sorts the meetings by its rule, then walks through them: take a meeting if it fits, skip it if it
+clashes. The timeline shows every meeting as a bar: green when taken, faded when skipped.
+
+### Rule 1: earliest start first
+
+Seems fair: first come, first served.
+
+<Viz client:visible approach="start" />
+
+It grabs the meeting that starts first, which happens to last all day and blocks everything else.
+
+### Rule 2: shortest first
+
+Short meetings take up less of the room, so they should leave the most space. Right?
+
+<Viz client:visible approach="shortest" />
+
+The shortest meeting sits right across the gap between two others, and blocks both.
+
+### Rule 3: earliest end first
+
+Ignore when a meeting starts or how long it is. Always pick the one that **frees the room soonest**.
+
+<Viz client:visible approach="end" />
+
+| Rule | Meetings fitted | Why |
+|---|---|---|
+| Earliest start | 1 | one early, long meeting blocks the rest |
+| Shortest | 2 | a short meeting can still straddle two others |
+| Earliest end | 3 | the most room left for everything after |
+
+## Why earliest end is always right: the exchange argument
+
+Take any best schedule, and compare its first meeting with the greedy choice `g`, the meeting that ends earliest
+of all.
+
+- `g` ends no later than the best schedule's first meeting, by definition.
+- So **swap** that first meeting for `g`. Nothing after it can clash, because `g` frees the room at least as early.
+- The schedule is still valid and still the same size, so some best schedule starts with `g`.
+
+Repeat the argument on the meetings left after `g`, and every greedy choice is part of some best answer. This
+**exchange argument** is the standard way to prove a greedy rule: show that any optimal answer can be changed,
+step by step, into the greedy one without getting worse. If you can't make the swap work, suspect the rule.
+
+## Patterns for interval problems
+
+Almost every interval problem starts with **sorting**, and the question is just *which end to sort by*:
+
+| Problem | Sort by | Then |
+|---|---|---|
+| Most non-overlapping intervals (this page) | end | take each one that starts after the last taken one ends |
+| Fewest intervals to remove so the rest don't overlap | end | n minus the count above |
+| Merge overlapping intervals | start | extend the last merged interval while the next one overlaps it |
+| Insert an interval into a sorted list | (already sorted) | copy the ones before, merge the overlapping ones, copy the rest |
+| Fewest meeting rooms for all meetings | start | keep a min-heap of end times; reuse a room if its meeting has ended |
+
+## Greedy or dynamic programming?
+
+Both build an answer from choices. Greedy commits to one choice per step; DP tries every choice and keeps the
+best, which is slower but safe.
+
+- If you can prove the locally best choice is always safe (an exchange argument), use greedy.
+- If you can build a small example where the obvious choice loses, that's a sign you need DP.
+  Coin change with coins 1, 3 and 4 for amount 6 is the classic one: greedy takes 4 + 1 + 1, but 3 + 3 is better.
+  See [Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/).
+
+[Maximum Subarray](/dsa/maximum-subarray/) is both: Kadane's rule ("drop the run so far if it's negative") is a
+greedy choice that's also a one-line DP. [Container With Most Water](/dsa/container-with-most-water/) uses a greedy
+pointer move: always move the shorter wall.
+
+## Interview theory
+
+<QA q="How do you merge overlapping intervals?">
+Sort by start. Walk through them, keeping the last merged interval. If the next one starts at or before its end,
+extend the end to the larger of the two; otherwise start a new merged interval. O(n log n) for the sort, O(n) for
+the walk.
+</QA>
+
+<QA q="How many meeting rooms do you need for a set of meetings?">
+Sort by start and keep a min-heap of the end times of meetings in progress. For each meeting, if the earliest end in
+the heap is at or before its start, that room is free: pop it. Push the meeting's end. The heap's largest size is
+the answer. Another way: sort all starts and all ends separately and sweep, counting +1 at a start and −1 at an end.
+</QA>
+
+<QA q="Why sort by end and not by start for the maximum number of meetings?">
+Sorting by start can let one long early meeting block many short later ones, as in the animation. Sorting by end
+always leaves the most remaining time, which the exchange argument proves can't hurt.
+</QA>
+
+<QA q="What's the time complexity of most greedy interval solutions?">
+O(n log n), dominated by the sort; the greedy pass itself is O(n). With a heap (meeting rooms) it's still
+O(n log n): n pushes and pops at O(log n) each.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "To fit the most meetings in one room, which meeting should you consider first?", options: ["The one that ends earliest", "The one that starts earliest", "The shortest one"], answer: 0, why: "It frees the room soonest, which the exchange argument shows is always safe." },
+  { q: "Meetings 0–8, 1–4, 4–6 and 6–8. How many does 'earliest start first' fit?", options: ["1", "2", "3"], answer: 0, why: "It takes 0–8 first, which overlaps all the others." },
+  { q: "What does an exchange argument show?", options: ["Any best answer can be changed into the greedy one without getting worse", "Greedy is always faster than DP", "Sorting is necessary"], answer: 0, why: "If the greedy choice can always be swapped in, it's part of some optimal answer." },
+  { q: "To merge overlapping intervals, sort by…", options: ["Start", "End", "Length"], answer: 0, why: "Sorted by start, every interval that overlaps the current merged one comes right after it." },
+  { q: "Coins 1, 3 and 4, amount 6. Why isn't 'take the biggest coin first' enough?", options: ["It gives 4 + 1 + 1 (3 coins), but 3 + 3 uses 2", "It can't make 6 at all", "It gives the right answer, just slowly"], answer: 0, why: "The locally best coin blocks the better combination. That's a sign the problem needs DP." },
+]} />
