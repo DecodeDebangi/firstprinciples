@@ -1,0 +1,78 @@
+---
+title: Search Insert Position
+leetcode: { number: 35, url: "https://leetcode.com/problems/search-insert-position/" }
+difficulty: Easy
+topics: [Binary search, Array]
+added: 2026-11-12
+summary: Find where a number is, or where it would go, in a sorted list. Goes from a linear scan to a binary search whose stopping point is the answer.
+best: { time: "O(log n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a sorted list `nums` of distinct integers and a `target`. Return the index of `target` if it's there.
+If it isn't, return the index where it would be inserted to keep the list sorted.
+
+For `nums = [2, 5, 9, 14, 20, 27, 33]` and `target = 16`, the answer is `4`: 16 belongs between 14 and 20.
+
+## The key question
+
+> **When binary search fails to find the target, where exactly does it stop?**
+
+At the insertion point. When the loop ends, `lo` has just passed `hi`; everything left of `lo` is smaller than the
+target and everything from `lo` on is bigger. So `lo` is the answer, with no extra work.
+
+## Approach 1: Linear scan
+
+Walk from the left and stop at the first number that's at least `target`.
+
+<Viz client:visible approach="linear" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** If the target is bigger than everything, all `n` numbers are checked: **O(n)**.
+
+**Space.** One index: **O(1)**.
+
+**What it wastes:** it ignores the sorted order, which could rule out half the list per comparison.
+</Complexity>
+
+## Approach 2: Binary search, return lo (optimal)
+
+Run an ordinary binary search. If it finds the target, return `mid`. If the window empties, return `lo`.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(log n)" space="O(1)">
+**Time.** Each comparison halves the window: at most `⌊log₂ n⌋ + 1` comparisons, **O(log n)**.
+
+**Space.** Three indices: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Linear scan | O(n) | O(1) | First number ≥ target |
+| Binary search | **O(log n)** | **O(1)** | Where the search stops is the slot |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when the target is bigger than every number. At n = 1024: 1,024 vs 11." />
+
+## Common mistakes
+
+- **Returning `hi` or `mid`.** When the target is missing, `hi` ends one to the left of the slot; `lo` is the slot.
+- **Returning -1.** Unlike plain binary search, a missing target still has an answer.
+- **Forgetting the end.** If the target is bigger than everything, the answer is `len(nums)`, and `lo` reaches exactly that.
+
+## Related problems
+
+- Binary Search (LeetCode 704). The same loop, returning -1 when the target is missing.
+- Find First and Last Position of Element (LeetCode 34). Two insertion-point searches.
+- First Bad Version (LeetCode 278). Binary search for the first position where a condition becomes true.

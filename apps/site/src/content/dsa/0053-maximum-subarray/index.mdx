@@ -1,0 +1,86 @@
+---
+title: Maximum Subarray
+leetcode: { number: 53, url: "https://leetcode.com/problems/maximum-subarray/" }
+difficulty: Medium
+topics: [Greedy, Dynamic programming, Array]
+added: 2026-11-12
+summary: Find the contiguous stretch with the largest sum. Goes from trying every start and end to Kadane's one pass, which extends the run or starts fresh when it turns negative.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of integers `nums`, which may include negatives. Return the largest sum of any non-empty
+**contiguous** subarray.
+
+For `nums = [4, -7, 3, -1, 5, -9]` the answer is `7`: `3 + (−1) + 5`.
+
+## The key question
+
+> **If I know the best sum of a run ending at the previous number, what's the best run ending here?**
+
+Either that run extended by this number, or this number alone. You only start fresh when the run so far is
+negative, because a negative prefix can only make what follows smaller.
+
+## Approach 1: Brute force, every subarray
+
+Try every start `i`, and extend the end `j` one step at a time with a running total, so each subarray costs one
+addition.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n(n + 1)/2` (start, end) pairs: **O(n²)**. Without the running total, summing each subarray from
+scratch would be O(n³).
+
+**Space.** A few numbers: **O(1)**.
+
+**What it wastes:** for each new start it re-adds the same numbers, even though the best run ending at each
+position can be carried forward.
+</Complexity>
+
+## Approach 2: Kadane's algorithm (optimal)
+
+Keep `cur`, the best sum of a run ending at the current number, and `best`, the best seen anywhere. At each number
+`x`: `cur = max(x, cur + x)`, then `best = max(best, cur)`. The shelf shows the current run; watch it restart
+whenever carrying the old run would hurt.
+
+<Viz client:visible approach="kadane" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, O(1) per number: **O(n)**.
+
+**Space.** Two numbers, `cur` and `best`: **O(1)**.
+
+This is the simplest example of dynamic programming: each answer (`cur` here) is built from the one before it,
+and the greedy choice to drop a negative prefix is always safe.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Every subarray | O(n²) | O(1) | Every start, every end |
+| Kadane | **O(n)** | **O(1)** | Extend the run, or start fresh when it's negative |
+
+<GrowthChart client:visible series={growth} caption="Additions for n numbers. Every subarray grows like n²/2; Kadane looks at each number once." />
+
+## Common mistakes
+
+- **Starting `best` at 0.** If every number is negative, the answer is the largest single number, e.g. `−1` for `[−3, −1, −2]`. Start from `nums[0]`.
+- **Resetting to 0 instead of to `x`.** `cur = max(x, cur + x)` keeps the run non-empty.
+- **Updating `best` before `cur`.** Compute the run ending here first, then compare.
+
+## Related problems
+
+- Maximum Product Subarray (LeetCode 152). Track both the largest and smallest product, since a negative can flip them.
+- Best Time to Buy and Sell Stock (LeetCode 121). The same "best so far" idea on price differences.
+- Maximum Sum Circular Subarray (LeetCode 918). Kadane twice: once for the max, once for the min.

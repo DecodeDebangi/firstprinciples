@@ -1,0 +1,81 @@
+---
+title: Valid Anagram
+leetcode: { number: 242, url: "https://leetcode.com/problems/valid-anagram/" }
+difficulty: Easy
+topics: [Hash map, String]
+added: 2026-11-12
+summary: Decide whether two words use exactly the same letters. Goes from sorting both and comparing, to counting letters in one word and cancelling them with the other.
+best: { time: "O(n)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two strings `s` and `t`. Return `True` if `t` is an **anagram** of `s`: the same letters, each used the
+same number of times, in any order.
+
+`"listen"` and `"silent"` are anagrams. `"rat"` and `"car"` are not.
+
+## The key question
+
+> **What do two anagrams have in common, whatever their order?**
+
+Their letter counts. Sorting reveals that by lining the letters up; counting checks it directly, without
+putting anything in order.
+
+## Approach 1: Sort both, compare
+
+If the lengths differ, they can't be anagrams. Otherwise sort both strings: anagrams become identical, so
+compare them position by position.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Sorting two strings of length `n` is **O(n log n)**; the comparison is O(n).
+
+**Space.** The two sorted copies: **O(n)**.
+
+**What it wastes:** it computes a full order, but only the counts matter.
+</Complexity>
+
+## Approach 2: Count letters (optimal)
+
+Count each letter of `s`. Then walk `t`, subtracting one per letter. If any count goes below zero, `t` has a
+letter `s` doesn't have enough of. If every count survives, they match, because the lengths are equal.
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(k)">
+**Time.** One pass over each string: **O(n)**.
+
+**Space.** One counter per distinct letter: **O(k)**, where `k` is the alphabet size (26 for lowercase English),
+so effectively O(1).
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Sort both | O(n log n) | O(n) | Anagrams sort to the same string |
+| Count letters | **O(n)** | **O(k)** | Same letters, same counts |
+
+<GrowthChart client:visible series={growth} caption="Operations for two anagrams of length n. Sorting twice adds about 2·n·log₂n; counting reads each letter once." />
+
+## Common mistakes
+
+- **Skipping the length check.** Without it, counting would accept `t` as a "match" when it's missing letters `s` has.
+- **Checking only that the same letters appear.** `"aab"` and `"abb"` use the same letters but different counts.
+- **Unicode.** For non-English text, use a dictionary (or `collections.Counter`), not a fixed array of 26.
+
+## Related problems
+
+- Group Anagrams (LeetCode 49). Use the sorted word, or the count, as a dictionary key.
+- Find All Anagrams in a String (LeetCode 438). Slide a window of counts across the string.
+- Ransom Note (LeetCode 383). Count one string, cancel with another.

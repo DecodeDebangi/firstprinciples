@@ -1,0 +1,95 @@
+---
+title: Product of Array Except Self
+leetcode: { number: 238, url: "https://leetcode.com/problems/product-of-array-except-self/" }
+difficulty: Medium
+topics: [Prefix sum, Array]
+added: 2026-11-12
+summary: For each position, multiply every other number, without using division. Goes from recomputing each product, to prefix and suffix tables, to a single output array and a running product.
+best: { time: "O(n)", space: "O(1) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums`. Return a list `out` where `out[i]` is the product of every number in `nums` **except**
+`nums[i]`. You may not use division, and the solution should run in O(n) time.
+
+For `nums = [2, 3, 1, 4]` the answer is `[12, 8, 24, 6]`. For example `out[0] = 3 × 1 × 4 = 12`.
+
+## The key question
+
+> **What is "everything except i" made of?**
+
+Two parts: everything **left** of `i` times everything **right** of `i`. Both are running products you can
+build in one pass each, the multiplication version of prefix sums.
+
+## Approach 1: Brute force
+
+For each position, multiply all the other numbers from scratch.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** `n − 1` multiplications for each of `n` positions: **O(n²)**.
+
+**Space.** Nothing beyond the answer: **O(1) extra**.
+
+**What it wastes:** neighbouring positions share almost all their factors, but each product starts again from 1.
+</Complexity>
+
+## Approach 2: Prefix and suffix arrays
+
+Build `left[i]`, the product of everything before `i`, from left to right, and `right[i]`, the product of
+everything after `i`, from right to left. Then `out[i] = left[i] × right[i]`. The grid shows the three rows filling.
+
+<Viz client:visible approach="arrays" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Three passes of `n` steps: **O(n)**.
+
+**Space.** The `left` and `right` tables: **O(n)** beyond the answer.
+
+**What it wastes:** `left` could be written straight into the answer, and `right` is only ever read once per position.
+</Complexity>
+
+## Approach 3: One output array and a running product (optimal)
+
+Write the left products directly into `out`. Then sweep from the right with a single number, `right`, the
+product of everything after `i`: multiply it into `out[i]`, then fold `nums[i]` into it.
+
+<Viz client:visible approach="inplace" />
+
+<Complexity time="O(n)" space="O(1) extra">
+**Time.** Two passes: **O(n)**.
+
+**Space.** The answer array is required output, so it isn't counted; beyond it, one number: **O(1) extra**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(1) | Multiply everything else, every time |
+| Prefix + suffix arrays | O(n) | O(n) | left[i] × right[i] |
+| One array + running product | **O(n)** | **O(1)** | Store left in the answer, carry right in one number |
+
+<GrowthChart client:visible series={growth} caption="Multiplications for n numbers. The two-array version does the same ~3n as the one-array version, so it's left out." />
+
+## Common mistakes
+
+- **Dividing the total product by `nums[i]`.** Not allowed here, and it breaks on zeros: `[0, 4]` would need 4 ÷ 0.
+- **Off-by-one in the prefix.** `left[i]` uses `nums[i − 1]`, not `nums[i]`: the number itself is excluded.
+- **Updating `right` before using it.** Multiply `out[i]` by `right` first, then fold in `nums[i]`.
+
+## Related problems
+
+- Find Pivot Index (LeetCode 724). Left and right sums, the addition version of this idea.
+- Trapping Rain Water (LeetCode 42). The highest bar to the left and to the right of every position.
+- Range Sum Query – Immutable (LeetCode 303). Prefix sums answer any range in O(1).

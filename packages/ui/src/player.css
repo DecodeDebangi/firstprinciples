@@ -301,3 +301,5 @@
   .fp-badge { animation: none; }
   .fp-val, .fp-ptr, .fp-ask, .fp-feedback, .fp-vars .is-changed dd, .fp-panel--ops.is-changed .fp-ops { animation: none; }
 }
+/* Grid cells take tone colours but never lift or sink (the grid panel would clip them). */
+.fp-gcell[class*="fp-cell--"] { transform: none; box-shadow: none; filter: none; opacity: 1; }

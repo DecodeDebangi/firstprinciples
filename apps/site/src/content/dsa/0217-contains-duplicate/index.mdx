@@ -1,0 +1,93 @@
+---
+title: Contains Duplicate
+leetcode: { number: 217, url: "https://leetcode.com/problems/contains-duplicate/" }
+difficulty: Easy
+topics: [Hash map, Array]
+added: 2026-11-12
+summary: Decide whether any value appears twice. Goes from comparing every pair, to sorting so equal values sit side by side, to a set that remembers what it has seen.
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of integers `nums`. Return `True` if any value appears at least twice, and `False` if every value
+is distinct.
+
+For `nums = [4, 9, 2, 7, 9, 1]` the answer is `True`: `9` appears twice.
+
+## The key question
+
+> **When I look at a number, how fast can I tell whether I've seen it before?**
+
+Scanning everything again is slow. Putting equal numbers next to each other helps. Remembering them in a set
+answers the question in one step.
+
+## Approach 1: Brute force
+
+Compare every number with every number after it.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n(n − 1)/2` pairs when there's no duplicate: **O(n²)**.
+
+**Space.** Two indices: **O(1)**.
+
+**What it wastes:** each number is compared against the rest from scratch, with nothing remembered.
+</Complexity>
+
+## Approach 2: Sort, then check neighbours
+
+After sorting, any duplicates sit side by side, so one pass comparing each number with the one before it finds them.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Sorting is **O(n log n)**; the neighbour pass is O(n). Sorting dominates: **O(n log n)**.
+
+**Space.** Python's `sorted` makes a copy: **O(n)**. Sorting in place (`nums.sort()`) avoids the copy but changes the input.
+
+**What it wastes:** it puts the whole list in order when all we need is "have I seen this?"
+</Complexity>
+
+## Approach 3: Hash set (optimal)
+
+Walk the list once, keeping a set of every value seen. A value that's already in the set is a duplicate.
+
+<Viz client:visible approach="set" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass; each set lookup and insert is O(1) on average: **O(n)**.
+
+**Space.** With no duplicates the set ends up holding all `n` values: **O(n)**. That's the trade: memory for speed.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Brute force | O(n²) | O(1) | Every pair |
+| Sort + neighbours | O(n log n) | O(n) or O(1) in place | Equal values end up adjacent |
+| Hash set | **O(n)** | O(n) | Remember what you've seen |
+
+<GrowthChart client:visible series={growth} caption="Operations on a list with no duplicates, the worst case for all three." />
+
+## Common mistakes
+
+- **Comparing a number with itself.** Start the inner loop at `i + 1`.
+- **Sorting and returning indices.** Fine here, since only a yes/no is asked, but sorting loses the original positions.
+- **`len(set(nums)) != len(nums)`.** Correct and short, but it always builds the whole set; the loop can stop at the first repeat.
+
+## Related problems
+
+- Contains Duplicate II (LeetCode 219). Duplicates within distance `k`: keep only a window of the last `k` values.
+- Two Sum (LeetCode 1). The same "have I seen it?" lookup, but for a partner value.
+- Valid Anagram (LeetCode 242). Counting instead of just remembering.

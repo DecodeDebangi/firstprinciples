@@ -1,0 +1,81 @@
+---
+title: Daily Temperatures
+leetcode: { number: 739, url: "https://leetcode.com/problems/daily-temperatures/" }
+difficulty: Medium
+topics: [Stack, Array]
+added: 2026-11-12
+summary: For each day, count how long until a warmer day. Goes from scanning ahead from every day to one pass with a stack of days still waiting.
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `temps` of daily temperatures. Return a list `answer` where `answer[i]` is the number of days
+after day `i` until a **warmer** temperature. If no warmer day comes, `answer[i]` is `0`.
+
+For `temps = [70, 74, 71, 69, 72, 76, 73]` the answer is `[1, 4, 2, 1, 1, 0, 0]`.
+
+## The key question
+
+> **Instead of each day looking forward, can each new day look back and settle the days still waiting?**
+
+When a warm day arrives, it answers every earlier, cooler day that hasn't found its warmer day yet, and those are
+always the most recent ones. "Most recent first" is a stack.
+
+## Approach 1: Brute force, look ahead from each day
+
+For each day, scan forward until a warmer one appears.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** When temperatures only fall, every scan runs to the end: `n(n − 1)/2` comparisons, **O(n²)**.
+
+**Space.** Nothing beyond the answer: **O(1) extra**.
+
+**What it wastes:** the same stretch of cool days is re-scanned by every day before it.
+</Complexity>
+
+## Approach 2: Monotonic stack (optimal)
+
+Walk forward once with a stack of days still waiting for a warmer day. Each new day pops every waiting day that's
+cooler, recording how long each waited, then pushes itself. Reading from bottom to top, the temperatures on the stack
+never rise, which is why it's called a **monotonic** stack.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Every day is pushed once and popped at most once, so all the `while` loops together run at most `n`
+times: **O(n)** overall, even though one day can pop several.
+
+**Space.** If temperatures only fall, every day waits on the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Look ahead from each day | O(n²) | O(1) | Each day scans forward |
+| Monotonic stack | **O(n)** | O(n) | Each warm day settles the cooler days waiting |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when temperatures only fall, the worst case for looking ahead." />
+
+## Common mistakes
+
+- **Storing temperatures instead of indices.** The answer is a distance, so the stack must hold days (indices).
+- **`<=` instead of `<`.** Only a strictly warmer day counts; an equal temperature keeps waiting.
+- **Thinking the nested loop makes it O(n²).** Count pushes and pops instead: each happens at most once per day.
+
+## Related problems
+
+- Next Greater Element I (LeetCode 496). The same stack, returning the value instead of the distance.
+- Online Stock Span (LeetCode 901). Look back instead of forward, still with a monotonic stack.
+- Largest Rectangle in Histogram (LeetCode 84). A harder monotonic-stack classic.
