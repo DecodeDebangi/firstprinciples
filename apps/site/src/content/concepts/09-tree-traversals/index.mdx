@@ -1,0 +1,123 @@
+---
+title: "Tree traversals: DFS vs BFS, and the three depth-first orders"
+topic: Trees
+kind: Explainer
+order: 1
+summary: Depth-first and breadth-first walks side by side, why pre-, in- and post-order are the same walk with a different moment to write a node down, which order each kind of problem needs, and what each costs in memory.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## Two ways to visit every node
+
+Nearly every tree problem starts by visiting every node once. There are two ways to do it:
+
+- **Depth-first (DFS)**: go as deep as possible down one branch, then back up and try the next. Recursion does
+  this naturally; the call stack remembers where to come back to.
+- **Breadth-first (BFS)**: visit the root, then everything one level down, then everything two levels down. A
+  **queue** remembers which nodes are found but not yet visited.
+
+Both are O(n): each node is visited exactly once. What differs is the **order**, and the **memory** they need.
+
+## One walk, three orders
+
+Depth-first has three famous orders, and they're the **same walk**. The only difference is the line that writes a
+node down:
+
+| Order | Writes the node… | For the example tree |
+|---|---|---|
+| Pre-order | **before** its subtrees | 6, 2, 1, 4, 3, 9, 7 |
+| In-order | **between** left and right | 1, 2, 3, 4, 6, 7, 9 |
+| Post-order | **after** both subtrees | 1, 3, 4, 2, 7, 9, 6 |
+
+Each animation shows the call stack (the nodes still waiting, shaded on the tree) and numbers each node as it's
+written down. Turn on predict mode to guess which node comes next.
+
+### Pre-order: the node first
+
+<Viz client:visible approach="preorder" />
+
+### In-order: left, node, right
+
+The example is a **binary search tree** (everything left of a node is smaller, everything right is bigger), so
+in-order comes out sorted.
+
+<Viz client:visible approach="inorder" />
+
+### Post-order: children first
+
+<Viz client:visible approach="postorder" />
+
+## Breadth-first: level by level
+
+<Viz client:visible approach="bfs" />
+
+Race the two walks to see how differently they move through the same tree:
+
+<Compare client:visible />
+
+## Which order does a problem need?
+
+Ask: **when does a node have what it needs?**
+
+- **It needs its parent's information** (a depth, a path so far, an allowed range): pre-order. Pass it down as an
+  argument. [Validate BST](/dsa/validate-binary-search-tree/) passes the allowed range down.
+- **It needs its children's answers** (a height, a size, a sum): post-order. Each call returns a value, and the
+  parent combines them. [Maximum Depth](/dsa/maximum-depth-of-binary-tree/) is `1 + max(left, right)`.
+- **It needs sorted order on a BST**: in-order. The k-th smallest value is the k-th node written down, and a
+  tree is a valid BST exactly when its in-order values only ever increase.
+- **It needs levels or the nearest anything**: BFS. [Level Order Traversal](/dsa/binary-tree-level-order-traversal/)
+  is BFS itself, and BFS finds the shallowest leaf without exploring deeper ones.
+
+When every node is handled independently, any order works: [Invert Binary Tree](/dsa/invert-binary-tree/) and
+[Same Tree](/dsa/same-tree/) are happy with either.
+
+## Memory: height vs width
+
+| | DFS | BFS |
+|---|---|---|
+| Remembers | the path from the root (call stack) | one level of nodes (queue) |
+| Extra space | O(h), the height | O(w), the widest level |
+| Balanced tree | O(log n) | O(n): the bottom level holds about n/2 nodes |
+| A tree like a linked list | O(n) | O(1) |
+
+So DFS is usually lighter on balanced trees, and BFS on long, thin ones. In Python, very deep recursion hits the
+recursion limit (about 1,000 calls), so for trees that could be thousands of levels deep, write DFS with your own
+stack. See [Stacks vs queues](/concepts/stacks-queues-monotonic/) for why a stack gives depth-first and a queue gives
+breadth-first.
+
+## Interview theory
+
+<QA q="How do you write in-order traversal without recursion?">
+Keep a stack. Push nodes while going left. When you can't go further, pop a node, write it down, and move to its
+right child, then repeat. The stack holds exactly the nodes the recursive version would have waiting on the call
+stack.
+</QA>
+
+<QA q="Can you rebuild a tree from its traversals?">
+From pre-order plus in-order, yes (if values are unique): the first pre-order value is the root, and its position in
+the in-order list splits the left and right subtrees. Pre-order alone isn't enough, because different trees share
+the same pre-order.
+</QA>
+
+<QA q="Why does BFS find the shortest path in an unweighted graph?">
+It visits everything at distance 1 before anything at distance 2, and so on. The first time it reaches a node, it's
+by a shortest path. DFS might reach it by a long detour first.
+</QA>
+
+<QA q="What's the time complexity of each traversal?">
+O(n) for all four: each node is visited once and does O(1) work. They differ only in the order of visits and the
+extra space: O(h) for depth-first, O(w) for breadth-first.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "Which order writes a node down before either of its subtrees?", options: ["Pre-order", "In-order", "Post-order"], answer: 0, why: "Pre means before: the node, then its left subtree, then its right subtree." },
+  { q: "In-order traversal of a binary search tree gives…", options: ["The values in sorted order", "The values level by level", "The root last"], answer: 0, why: "Smaller values are on the left and bigger on the right, so left, node, right walks them in increasing order." },
+  { q: "To compute every subtree's height, which order fits?", options: ["Post-order", "Pre-order", "BFS"], answer: 0, why: "A node's height needs both children's heights first, so it's handled after its subtrees." },
+  { q: "BFS uses which data structure to decide what to visit next?", options: ["A queue", "A stack", "A hash set"], answer: 0, why: "The oldest discovered node is visited first, which keeps the levels in order." },
+  { q: "On a perfectly balanced tree with n nodes, how much extra space does BFS need?", options: ["O(n)", "O(log n)", "O(1)"], answer: 0, why: "The bottom level holds about half the nodes, and they're all in the queue at once." },
+]} />
