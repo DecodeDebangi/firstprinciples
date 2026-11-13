@@ -1,0 +1,121 @@
+---
+title: "Arrays vs linked lists: memory, cache and when each wins"
+topic: Linked lists
+kind: Explainer
+order: 1
+summary: How each one lays items out in memory, why that makes array reads O(1) and linked-list inserts O(1), why arrays still win most real races, and when a linked list is genuinely the right tool.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growthInsert, growthRead } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## Two ways to keep a list
+
+Both hold items in order. The difference is **where the items live in memory**:
+
+- An **array** puts every item side by side in one block. Item `k` sits at a fixed distance from the start.
+- A **linked list** puts each item in its own **node**, wherever there's free space, and each node holds a pointer
+  to the next one. The only way in is the head.
+
+Every trade-off between them follows from that one difference.
+
+## Reading item k
+
+In an array, all slots are the same size, so the address of item `k` is `start + k × size`: one multiplication
+and one jump, whatever `k` is.
+
+<Viz client:visible approach="array-read" />
+
+A linked list has no formula. Nodes can be anywhere, so the only way to find node `k` is to start at the head and
+follow `k` pointers.
+
+<Viz client:visible approach="list-read" />
+
+## Inserting at the front
+
+Now the roles swap. To make room at the front of an array, every item has to shift one place to the right.
+
+<Viz client:visible approach="array-insert" />
+
+A linked list just creates a node and points it at the old head. Nothing else moves.
+
+<Viz client:visible approach="list-insert" />
+
+## Side by side
+
+Race the two front insertions, then switch either lane to the reads.
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growthInsert} caption="Operations to insert at the front of n items." />
+
+<GrowthChart client:visible series={growthRead} caption="Operations to read the last of n items." />
+
+| Operation | Array (Python `list`) | Singly linked list |
+|---|---|---|
+| Read or write item `k` | O(1) | O(k) |
+| Insert or delete at the front | O(n) | O(1) |
+| Insert or delete at the end | O(1) amortised | O(1) with a tail pointer, else O(n) |
+| Insert or delete after a node you already hold | O(n) | O(1) |
+| Search for a value | O(n) | O(n) |
+| Extra memory per item | none | one pointer (two if doubly linked) |
+
+## Why arrays still win most races
+
+Big-O counts steps, but not all steps cost the same. When the CPU reads one array item, it fetches the whole
+**cache line** around it (typically 64 bytes), so the next few items are already in fast memory. Walking an array
+is one long run of cache hits.
+
+Linked-list nodes are scattered, so each `next` can jump to a part of memory that isn't cached, and the CPU waits
+for main memory, which is roughly 100 times slower than a cache hit. That's why scanning a linked list is often
+several times slower than scanning an array of the same length, even though both are O(n), and why the "O(1)
+insert" only pays off if you **already hold the node**: finding the spot first is an O(n) walk.
+
+## When a linked list is the right tool
+
+- **You hold a reference to the node already.** An LRU cache keeps a hash map from key to node, so it can unlink
+  and move any node in O(1). A plain array would have to shift.
+- **Both ends change constantly.** Queues and deques add and remove at the ends; Python's `collections.deque` is
+  built from linked blocks of items for exactly this reason.
+- **Items must never move.** Other code holds pointers to them, so they can't be copied into a bigger array.
+- **The problem hands you one.** Interview problems like [Reverse Linked List](/dsa/reverse-linked-list/) and
+  [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/) test whether you can rewire pointers without losing the
+  chain.
+
+Otherwise, reach for an array (a Python `list`) by default.
+
+## Interview theory
+
+<QA q="How does a dynamic array give O(1) appends if it sometimes has to copy everything?">
+When it runs out of room, it allocates a bigger block (Python grows by about 1.125×, many languages by 2×) and copies
+every item across. Copies are rare: with doubling, n appends cause at most about 2n copies in total, so each append
+costs O(1) **amortised**, even though a single append can be O(n).
+</QA>
+
+<QA q="What does a doubly linked list add?">
+Each node also points to the previous one. You can walk backwards and delete a node you hold in O(1) without
+knowing its predecessor, at the cost of one more pointer per node and more pointers to keep correct.
+</QA>
+
+<QA q="Why do linked-list solutions often start with a dummy head node?">
+Inserting or deleting at the head is a special case: there's no previous node to rewire. A dummy node in front of
+the real head means every real node has a predecessor, so one piece of code handles every position. Return
+`dummy.next` at the end.
+</QA>
+
+<QA q="Is a Python list an array or a linked list?">
+An array: a contiguous block of pointers to the objects. That's why `a[k]` is O(1) and `a.insert(0, x)` and
+`a.pop(0)` are O(n).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "Why is reading item k from an array O(1)?", options: ["Its address is start + k × size, computed directly", "Arrays are always sorted", "The CPU caches every array"], answer: 0, why: "Slots are equal in size and consecutive, so the address of any index is one calculation away." },
+  { q: "Why is inserting at the front of a linked list O(1)?", options: ["Only the new node's pointer and the head change", "Linked lists are smaller than arrays", "The list is copied in the background"], answer: 0, why: "Create a node, point it at the old head, and make it the head. No existing node moves." },
+  { q: "You need to insert in the middle of a linked list, and you only have the head. What's the cost?", options: ["O(n): you must walk to the spot first", "O(1)", "O(log n)"], answer: 0, why: "The O(1) insert assumes you already hold the node before the spot. Finding it is a walk." },
+  { q: "Both an array scan and a linked-list scan are O(n). Why is the array usually faster in practice?", options: ["Its items are contiguous, so the CPU cache already holds the next ones", "Arrays use fewer comparisons", "Linked lists are scanned twice"], answer: 0, why: "Each cache line fetch brings in several neighbouring items; scattered nodes often miss the cache." },
+  { q: "An LRU cache must move any entry to the front in O(1). What does it use?", options: ["A hash map plus a doubly linked list", "A sorted array", "A single Python list"], answer: 0, why: "The map finds the node in O(1), and the doubly linked list unlinks and re-inserts it in O(1)." },
+]} />
