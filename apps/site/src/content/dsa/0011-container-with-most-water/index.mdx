@@ -1,0 +1,83 @@
+---
+title: Container With Most Water
+leetcode: { number: 11, url: "https://leetcode.com/problems/container-with-most-water/" }
+difficulty: Medium
+topics: [Two pointers, Greedy, Array]
+added: 2026-11-13
+summary: Pick two vertical lines that hold the most water between them. Goes from trying every pair to two pointers that always give up the shorter line.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `height`, where `height[i]` is the height of a vertical line at position `i`. Any two lines form a
+container with the x-axis. It holds `(j − i) × min(height[i], height[j])` units of water. Return the most water any
+pair can hold.
+
+For `height = [3, 7, 2, 6, 4, 8, 5]` the answer is `28`: lines 1 and 5 are 4 apart and the shorter is 7, so `4 × 7 = 28`.
+
+## The key question
+
+> **Once I've measured a container, which of its two lines can never be part of a bigger one?**
+
+The shorter line. Every other container that uses it is narrower, and its water level can't rise above that
+short line. So after measuring, you can drop the shorter line for good.
+
+## Approach 1: Brute force, every pair
+
+Measure every pair of lines and keep the largest.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n(n − 1)/2` pairs: **O(n²)**.
+
+**Space.** A couple of numbers: **O(1)**.
+
+**What it wastes:** it keeps measuring containers built on a short line that has already been beaten.
+</Complexity>
+
+## Approach 2: Two pointers, move the shorter line (optimal)
+
+Start with the widest container: `lo` at the left end, `hi` at the right. Measure it, then move whichever pointer
+sits on the shorter line inward. Repeat until they meet.
+
+<Viz client:visible approach="pointers" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each step moves one pointer inward, so `n − 1` steps: **O(n)**.
+
+**Space.** Two pointers and the best area: **O(1)**.
+
+**Why it's safe:** dropping the shorter line only rules out containers that are narrower *and* no taller than the
+one just measured, so none of them could be the answer.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Every pair | O(n²) | O(1) | Measure everything |
+| Move the shorter line | **O(n)** | **O(1)** | The shorter line can't do better narrower |
+
+<GrowthChart client:visible series={growth} caption="Containers measured for n lines. Every pair grows like n²/2; two pointers measure n − 1." />
+
+## Common mistakes
+
+- **Moving the taller line.** That can only shrink the width without raising the water level. Always move the shorter one.
+- **Using `max` for the height.** Water spills over the shorter line: the level is `min(height[lo], height[hi])`.
+- **Confusing it with Trapping Rain Water.** Here only two lines matter, and the lines between them don't block anything.
+
+## Related problems
+
+- Trapping Rain Water (LeetCode 42). Water held by all the bars together, also solvable with two pointers.
+- Two Sum II (LeetCode 167). The same squeeze from both ends, steered by a comparison.
+- 3Sum (LeetCode 15). Fix one number, then squeeze two pointers.

@@ -73,8 +73,12 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
         })}
       </div>
       {step.badge && badgeCol && (
-        <div className="fp-badge" key={`${step.badge.at}-${step.badge.text}`}
-          style={{ left: badgeCol.x + badgeCol.w / 2, top: Math.max(0, badgeCol.top - 40) }}>
+        <div key={`${step.badge.at}-${step.badge.text}`}
+          className={`fp-badge${step.badge.at <= 1 ? " is-start" : step.badge.at >= n - 2 ? " is-end" : ""}`}
+          style={{
+            left: step.badge.at <= 1 ? badgeCol.x : step.badge.at >= n - 2 ? badgeCol.x + badgeCol.w : badgeCol.x + badgeCol.w / 2,
+            top: Math.max(0, badgeCol.top - 40),
+          }}>
           {step.badge.text}
         </div>
       )}

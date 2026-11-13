@@ -1,0 +1,82 @@
+---
+title: Sort Colors
+leetcode: { number: 75, url: "https://leetcode.com/problems/sort-colors/" }
+difficulty: Medium
+topics: [Two pointers, Array]
+added: 2026-11-13
+summary: Sort a list of 0s, 1s and 2s in place without a library sort. Goes from counting and rewriting in two passes to the one-pass Dutch national flag algorithm with three pointers.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` containing only `0`, `1` and `2` (three colours). Sort it in place so all 0s come first,
+then 1s, then 2s, without using a library sort.
+
+`[2, 0, 1, 2, 1, 0, 0]` becomes `[0, 0, 0, 1, 1, 2, 2]`.
+
+## The key question
+
+> **With only three values, do I need comparisons at all?**
+
+No. Each value knows its zone: 0s at the front, 2s at the back, 1s in between. You can count them, or place each
+one directly into its zone as you meet it.
+
+## Approach 1: Count, then overwrite
+
+Count the 0s, 1s and 2s in one pass, then write that many of each back in order.
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Two passes over `n` values: **O(n)**.
+
+**Space.** Three counters: **O(1)**.
+
+**What it wastes:** a second pass, and it only works because the values are small integers; it rewrites values
+instead of moving them, which matters if the items carry other data.
+</Complexity>
+
+## Approach 2: Dutch national flag, one pass (optimal)
+
+Keep three zones with three pointers: 0s before `lo`, 1s between `lo` and `mid`, 2s after `hi`. Look at
+`nums[mid]`: a 0 is swapped to `lo` (both move on), a 1 stays (`mid` moves on), a 2 is swapped to `hi` (only `hi`
+moves, because the value that comes back hasn't been checked yet).
+
+<Viz client:visible approach="flag" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Every step either moves `mid` right or `hi` left, and the loop ends when they cross: at most `n` steps,
+**O(n)**, in a single pass.
+
+**Space.** Three pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count, then overwrite | O(n), two passes | O(1) | Tally, then rewrite |
+| Dutch national flag | **O(n), one pass** | **O(1)** | Swap each value straight into its zone |
+
+<GrowthChart client:visible series={growth} caption="Operations for n values. Counting reads and rewrites every value; the flag algorithm looks at each once." />
+
+## Common mistakes
+
+- **Moving `mid` after swapping a 2.** The value swapped in from `hi` is unchecked; `mid` must look at it next.
+- **`while mid < hi`.** The cell at `hi` still needs checking: loop while `mid <= hi`.
+- **Calling `sort()`.** Allowed in practice, but the problem asks you to do it yourself, and it's O(n log n).
+
+## Related problems
+
+- Move Zeroes (LeetCode 283). The two-zone version of the same idea.
+- Sort Array By Parity (LeetCode 905). Two zones, even and odd.
+- Kth Largest Element in an Array (LeetCode 215). Quickselect uses the same three-way partition.

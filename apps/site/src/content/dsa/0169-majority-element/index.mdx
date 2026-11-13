@@ -1,0 +1,97 @@
+---
+title: Majority Element
+leetcode: { number: 169, url: "https://leetcode.com/problems/majority-element/" }
+difficulty: Easy
+topics: [Hash map, Array]
+added: 2026-11-13
+summary: Find the value that appears more than half the time. Goes from counting every value, to a hash map of counts, to Boyer–Moore voting with just two variables.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` of length `n`. One value, the **majority**, appears more than `n / 2` times; the problem
+guarantees it exists. Return it.
+
+For `nums = [7, 5, 2, 2, 7, 2, 2]` the answer is `2`: it appears 4 times out of 7.
+
+## The key question
+
+> **What happens if every majority value is paired off against a different value?**
+
+The majority has more copies than every other value put together, so some of its copies are always left over.
+That turns "count everything" into "keep a running tally".
+
+## Approach 1: Brute force, count each value
+
+For each value, count how often it appears in the whole list.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to `n` full counts of `n` reads each: **O(n²)**.
+
+**Space.** One counter: **O(1)**.
+
+**What it wastes:** the same values are recounted from scratch every time.
+</Complexity>
+
+## Approach 2: Hash map of counts
+
+One pass, keeping a count per value, stopping as soon as one passes `n / 2`.
+
+<Viz client:visible approach="hash" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass with O(1) map updates: **O(n)**.
+
+**Space.** Up to about `n / 2` distinct values in the map: **O(n)**.
+
+**What it wastes:** it counts every value, though only the majority matters.
+</Complexity>
+
+## Approach 3: Boyer–Moore voting (optimal)
+
+Keep one `candidate` and a `count`. Each value equal to the candidate adds a vote; each different value cancels
+one. When the count drops to zero, the next value becomes the new candidate. The majority always survives.
+
+<Viz client:visible approach="vote" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, O(1) per value: **O(n)**.
+
+**Space.** Two variables: **O(1)**.
+
+**Why it works:** each cancellation removes one majority copy and one other value at most. With more than
+`n / 2` majority copies, they can't all be cancelled.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count each value | O(n²) | O(1) | Full count per value |
+| Hash map | O(n) | O(n) | One count per value |
+| Boyer–Moore voting | **O(n)** | **O(1)** | Pair the majority off against everything else |
+
+<GrowthChart client:visible series={growth} caption="Operations when the other values come first. The hash map does as many steps as voting here, so it's left out." />
+
+## Common mistakes
+
+- **Using voting without the guarantee.** If a majority might not exist, voting still returns *something*: verify it with a second counting pass.
+- **Sorting and returning the middle.** Correct (the majority always covers the middle), but O(n log n).
+- **Resetting the count to 0 on a new candidate.** The new candidate starts with count 1.
+
+## Related problems
+
+- Majority Element II (LeetCode 229). Values above `n / 3`: voting with two candidates.
+- Contains Duplicate (LeetCode 217). Another count-or-remember question.
+- Single Number (LeetCode 136). Cancellation again, this time with XOR.

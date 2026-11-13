@@ -1,0 +1,83 @@
+---
+title: Merge Sorted Array
+leetcode: { number: 88, url: "https://leetcode.com/problems/merge-sorted-array/" }
+difficulty: Easy
+topics: [Two pointers, Array]
+added: 2026-11-13
+summary: Merge one sorted array into another that has empty room at its end. Goes from copying in and re-sorting to filling from the back with three pointers, in place.
+best: { time: "O(m + n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two sorted arrays. `nums1` holds `m` values followed by `n` empty slots; `nums2` holds `n` values. Merge
+`nums2` into `nums1` so that `nums1` ends up as one sorted array of `m + n` values. Change `nums1` in place and
+return nothing.
+
+`nums1 = [1, 4, 7, _, _, _]` and `nums2 = [2, 5, 6]` become `[1, 2, 4, 5, 6, 7]`.
+
+## The key question
+
+> **Where can I write without destroying a value I haven't read yet?**
+
+Merging from the front would overwrite `nums1`'s own values before they're placed. The empty slots are at the
+**back**, so build the answer from the back, largest value first.
+
+## Approach 1: Copy in, then sort
+
+Drop `nums2` into the empty slots and sort the whole array.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O((m + n) log(m + n))" space="O(1)*">
+**Time.** The copy is O(n); sorting `m + n` values dominates: **O((m + n) log(m + n))**.
+
+**Space.** Python's sort needs up to O(m + n) scratch space internally; a heap sort would be O(1). Either way, it's
+not the bottleneck.
+
+**What it wastes:** both halves were already sorted. Sorting throws that away and finds the order again.
+</Complexity>
+
+## Approach 2: Three pointers from the back (optimal)
+
+Keep `i` at the last real value of `nums1`, `j` at the last value of `nums2`, and `k` at the last slot. Put the
+larger of `nums1[i]` and `nums2[j]` into slot `k`, then step those pointers left. When `nums2` runs out, whatever
+is left of `nums1` is already in place.
+
+<Viz client:visible approach="back" />
+
+<Complexity time="O(m + n)" space="O(1)">
+**Time.** Each step fills one slot: at most `m + n` steps, **O(m + n)**.
+
+**Space.** Three indices: **O(1)**. Writing from the back is what makes this safe: `k` never passes `i`, so no
+unread value is ever overwritten.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Copy in, sort | O((m + n) log(m + n)) | O(1)* | Ignore that both halves are sorted |
+| Three pointers from the back | **O(m + n)** | **O(1)** | Largest first into the empty end |
+
+<GrowthChart client:visible series={growth} caption="Operations for m + n values, interleaved. Sorting adds about n·log₂n; the back merge places each value once." />
+
+## Common mistakes
+
+- **Merging from the front.** It overwrites `nums1`'s values before they're used, unless you copy them out first (O(m) extra space).
+- **Looping while `i >= 0`.** The loop must run while `nums2` has values (`j >= 0`); leftovers in `nums1` are already in place.
+- **Forgetting `i >= 0`.** When `nums1`'s values are used up, take from `nums2` without reading `nums1[-1]`.
+
+## Related problems
+
+- Merge Two Sorted Lists (LeetCode 21). The same merge, front to back, on linked lists.
+- Squares of a Sorted Array (LeetCode 977). Fill the answer from the back with the larger square.
+- Two Sum II (LeetCode 167). Two pointers walking a sorted array.

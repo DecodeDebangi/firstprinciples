@@ -1,0 +1,81 @@
+---
+title: Longest Consecutive Sequence
+leetcode: { number: 128, url: "https://leetcode.com/problems/longest-consecutive-sequence/" }
+difficulty: Medium
+topics: [Hash map, Array]
+added: 2026-11-13
+summary: Find the longest run of consecutive integers hidden in an unsorted list, in O(n). Goes from sorting and scanning to a hash set that only counts from the start of each run.
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an unsorted list `nums`. Return the length of the longest set of values that form a run of consecutive
+integers, like `1, 2, 3, 4`. Their positions in the list don't matter. The problem asks for O(n) time.
+
+For `nums = [10, 4, 20, 1, 3, 2, 11]` the answer is `4`: the run `1, 2, 3, 4`.
+
+## The key question
+
+> **How do I know a number is where a run *starts*?**
+
+`x` starts a run exactly when `x − 1` isn't in the list. Count upward only from those starts, and every number is
+counted once, inside the one run it belongs to.
+
+## Approach 1: Sort, then count runs
+
+Sort the distinct values, then walk once: extend the run while each value is one more than the last, otherwise start over.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Sorting dominates: **O(n log n)**. The scan is O(n).
+
+**Space.** The sorted copy of distinct values: **O(n)**.
+
+**What it wastes:** it puts everything in order, but runs only need "is x + 1 here?", which a set answers in O(1).
+</Complexity>
+
+## Approach 2: Hash set, count only from run starts (optimal)
+
+Put every number in a set. For each number, skip it if `x − 1` is in the set. Otherwise it's a start: count `x + 1`,
+`x + 2`, … while they're in the set.
+
+<Viz client:visible approach="set" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Building the set is O(n). The inner `while` loop looks like it could make this O(n²), but it only runs
+from run starts, and each number is stepped over by exactly one run. Across the whole loop that's at most `n`
+extra steps: **O(n)**.
+
+**Space.** The set: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Sort, then scan | O(n log n) | O(n) | Consecutive values end up adjacent |
+| Hash set from run starts | **O(n)** | O(n) | Count each run once, from its first number |
+
+<GrowthChart client:visible series={growth} caption="Operations for n shuffled consecutive numbers. Sorting adds about n·log₂n; the set approach touches each number a constant number of times." />
+
+## Common mistakes
+
+- **Counting upward from every number.** Without the `x − 1` check, a run of length `n` is counted `n` times: O(n²).
+- **Forgetting duplicates.** `[1, 2, 0, 1]` has a run of length 3, not 4. A set (or deduplicated sort) handles it.
+- **Empty input.** Return 0.
+
+## Related problems
+
+- Contains Duplicate (LeetCode 217). The same set, used for a simpler question.
+- Two Sum (LeetCode 1). Look up the value you need instead of searching for it.
+- Longest Increasing Subsequence (LeetCode 300). Order matters there; here it doesn't.

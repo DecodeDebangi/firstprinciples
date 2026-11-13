@@ -1,0 +1,79 @@
+---
+title: Move Zeroes
+leetcode: { number: 283, url: "https://leetcode.com/problems/move-zeroes/" }
+difficulty: Easy
+topics: [Two pointers, Array]
+added: 2026-11-13
+summary: Push every zero to the end while keeping the other numbers in order, in place. Goes from bubbling zeros backwards pass after pass to one pass with a read and a write pointer.
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums`. Move every `0` to the end while keeping the non-zero numbers in their original order. Do it
+in place, without making a copy.
+
+`[0, 3, 0, 5, 8, 0, 2]` becomes `[3, 5, 8, 2, 0, 0, 0]`.
+
+## The key question
+
+> **Instead of moving the zeros back, can I move the non-zeros forward?**
+
+Every non-zero has a known destination: the next free slot at the front. Sending each one there in reading order
+keeps their order, and the zeros end up behind them without ever being moved on purpose.
+
+## Approach 1: Bubble each zero to the end
+
+Walk the list repeatedly, swapping any zero with the non-zero after it, like bubble sort.
+
+<Viz client:visible approach="bubble" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to `n` passes of up to `n` comparisons: about `n²/2`, **O(n²)**.
+
+**Space.** Swaps in place: **O(1)**.
+
+**What it wastes:** a zero near the front moves one step per pass, so it gets compared again and again.
+</Complexity>
+
+## Approach 2: Read and write pointers (optimal)
+
+`read` visits every number once. `write` marks where the next non-zero belongs. Each non-zero is swapped into slot
+`write`, and `write` moves on. Everything left of `write` is final.
+
+<Viz client:visible approach="pointers" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, with at most one swap per number: **O(n)**.
+
+**Space.** Two indices: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Bubble zeros back | O(n²) | O(1) | Repeated passes of neighbour swaps |
+| Read and write pointers | **O(n)** | **O(1)** | Send each non-zero to the next free front slot |
+
+<GrowthChart client:visible series={growth} caption="Comparisons for n numbers. Bubbling grows like n²/2; one pass reads each number once." />
+
+## Common mistakes
+
+- **Removing zeros while iterating.** `nums.remove(0)` inside a loop over `nums` skips elements and is O(n²).
+- **Overwriting instead of swapping.** Copying non-zeros forward works, but then fill the rest with zeros in a second loop.
+- **Losing the order.** Swapping zeros with the *last* element is fast but scrambles the non-zeros.
+
+## Related problems
+
+- Remove Element (LeetCode 27). The same read/write pattern, dropping a given value.
+- Remove Duplicates from Sorted Array (LeetCode 26). Write only when the value changes.
+- Sort Colors (LeetCode 75). Three zones instead of two.
