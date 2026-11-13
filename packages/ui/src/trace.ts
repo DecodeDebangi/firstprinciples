@@ -20,6 +20,35 @@ export interface ListRow {
   tones?: Record<string, Tone>;
 }
 
+/** One binary-tree node. Children are node ids (or null). */
+export interface TreeNodeData { id: string; val: number | string; left: string | null; right: string | null }
+
+/** One tree for TreeView. Node ids stay stable across steps, so moved subtrees slide instead of jumping. */
+export interface TreeData {
+  label?: string;
+  root: string | null;
+  nodes: TreeNodeData[];
+  tones?: Record<string, Tone>;
+  /** Small text under a node: a return value, an allowed range, a level… */
+  notes?: Record<string, string>;
+  pointers?: Record<string, string | null>;
+}
+
+/** Build a tree from LeetCode's level-order list, e.g. [3, 9, 20, null, null, 15, 7]. Ids are "t0", "t1", … */
+export function treeFromLevelOrder(vals: (number | null)[]): { root: string | null; nodes: TreeNodeData[] } {
+  if (!vals.length || vals[0] === null) return { root: null, nodes: [] };
+  const nodes: TreeNodeData[] = [];
+  const make = (k: number) => { const n = { id: `t${k}`, val: vals[k] as number, left: null, right: null } as TreeNodeData; nodes.push(n); return n; };
+  const queue = [make(0)];
+  let k = 1;
+  while (queue.length && k < vals.length) {
+    const node = queue.shift()!;
+    if (k < vals.length) { if (vals[k] !== null) { const c = make(k); node.left = c.id; queue.push(c); } k++; }
+    if (k < vals.length) { if (vals[k] !== null) { const c = make(k); node.right = c.id; queue.push(c); } k++; }
+  }
+  return { root: "t0", nodes };
+}
+
 export interface ArrayStep {
   /** 1-based line in the approach's `code` to highlight. */
   line: number;
@@ -30,6 +59,8 @@ export interface ArrayStep {
   labels?: string[];
   /** Linked lists drawn instead of the array (pass `array: []`). */
   lists?: ListRow[];
+  /** Binary trees drawn instead of the array (pass `array: []`). */
+  trees?: TreeData[];
   /** Named pointers, e.g. { lo: 0, hi: 7 }. */
   pointers?: Record<string, number>;
   tones?: Record<number, Tone>;

@@ -1,0 +1,80 @@
+---
+title: Binary Tree Level Order Traversal
+leetcode: { number: 102, url: "https://leetcode.com/problems/binary-tree-level-order-traversal/" }
+difficulty: Medium
+topics: [Tree, Binary tree, BFS]
+added: 2026-11-13
+summary: List a tree's values level by level, left to right. Goes from walking down from the root once per level to a queue that visits every node exactly once.
+best: { time: "O(n)", space: "O(w)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the `root` of a binary tree. Return its values level by level: a list per level, each ordered left to right.
+
+For `[1, 2, 3, 4, null, 5, 6, null, 7]` the answer is `[[1], [2, 3], [4, 5, 6], [7]]`.
+
+## The key question
+
+> **What order do I need to visit the nodes in?**
+
+Top to bottom, left to right: the order they were discovered. "Handle things in the order they arrived" is
+exactly what a **queue** does.
+
+## Approach 1: One walk per level
+
+For depth 0, 1, 2, …, walk down from the root and collect the nodes at exactly that depth. Stop when a depth comes
+back empty. The shaded nodes show what each walk had to pass through again.
+
+<Viz client:visible approach="rewalk" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** The walk for depth `d` passes every node above it again. Over `h` levels that's up to `n · h` visits:
+**O(n²)** for a tree shaped like a chain.
+
+**Space.** Recursion depth: **O(h)**.
+
+**What it wastes:** the top of the tree is walked once for every level below it.
+</Complexity>
+
+## Approach 2: Queue, one level at a time (optimal)
+
+Put the root in a queue. Repeatedly: note how many nodes are in the queue (that's one whole level), take exactly
+that many from the front, record their values, and add their children to the back.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Every node enters and leaves the queue once: **O(n)**.
+
+**Space.** The queue holds at most two partial levels: **O(w)**, the width of the widest level (up to about `n / 2`).
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| One walk per level | O(n · h), up to O(n²) | O(h) | Re-walk from the root for each depth |
+| Queue (BFS) | **O(n)** | O(w) | Visit nodes in the order they're found |
+
+<GrowthChart client:visible series={growth} caption="Node visits for a chain-shaped tree of n nodes, the worst case for re-walking." />
+
+## Common mistakes
+
+- **Not fixing the level size first.** Read `len(queue)` *before* the inner loop; children added during it belong to the next level.
+- **Using a list as a queue.** `list.pop(0)` is O(n); use `collections.deque`.
+- **Empty tree.** Return `[]`, not `[[]]`.
+
+## Related problems
+
+- Binary Tree Zigzag Level Order Traversal (LeetCode 103). Reverse every other level.
+- Binary Tree Right Side View (LeetCode 199). The last node of each level.
+- Maximum Depth of Binary Tree (LeetCode 104). Count the levels instead of listing them.

@@ -7,4 +7,5 @@ export { ComparePlayer } from "./ComparePlayer";
 export { GrowthChart } from "./GrowthChart";
 export { ArrayCells } from "./ArrayCells";
 export { ListView } from "./ListView";
+export { TreeView } from "./TreeView";
 export { AutoDemo } from "./AutoDemo";

@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 
-export type InputValues = Record<string, number | number[] | string>;
+export type InputValues = Record<string, number | number[] | string | (number | null)[]>;
 
 export interface InputField {
   key: string;
   label: string;
-  kind: "numbers" | "number" | "text";
+  /** "tree" = a level-order list where `null` marks a missing child, as LeetCode writes trees. */
+  kind: "numbers" | "number" | "text" | "tree";
   hint?: string;
 }
 
 export type Prepared<I> = { input: I; note?: string } | { error: string };
 
-export function toText(v: number | number[] | string) {
-  return Array.isArray(v) ? v.join(", ") : String(v);
+export function toText(v: number | number[] | string | (number | null)[]) {
+  return Array.isArray(v) ? v.map((x) => (x === null ? "null" : x)).join(", ") : String(v);
 }
 
 export function parseDraft(fields: InputField[], draft: Record<string, string>, maxLength: number): { raw: InputValues } | { error: string } {
@@ -23,6 +24,14 @@ export function parseDraft(fields: InputField[], draft: Record<string, string>, 
       const compact = text.replace(/\s+/g, "");
       if (compact.length > maxLength) return { error: `${f.label} can be at most ${maxLength} characters so the animation fits.` };
       raw[f.key] = compact;
+    } else if (f.kind === "tree") {
+      const parts = text.split(/[\s,]+/).filter(Boolean);
+      const vals = parts.map((p) => (/^(null|none|_|-)$/i.test(p) ? null : Number(p)));
+      if (vals.some((v) => v !== null && !Number.isInteger(v)))
+        return { error: `${f.label} must be whole numbers or null, separated by commas (LeetCode's level order).` };
+      if (vals.length && vals[0] === null) return { error: `${f.label} can't start with null: the first value is the root.` };
+      if (vals.filter((v) => v !== null).length > 15) return { error: `${f.label} can have at most 15 nodes so the tree fits.` };
+      raw[f.key] = vals;
     } else if (f.kind === "number") {
       const n = Number(text);
       if (text === "" || !Number.isInteger(n)) return { error: `${f.label} must be a whole number.` };

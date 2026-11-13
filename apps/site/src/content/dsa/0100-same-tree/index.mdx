@@ -1,0 +1,80 @@
+---
+title: Same Tree
+leetcode: { number: 100, url: "https://leetcode.com/problems/same-tree/" }
+difficulty: Easy
+topics: [Tree, Binary tree]
+added: 2026-11-13
+summary: Decide whether two binary trees have the same shape and the same values. Goes from writing both trees out in full to walking them in step and stopping at the first difference.
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the roots of two binary trees, `p` and `q`. Return `True` if they are identical: the same shape, with the
+same value at every position.
+
+`[6, 2, 9, 1, 4]` and `[6, 2, 9, 1, 5]` are not the same: they match everywhere except the last node.
+
+## The key question
+
+> **When do two trees match?**
+
+When their roots match, their left subtrees match, and their right subtrees match. Two missing children also
+count as a match. A missing child opposite a real one doesn't.
+
+## Approach 1: Serialize both, compare
+
+Write each tree out in full, marking every missing child with `#`, then compare the two lists. The markers matter:
+without them, different shapes can produce the same list of values.
+
+<Viz client:visible approach="serialize" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Writing out both trees and comparing the lists: about `6n` steps, **O(n)**.
+
+**Space.** The two written-out lists: **O(n)**.
+
+**What it wastes:** it always writes out both trees completely, even when the roots already differ.
+</Complexity>
+
+## Approach 2: Compare node by node (optimal)
+
+Walk both trees at once. At each pair of positions: both empty is a match; one empty or different values is a
+mismatch; otherwise compare the left children, then the right children.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each pair of nodes is compared at most once, and the walk stops at the first difference: **O(n)** worst case.
+
+**Space.** The call stack is as deep as the tree: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Serialize and compare | O(n) | O(n) | Write both out, compare the text |
+| Node by node | **O(n)** | **O(h)** | Walk in step, stop at the first difference |
+
+<GrowthChart client:visible series={growth} caption="Steps for two identical complete trees of n nodes. Both are linear; walking in step does about a third of the work." />
+
+## Common mistakes
+
+- **Serializing without null markers.** `[1, 2]` and `[1, null, 2]` both list as `1 2` without them.
+- **Comparing only values in order.** Two trees can have the same in-order values and different shapes.
+- **Checking `p.val == q.val` before checking for `None`.** That crashes when one side is missing.
+
+## Related problems
+
+- Symmetric Tree (LeetCode 101). The same walk, but left against right.
+- Subtree of Another Tree (LeetCode 572). Run Same Tree from every node of the bigger tree.
+- Invert Binary Tree (LeetCode 226). Another "do the same thing at every node" recursion.

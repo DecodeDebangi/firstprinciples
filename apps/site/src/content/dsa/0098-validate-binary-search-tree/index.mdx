@@ -1,0 +1,95 @@
+---
+title: Validate Binary Search Tree
+leetcode: { number: 98, url: "https://leetcode.com/problems/validate-binary-search-tree/" }
+difficulty: Medium
+topics: [Tree, BST, Binary tree]
+added: 2026-11-13
+summary: Check that every value in a node's left subtree is smaller and every value in its right subtree is bigger, at every node. Goes from checking whole subtrees at each node to one pass with an in-order walk or inherited ranges.
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the `root` of a binary tree. Return `True` if it's a valid **binary search tree**: for every node, *all*
+values in its left subtree are smaller than it and *all* values in its right subtree are bigger.
+
+`[8, 3, 10, 1, 6, null, 14, null, null, 4, 9]` is **not** valid, even though every node is in the right place
+relative to its own parent: `9` sits under `6` (fine) but inside `8`'s left subtree, and `9 > 8`.
+
+## The key question
+
+> **What does a node need to know that its parent alone can't tell it?**
+
+The limits set by *all* its ancestors. Checking each node only against its children misses cases like the `9`
+above. Every correct approach carries more context than that.
+
+## Approach 1: Check every subtree against every node
+
+The definition, taken literally: at each node, read its whole left subtree and its whole right subtree and check
+every value. In the example it fails straight away at the root, because `9` is in `8`'s left subtree.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Every value is re-read once for each of its ancestors: up to `n · h` reads, **O(n²)** for a chain.
+
+**Space.** Recursion depth: **O(h)**.
+
+**What it wastes:** the same values are checked again at every level above them.
+</Complexity>
+
+## Approach 2: In-order traversal must increase
+
+An in-order walk (left subtree, node, right subtree) of a BST visits the values in increasing order. So walk in
+order and check that each value beats the one before it. The `#` labels show the visiting order.
+
+<Viz client:visible approach="inorder" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** Recursion depth: **O(h)**, plus one variable for the previous value.
+</Complexity>
+
+## Approach 3: Pass down allowed ranges (optimal)
+
+Give each node the range its value must fall in. The root allows anything. Going left caps the maximum at the
+parent's value; going right raises the minimum to it. Each node checks only its own range, shown under it.
+
+<Viz client:visible approach="bounds" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One O(1) check per node: **O(n)**, stopping at the first node outside its range.
+
+**Space.** Recursion depth: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every subtree | O(n · h) | O(h) | The definition, literally |
+| In-order must increase | **O(n)** | O(h) | A BST reads sorted in order |
+| Allowed ranges | **O(n)** | O(h) | Each node inherits limits from its ancestors |
+
+<GrowthChart client:visible series={growth} caption="Value checks for a valid chain-shaped tree of n nodes. The in-order walk does the same n checks as the ranges version, so it's left out." />
+
+## Common mistakes
+
+- **Comparing a node only with its children.** The example above passes that check and still isn't a BST.
+- **Allowing equal values.** Here a BST needs strictly smaller on the left and strictly bigger on the right, so `[2, 2]` is invalid.
+- **Using the smallest possible integer as a starting bound.** A node may hold exactly that value; use infinity or `None`.
+
+## Related problems
+
+- Kth Smallest Element in a BST (LeetCode 230). The in-order walk again: stop at the kth value.
+- Lowest Common Ancestor of a BST (LeetCode 235). Use the ordering to decide which way to go.
+- Convert Sorted Array to Binary Search Tree (LeetCode 108). Build a BST instead of checking one.

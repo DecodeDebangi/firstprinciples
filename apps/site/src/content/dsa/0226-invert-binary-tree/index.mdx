@@ -1,0 +1,74 @@
+---
+title: Invert Binary Tree
+leetcode: { number: 226, url: "https://leetcode.com/problems/invert-binary-tree/" }
+difficulty: Easy
+topics: [Tree, Binary tree]
+added: 2026-11-13
+summary: Mirror a binary tree by swapping every node's left and right children. Compares a recursive swap with an iterative one that uses a queue.
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the `root` of a binary tree. Mirror it left to right, so that every left child becomes a right child and
+vice versa, and return the root.
+
+`[5, 3, 8, 1, 4, 7, 9]` becomes `[5, 8, 3, 9, 7, 4, 1]`.
+
+## The key question
+
+> **What does mirroring a whole tree come down to at a single node?**
+
+Swapping that node's two children. Do that at every node, in any order, and the whole tree is mirrored: each swap
+moves an entire subtree, and the subtree's own insides get swapped when you reach them.
+
+## Approach 1: Recursive, swap then recurse
+
+At each node, swap `left` and `right`, then invert both children. Watch whole subtrees slide across with each swap.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One swap per node: **O(n)**.
+
+**Space.** The call stack is as deep as the tree: **O(h)**, from about `log₂ n` (balanced) up to `n` (a chain).
+</Complexity>
+
+## Approach 2: Iterative with a queue
+
+The order of the swaps doesn't matter, so visit the nodes level by level with a queue instead of recursion.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** One swap per node: **O(n)**.
+
+**Space.** The queue holds at most one level: **O(w)**, the width of the widest level. No risk of hitting the recursion limit.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Note |
+|---|---|---|---|
+| Recursive | O(n) | O(h) | Shortest to write |
+| Queue | O(n) | O(w) | No recursion, so safe on very deep trees |
+
+Both perform exactly one swap per node, so there's no growth chart: the two lines would be the same.
+
+## Common mistakes
+
+- **Swapping one side at a time.** `root.left = invert(root.right)` followed by `root.right = invert(root.left)` uses the *new* left. Swap both at once, or save one first.
+- **Swapping values instead of children.** Only the shape changes; each node keeps its own value.
+- **Forgetting to return the root.** The problem expects the (same) root back.
+
+## Related problems
+
+- Symmetric Tree (LeetCode 101). Is the tree a mirror of itself? Compare left with right, outside in.
+- Same Tree (LeetCode 100). Walk two trees in step.
+- Maximum Depth of Binary Tree (LeetCode 104). The same "do it at every node" recursion.

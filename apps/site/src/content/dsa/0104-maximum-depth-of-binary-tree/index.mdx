@@ -1,0 +1,79 @@
+---
+title: Maximum Depth of Binary Tree
+leetcode: { number: 104, url: "https://leetcode.com/problems/maximum-depth-of-binary-tree/" }
+difficulty: Easy
+topics: [Tree, Binary tree]
+added: 2026-11-13
+summary: Count how many levels a binary tree has. Compares asking each subtree for its depth recursively with counting levels one at a time using a queue.
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the `root` of a binary tree. Return its **maximum depth**: the number of nodes on the longest path from the
+root down to a leaf.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7]` (written level by level, `null` for a missing child),
+the answer is `4`: `8 → 3 → 6 → 4`.
+
+## The key question
+
+> **If I knew the depth of each subtree, what would the depth of the whole tree be?**
+
+One more than the deeper of the two. That single rule, applied at every node, is the whole solution. It's the
+pattern behind most tree problems: solve the left, solve the right, combine.
+
+## Approach 1: Recursive, depth-first
+
+Ask the left subtree for its depth, ask the right subtree, and return `1 + max(left, right)`. An empty subtree has
+depth 0. The label under each node shows the depth it returned.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once and does O(1) work: **O(n)**.
+
+**Space.** The call stack holds one frame per level of the current path: **O(h)**, where `h` is the tree's height.
+That's about `log₂ n` for a balanced tree, but `n` for a tree shaped like a chain.
+</Complexity>
+
+## Approach 2: Level by level, breadth-first
+
+Process the tree one level at a time with a queue, counting the levels. When the queue empties, the count is the depth.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node enters and leaves the queue once: **O(n)**.
+
+**Space.** The queue holds one level at a time: **O(w)**, where `w` is the widest level. That's up to about `n / 2`
+for a full tree, but just 1 for a chain.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Best when |
+|---|---|---|---|
+| Recursive (DFS) | O(n) | O(h) | The tree is wide and shallow |
+| Level by level (BFS) | O(n) | O(w) | The tree is deep and narrow, or recursion depth is a risk |
+
+Both visit every node exactly once, so there's no growth chart here: the lines would be identical. The real
+difference is memory, and it depends on the tree's shape.
+
+## Common mistakes
+
+- **Returning 1 for an empty tree.** No nodes means depth 0.
+- **Counting edges instead of nodes.** This problem counts nodes on the path: a single node has depth 1.
+- **Forgetting the tree can be a chain.** On a 10,000-node chain, recursion can hit Python's recursion limit; BFS can't.
+
+## Related problems
+
+- Minimum Depth of Binary Tree (LeetCode 111). The shortest path to a *leaf*: careful with nodes that have one child.
+- Balanced Binary Tree (LeetCode 110). Compare left and right depths at every node.
+- Diameter of Binary Tree (LeetCode 543). The longest path through each node is its left depth plus its right depth.

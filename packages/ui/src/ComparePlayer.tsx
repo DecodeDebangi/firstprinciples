@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrayCells } from "./ArrayCells";
 import { ListView } from "./ListView";
+import { TreeView } from "./TreeView";
 import { SPEEDS } from "./ArrayPlayer";
 import { InputForm, type InputField, type InputValues, type Prepared } from "./input";
 import { Tracer, type Approach, type ArrayStep } from "./trace";
@@ -86,7 +87,7 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
                   {approaches.map((ap, i) => <option key={ap.id} value={i}>{ap.name}</option>)}
                 </select>
               </label>
-              {step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
+              {step.trees ? <TreeView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
               <p className={`fp-message fp-message--small${step.done ? ` fp-message--${step.done}` : ""}`}>{step.message}</p>
               <div className="fp-meter">
                 <div className="fp-meter__label">

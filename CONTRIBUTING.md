@@ -66,6 +66,13 @@ Each roadmap topic gets its own page at `/topics/<slug>/` once a problem practis
 reach for it" signals and Python template live in `apps/site/src/data/topicGuides.ts`; keep the template short
 enough to fit a phone (comments under about 25 characters).
 
+Trees: use the `"tree"` input kind (LeetCode's level order with `null`), build with `treeFromLevelOrder`, and
+draw with `trees: [{ root, nodes, tones, notes, pointers }]` on a step. If an approach changes the tree, snapshot
+the nodes for every step (`nodes.map((n) => ({ ...n }))`). Linked lists use `lists`, 2D answers use `grid`.
+
+The growth chart may be left out when every approach does the same amount of work (e.g. two O(n) tree walks):
+say so in one sentence under the comparison table instead of drawing identical lines.
+
 A new data structure (linked list, tree, graph, DP table) needs a new renderer in `packages/ui` alongside
 `ArrayPlayer`, with its own step type in `trace.ts`.
 
