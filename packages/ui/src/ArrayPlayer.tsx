@@ -245,8 +245,15 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
                 ) : (
                   <div className="fp-grid" role="img"
                     aria-label={`${step.grid.title}: ${step.grid.rows.map((r) => r.join(" ")).join(" / ")}`}>
+                    {step.grid.colLabels && (
+                      <div className="fp-grid__row" aria-hidden="true">
+                        {step.grid.rowLabels && <span className="fp-gcell fp-glabel" />}
+                        {step.grid.colLabels.map((v, c) => <span key={c} className="fp-gcell fp-glabel">{v}</span>)}
+                      </div>
+                    )}
                     {step.grid.rows.map((row, r) => (
                       <div className="fp-grid__row" key={r}>
+                        {step.grid!.rowLabels && <span className="fp-gcell fp-glabel" aria-hidden="true">{step.grid!.rowLabels[r]}</span>}
                         {row.map((v, c) => {
                           const tone = step.grid!.tones?.[`${r},${c}`];
                           return <span key={c} className={`fp-gcell${tone ? ` fp-cell--${tone}` : ""}`}>{v}</span>;

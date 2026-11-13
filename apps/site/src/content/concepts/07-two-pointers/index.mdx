@@ -1,0 +1,121 @@
+---
+title: "Two pointers: why skipping pairs is safe"
+topic: Two pointers
+kind: Explainer
+order: 1
+summary: The two shapes of the technique (both ends, and same direction), a picture of why one comparison can rule out a whole row of pairs, how to tell when two pointers will work, and how it relates to the sliding window.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The idea
+
+Many array problems are secretly about **pairs**: two numbers that add up to a target, two walls that hold the most
+water, two ends of a palindrome. An array of n items has about n²/2 pairs, so checking each one is O(n²).
+
+Two pointers is a way to look at only O(n) of them **and still be sure** you didn't skip the answer. The trick is
+that, on the right kind of input, one comparison can rule out a whole group of pairs at once.
+
+## The slow way: check every pair
+
+The table under the animation lists every pair: row `i`, column `j`. A `?` is a pair nobody has looked at yet.
+The brute force fills it in one cell at a time.
+
+<Viz client:visible approach="brute" />
+
+## Shape 1: Pointers from both ends
+
+Now sort the array and put one pointer at each end. Look at `a[lo] + a[hi]`:
+
+- **Too small?** `a[hi]` is the largest number left, so pairing `a[lo]` with anything else gives an even smaller
+  sum. Every pair in row `lo` is impossible: move `lo` right.
+- **Too big?** `a[lo]` is the smallest number left, so `a[hi]` is too big with every partner. Column `hi` is out:
+  move `hi` left.
+
+Watch the table: each sum wipes out a whole row or column, including pairs that were never looked at (`–`).
+
+<Viz client:visible approach="ends" />
+
+That's the whole proof that skipping is safe: a pair is only skipped after a comparison has shown it **can't** be
+the answer. Every step removes one candidate number, so after at most n − 1 sums, the pointers meet.
+
+## Shape 2: Same direction (read and write)
+
+The second shape has both pointers moving left to right at different speeds. A fast **read** pointer `r` looks at
+every item; a slow **write** pointer `w` marks where the next item worth keeping goes. Everything left of `w` is
+finished. It compacts, filters or deduplicates an array in place, with no extra array.
+
+<Viz client:visible approach="readwrite" />
+
+[Move Zeroes](/dsa/move-zeroes/) is the same pattern with a different "keep it?" test, and
+[Merge Sorted Array](/dsa/merge-sorted-array/) runs it backwards from the end so nothing is overwritten.
+
+## How much work it saves
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Pair sums checked when no pair adds up to the target." />
+
+| | Every pair | Both ends | Same direction |
+|---|---|---|---|
+| Time | O(n²) | O(n) after sorting | O(n) |
+| Space | O(1) | O(1) | O(1) |
+| Needs | nothing | sorted input (or sort first: O(n log n)) | a "keep it?" rule |
+| Answers | any pair question | pair sums, palindromes, widest container | filter, compact, dedupe in place |
+
+## When will two pointers work?
+
+Ask: **after one comparison, can I say for certain that one end is useless?** That needs some kind of order:
+
+- **Sorted values**: a sum that's too small means the smaller number is the problem
+  ([Two Sum II](/dsa/two-sum-ii-input-array-is-sorted/)).
+- **A limit set by one side**: in [Container With Most Water](/dsa/container-with-most-water/), the shorter wall
+  caps the area, so moving the taller one can't help.
+- **Symmetry**: a [palindrome](/dsa/valid-palindrome/) must match from both ends inward.
+
+If the array is unsorted and order matters (the original indices of [Two Sum](/dsa/two-sum/)), sorting would
+lose information. Use a hash map instead.
+
+## Two pointers vs sliding window
+
+A **sliding window** is the same-direction shape where you care about **everything between** the pointers, not
+just the two ends: the longest substring with no repeated letter, the smallest subarray with a large enough sum.
+The right pointer grows the window, the left pointer shrinks it when a rule breaks, and each pointer only ever
+moves forward, so it's O(n) too. [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/)
+is the classic example.
+
+## Interview theory
+
+<QA q="Why is the both-ends version O(n) and not O(n²)?">
+Every iteration moves `lo` right or `hi` left by one, and they start n − 1 apart. So the loop runs at most n − 1
+times. Each iteration does O(1) work.
+</QA>
+
+<QA q="Two Sum on an unsorted array: sort and use two pointers, or use a hash map?">
+The hash map is O(n) time and O(n) space, and keeps the original indices. Sorting first costs O(n log n) and moves
+the items, so you'd have to carry the original indices along. Two pointers wins only when the input is already
+sorted or space must be O(1).
+</QA>
+
+<QA q="How does 3Sum use two pointers?">
+Sort the array, fix the first number `a[i]`, then run the both-ends search on the rest for target `−a[i]`. That's
+n searches of O(n) each: O(n²), down from O(n³). Skip repeated values of `a[i]` to avoid duplicate triples.
+</QA>
+
+<QA q="What's a fast and slow pointer on a linked list?">
+Two pointers moving at different speeds: slow moves one node, fast moves two. When fast reaches the end, slow is at
+the middle. If the list has a cycle, fast eventually laps slow and they meet (Floyd's algorithm).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "a = [1, 3, 5, 8], target 12. lo = 0, hi = 3: 1 + 8 = 9. What's the next move?", options: ["Move lo right", "Move hi left", "Stop: no pair exists"], answer: 0, why: "9 < 12, and 8 is the largest number left, so 1 is too small for every partner." },
+  { q: "Why is it safe to drop a[lo] when a[lo] + a[hi] < target?", options: ["a[hi] is the biggest partner left, and even it isn't enough", "a[lo] has already been used", "The array has no duplicates"], answer: 0, why: "Every other partner is smaller than a[hi], so every sum with a[lo] would be smaller still." },
+  { q: "What does the both-ends technique need from the input?", options: ["Some order, such as sorted values", "No duplicates", "An even length"], answer: 0, why: "Without order, one comparison tells you nothing about the other pairs." },
+  { q: "In the read/write pattern, what's true of everything left of w?", options: ["It's finished: the kept items, in order", "It hasn't been read yet", "It's all duplicates"], answer: 0, why: "w only advances after writing an item worth keeping, so the prefix a[:w] is the answer so far." },
+  { q: "Find the longest stretch of a string with no repeated letter. Which technique fits?", options: ["Sliding window", "Both ends", "Sort, then both ends"], answer: 0, why: "You care about everything between the pointers, and the window grows and shrinks as you go." },
+]} />
