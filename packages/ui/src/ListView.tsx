@@ -49,7 +49,7 @@ function Row({ row }: { row: ListRow }) {
   const describe = row.nodes.map((n) => (n.kind === "null" ? "None" : String(n.val))).join(" → ");
 
   return (
-    <div className="fp-lrow">
+    <div className={`fp-lrow${row.compact ? " is-compact" : ""}`}>
       {row.label && <div className="fp-lrow__label">{row.label}</div>}
       <div className="fp-ltrack" ref={trackRef}>
         <div className="fp-lnodes" role="img" aria-label={`${row.label ? row.label + ": " : ""}${describe}`}>
@@ -76,7 +76,7 @@ function Row({ row }: { row: ListRow }) {
             );
           })}
         </div>
-        <div className="fp-ptr-layer" style={{ height: rows * PTR_ROW + 10 }} aria-hidden="true">
+        {(ptrs.length > 0 || !row.compact) && <div className="fp-ptr-layer" style={{ height: rows * PTR_ROW + 10 }} aria-hidden="true">
           {ptrs.map(({ name, id, r }) => {
             const c = pos[id];
             if (!c) return null;
@@ -86,7 +86,7 @@ function Row({ row }: { row: ListRow }) {
               </span>
             );
           })}
-        </div>
+        </div>}
         {ptrs.length > 0 && <span className="fp-sr">Pointers: {ptrs.map((p) => `${p.name} at ${p.id}`).join(", ")}</span>}
       </div>
     </div>

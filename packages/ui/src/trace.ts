@@ -18,6 +18,8 @@ export interface ListRow {
   arrows: ("right" | "left" | "both" | null)[];
   pointers?: Record<string, string | null>;
   tones?: Record<string, Tone>;
+  /** Small rows with no lift and no empty pointer rail, for many short lists (e.g. hash-table buckets). */
+  compact?: boolean;
 }
 
 /** One binary-tree node. Children are node ids (or null). */

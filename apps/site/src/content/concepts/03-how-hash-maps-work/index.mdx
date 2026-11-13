@@ -1,0 +1,108 @@
+---
+title: "How hash maps work: hashing, collisions and resizing"
+topic: Arrays & hashing
+kind: Explainer
+order: 1
+summary: Why a dictionary lookup takes O(1) on average, what happens when two keys land in the same spot, and why the table quietly doubles itself as it fills up.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The idea in one sentence
+
+A hash map is an **array**, plus a function that turns any key into an **index** in that array, so finding a key
+means jumping to one position instead of searching.
+
+That function is the **hash function**. In Python, `hash(42)` is `42` and `hash("cat")` is some large number; the
+map takes it modulo the array's length to get a position: `index = hash(key) % len(array)`.
+
+## Why lookups are O(1)
+
+Searching a plain list for a key means checking items one by one: O(n). A hash map computes the key's position
+directly: one hash, one modulo, one array access. That cost doesn't depend on how many keys are stored, so it's
+**O(1)**. It's the reason [Two Sum](/dsa/two-sum/), [Contains Duplicate](/dsa/contains-duplicate/) and
+[Longest Consecutive Sequence](/dsa/longest-consecutive-sequence/) drop from O(n²) or O(n log n) to O(n).
+
+## Collisions are unavoidable
+
+There are infinitely many possible keys and only a few slots, so sooner or later two keys map to the same index:
+a **collision**. With 4 buckets, `12 % 4` and `20 % 4` are both 0. Even with a good hash function, collisions start
+earlier than you'd guess, just as two people in a room of 23 share a birthday more often than not.
+
+There are two standard ways to handle them.
+
+## Fix 1: Separate chaining
+
+Each bucket holds a small list (a chain) of every key that landed there. To look a key up, go to its bucket and
+walk the chain. Watch bucket chains form, then watch the table **double** and spread them out once it's more than
+75% full.
+
+<Viz client:visible approach="chaining" />
+
+## Fix 2: Open addressing (linear probing)
+
+There are no chains: every key sits directly in the array. If a key's slot is taken, try the next slot, then the
+next, until one is free. Lookups follow the same path. Here the table has 10 slots, so a key's home slot is just its
+last digit: 22 wants 12's slot, and 17 wants 7's.
+
+<Viz client:visible approach="probing" />
+
+Probing keeps everything in one array, which is fast for the CPU cache, but filled slots bunch into **clusters**
+that make later probes longer. That's why open-addressing tables resize earlier.
+
+## Load factor and resizing
+
+The **load factor** is keys ÷ slots. As it rises, chains get longer (or probes get longer) and lookups slow down.
+So hash maps watch it and, past a threshold, allocate an array twice the size and re-insert every key.
+
+A single resize costs O(n), but it happens so rarely that, spread across all the insertions that led up to it, each
+insertion still costs **O(1) amortised**: doubling means you insert n keys before paying O(n) again.
+
+## What real languages do
+
+| Language | Collision strategy | Resizes when |
+|---|---|---|
+| Python `dict` | Open addressing (with a scrambled probe order, not +1) | About two-thirds full |
+| Java `HashMap` | Chaining; a long chain (8+) turns into a balanced tree | 75% full (load factor 0.75) |
+
+Python's `dict` also keeps insertion order (guaranteed since Python 3.7).
+
+## Interview theory
+
+<QA q="What's the worst-case time for a hash map lookup, and when does it happen?">
+O(n): if every key lands in the same bucket, a lookup walks one long chain. A good hash function makes this
+extremely unlikely by accident. Java limits the damage by turning long chains into trees, making the worst case
+O(log n).
+</QA>
+
+<QA q="Why can't you use a Python list as a dictionary key?">
+A key's position depends on its hash. If the key could change after insertion, its hash would change and the map
+would look in the wrong place. Lists are mutable, so they're unhashable; use a tuple instead.
+</QA>
+
+<QA q="What is hash flooding?">
+An attack where someone sends many keys chosen to collide, turning O(1) lookups into O(n) and an O(n) request into
+O(n²). Python randomises string hashes per process (since Python 3.3) to make the colliding keys impossible to predict.
+</QA>
+
+<QA q="Why do hash tables double in size instead of growing by a fixed amount?">
+Doubling keeps the cost of insertions O(1) amortised: after a resize to 2n slots, you get n cheap insertions before
+the next O(n) resize. Growing by a fixed amount would trigger resizes far more often, making inserts O(n) amortised.
+</QA>
+
+<QA q="When would you choose a sorted structure (like a balanced tree) over a hash map?">
+When you need order: the smallest key, a range of keys, or iteration in sorted order. Hash maps answer
+"is it there?" in O(1) but know nothing about order; trees answer ordered questions in O(log n).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "A hash map has 8 buckets. Which bucket does the key 27 go to (hash(27) = 27)?", options: ["Bucket 3", "Bucket 7", "Bucket 2"], answer: 0, why: "27 % 8 = 3, since 8 × 3 = 24 and 27 − 24 = 3." },
+  { q: "Two different keys land in the same bucket. What is this called?", options: ["A collision", "A resize", "A rehash"], answer: 0, why: "A collision: different keys, same index. Chaining or probing handles it." },
+  { q: "Why is inserting into a hash map O(1) on average even though resizing costs O(n)?", options: ["Resizes are rare enough to average out", "Resizing happens in the background", "Resizing is actually O(1)"], answer: 0, why: "Doubling means n cheap inserts happen between O(n) resizes, so each insert averages O(1): amortised cost." },
+  { q: "In linear probing, why do clusters hurt?", options: ["New keys landing anywhere in a cluster must probe to its end", "They use more memory", "They make the hash function slower"], answer: 0, why: "Every key whose home slot falls inside a cluster has to step past it, and that makes the cluster grow further." },
+  { q: "You need the 10 smallest keys out of a collection. Is a hash map a good fit?", options: ["No: it keeps no order", "Yes: lookups are O(1)", "Yes, if it's large enough"], answer: 0, why: "Hash maps spread keys out with no order. A heap or a sorted structure is the right tool." },
+]} />

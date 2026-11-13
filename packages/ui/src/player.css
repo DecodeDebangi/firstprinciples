@@ -234,6 +234,15 @@
 .fp-larrow.is-both line, .fp-larrow.is-both path { stroke: var(--tone-miss-border); }
 .fp-larrow svg { transition: opacity .3s; }
 
+/* Compact list rows (hash-table buckets): colour without lift, no empty rail. */
+.fp-lrow.is-compact .fp-ltrack { padding-top: 2px; }
+.fp-lrow.is-compact .fp-lnodes { min-height: 34px; padding-bottom: 2px; }
+.fp-lrow.is-compact .fp-lnode { width: 30px; font-size: 13px; }
+.fp-lrow.is-compact .fp-cell { transform: none; box-shadow: none; }
+.fp-lrow.is-compact .fp-lrow__label { padding-top: 9px; }
+.fp-lrow.is-compact + .fp-lrow.is-compact { border-top: 1px dashed var(--border); }
+.fp-lists:has(.is-compact) { gap: 0; padding-top: 8px; }
+
 /* Binary trees */
 .fp-trees { display: grid; gap: 12px; }
 .fp-trees.is-multi { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
