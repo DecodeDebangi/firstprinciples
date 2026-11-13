@@ -34,6 +34,8 @@ export interface TreeData {
   /** Small text under a node: a return value, an allowed range, a level… */
   notes?: Record<string, string>;
   pointers?: Record<string, string | null>;
+  /** "compact" gives columns only to leaves and centres parents: for call trees, where nodes have 0 or 2 children. */
+  layout?: "inorder" | "compact";
 }
 
 /** Build a tree from LeetCode's level-order list, e.g. [3, 9, 20, null, null, 15, 7]. Ids are "t0", "t1", … */

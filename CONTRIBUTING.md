@@ -67,7 +67,8 @@ reach for it" signals and Python template live in `apps/site/src/data/topicGuide
 enough to fit a phone (comments under about 25 characters).
 
 Trees: use the `"tree"` input kind (LeetCode's level order with `null`), build with `treeFromLevelOrder`, and
-draw with `trees: [{ root, nodes, tones, notes, pointers }]` on a step. If an approach changes the tree, snapshot
+draw with `trees: [{ root, nodes, tones, notes, pointers }]` on a step. For a recursion's call tree, set
+`layout: "compact"` (columns only for leaves, parents centred), which is far narrower than the default in-order layout. If an approach changes the tree, snapshot
 the nodes for every step (`nodes.map((n) => ({ ...n }))`). Linked lists use `lists`, 2D answers use `grid` (optional
 `rowLabels`/`colLabels` draw headers; empty-string cells are invisible, which suits triangular tables).
 

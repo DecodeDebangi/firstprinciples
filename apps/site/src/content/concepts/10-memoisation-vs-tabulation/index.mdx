@@ -1,0 +1,128 @@
+---
+title: "Memoisation vs tabulation: from exponential recursion to a table"
+topic: Dynamic programming
+kind: Explainer
+order: 1
+summary: What dynamic programming actually is, watched on a call tree. Plain recursion repeats the same work, a memo cuts whole branches off, and a bottom-up table removes the recursion. Plus how to spot a DP problem and design one in four steps.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The example: climbing stairs
+
+You're at the bottom of `n` stairs and can climb **1 or 2** at a time. How many different ways are there to reach
+the top?
+
+Think about your **last** move. You arrived at stair `n` either with 1 step from stair `n − 1`, or with 2 steps from
+stair `n − 2`. Every way to reach the top is a way to reach one of those two, plus that last move:
+
+> `ways(n) = ways(n − 1) + ways(n − 2)`, with `ways(0) = ways(1) = 1`.
+
+That one line is a correct solution. The problem is how much work it does.
+
+## Plain recursion: the same questions, again and again
+
+The faded tree is every call the recursion will make. Watch it light up: `ways(3)` gets worked out twice and
+`ways(2)` three times, each time from scratch. The yellow nodes are repeated work.
+
+<Viz client:visible approach="naive" />
+
+Every call above the base cases makes two more, so the tree roughly doubles with each extra stair. The number of
+calls grows like 1.6ⁿ: about 22,000 calls for n = 20, and about 3.7 billion for n = 45.
+
+## Top-down: remember every answer (memoisation)
+
+Repeated work has an easy fix: the first time you work out `ways(m)`, **save it**. The next time anything asks for
+`ways(m)`, return the saved answer. Watch the faded branches: whole subtrees are never called.
+
+<Viz client:visible approach="memo" />
+
+Each value from 2 to n is computed once, so that's **O(n)** calls instead of exponential. The code barely changed:
+the same recursion, plus two lines.
+
+## Bottom-up: fill a table (tabulation)
+
+Memoisation still recurses from the top down. But we know exactly which smaller answers each one needs, so we can
+compute them **in order, smallest first**, and never recurse at all.
+
+<Viz client:visible approach="table" />
+
+Since each entry only reads the two before it, you can keep just two variables instead of the whole table: O(1)
+space.
+
+## Comparing the three
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Calls (or table entries) to compute ways(n)." />
+
+| | Plain recursion | Top-down (memo) | Bottom-up (table) |
+|---|---|---|---|
+| Time | O(1.6ⁿ) | O(n) | O(n) |
+| Space | O(n) call stack | O(n) memo + stack | O(n) table, or O(1) |
+| Computes | everything, many times | only what's needed, once | everything up to n, once |
+| Easiest to write | yes | yes, from the recursion | needs the right fill order |
+| Deep inputs | recursion limit | recursion limit | no recursion |
+
+**Which one to use?** Write the recursion first: it's the hardest part and the most natural to reason about. Add a
+memo and you're usually done. Convert to a table when recursion depth is a problem, or when you want to shrink the
+space by keeping only the last row or two.
+
+## What makes something a DP problem?
+
+Dynamic programming is just this: **solve each smaller problem once, and build bigger answers from them.** It works
+when a problem has two properties:
+
+1. **Overlapping subproblems**: the same smaller question comes up many times (like `ways(2)` above). If every
+   subproblem were different, saving answers wouldn't help: that's plain divide and conquer, like merge sort.
+2. **Optimal substructure**: the answer to the big problem can be built from answers to smaller ones.
+
+Signals in the problem statement: "how many ways", "minimum cost", "maximum profit", "longest", "can you reach",
+over a sequence or grid, where choices made early affect what's possible later.
+
+## Designing one in four steps
+
+1. **State**: what does `dp[i]` mean, in words? ("The number of ways to reach stair i.")
+2. **Recurrence**: how does `dp[i]` come from smaller states? Think about the **last** choice.
+3. **Base cases**: the smallest states you can answer directly.
+4. **Order**: fill states so everything `dp[i]` needs is ready first.
+
+[Maximum Subarray](/dsa/maximum-subarray/) is DP with state "best sum ending at i", and
+[Pascal's Triangle](/dsa/pascals-triangle/) builds each row from the one above.
+
+## Interview theory
+
+<QA q="Is dynamic programming the same as recursion with caching?">
+That's one way to implement it (top-down). DP is the idea of reusing subproblem answers; memoised recursion and
+bottom-up tables are two ways to do it. They do the same work in the same time complexity.
+</QA>
+
+<QA q="When is greedy enough, and when do you need DP?">
+Greedy works when the locally best choice is always part of an optimal answer; you can prove it never needs undoing.
+When an early choice can turn out wrong later (coin change with coins 1, 3 and 4 for amount 6: greedy takes 4 + 1 + 1,
+but 3 + 3 is better), you need DP to consider every option.
+</QA>
+
+<QA q="How do you get the time complexity of a DP solution?">
+Number of states × work per state. Climbing stairs has n states and O(1) work each: O(n). A grid DP with m × n
+states and O(1) work is O(m·n). If each state loops over k options, multiply by k.
+</QA>
+
+<QA q="Why does Python's functools.cache work here?">
+`@functools.cache` (or `lru_cache`) memoises a function automatically: it stores the result for each set of
+arguments. Putting it on the plain recursive `ways` turns it into the top-down version. The arguments must be
+hashable.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "Why is the plain recursive ways(n) slow?", options: ["It solves the same subproblems many times", "Addition is slow", "It uses a table"], answer: 0, why: "ways(n − 2) is computed both directly and inside ways(n − 1), and the repetition compounds down the tree." },
+  { q: "What does adding a memo change?", options: ["Each subproblem is computed once: exponential becomes O(n)", "Nothing: it only saves memory", "It removes the base cases"], answer: 0, why: "Later calls for the same m return the saved answer, so whole branches of the call tree are never made." },
+  { q: "In the bottom-up table, why fill dp from left to right?", options: ["Each entry needs the ones before it", "Python lists only grow to the right", "It's faster than right to left for any problem"], answer: 0, why: "dp[i] reads dp[i − 1] and dp[i − 2], so they must already be filled." },
+  { q: "Merge sort splits a problem into smaller ones. Why isn't it DP?", options: ["Its subproblems don't overlap", "It doesn't use recursion", "It's too fast"], answer: 0, why: "Each half is a different, independent subarray, so there's nothing to reuse." },
+  { q: "A DP has n × m states and does O(1) work per state. What's its time?", options: ["O(n·m)", "O(n + m)", "O(2ⁿ)"], answer: 0, why: "Time is number of states times the work per state." },
+]} />
