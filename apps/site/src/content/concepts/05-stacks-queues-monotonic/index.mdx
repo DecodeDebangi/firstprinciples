@@ -1,0 +1,93 @@
+---
+title: Stacks vs queues, and the monotonic stack
+topic: Stack
+kind: Explainer
+order: 1
+summary: Last in first out vs first in first out, which problems need which, how to use them correctly in Python, and the monotonic stack trick that turns "look ahead from every position" from O(n²) into O(n).
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## Two ways to wait in line
+
+Both a **stack** and a **queue** hold items until you're ready for them. The only difference is *which* item you get back:
+
+- A **stack** gives back the **most recent** item: last in, first out (LIFO). Like a pile of plates.
+- A **queue** gives back the **oldest** item: first in, first out (FIFO). Like a line at a counter.
+
+Push the same items through both and watch the order they come out in.
+
+<Viz client:visible approach="stack" />
+
+<Viz client:visible approach="queue" />
+
+## Which one does a problem need?
+
+| Reach for a stack when… | Reach for a queue when… |
+|---|---|
+| The most recent unfinished thing must be handled first | Things must be handled in the order they arrived |
+| Matching pairs: brackets, tags ([Valid Parentheses](/dsa/valid-parentheses/)) | Level-by-level traversal, shortest steps ([Level Order](/dsa/binary-tree-level-order-traversal/)) |
+| Undo, backtracking, depth-first search | Scheduling, buffering, breadth-first search |
+| Evaluating nested expressions | Processing a stream fairly |
+
+Recursion is a stack in disguise: every waiting function call sits on the **call stack**, and the most recent call
+finishes first. That's why any recursive depth-first search can be rewritten with an explicit stack.
+
+## Using them in Python
+
+| Operation | Stack (`list`) | Queue (`collections.deque`) |
+|---|---|---|
+| Add | `s.append(x)`: O(1) | `q.append(x)`: O(1) |
+| Remove | `s.pop()`: O(1) | `q.popleft()`: O(1) |
+| Peek | `s[-1]` | `q[0]` |
+
+**Don't use a list as a queue.** `list.pop(0)` shifts every remaining element left: O(n) per removal, so a loop that
+empties a queue of n items becomes O(n²). `deque` removes from either end in O(1).
+
+## The monotonic stack
+
+A powerful trick for "for each item, find the next bigger (or smaller) item". Walk left to right and keep a stack of
+items still **waiting** for their answer. When a new item arrives, it answers every waiting item smaller than it,
+starting from the top, and then waits itself. Because smaller items are always popped before a new one is pushed,
+the values on the stack only ever **decrease toward the top**. That ordering gives the stack its name.
+
+<Viz client:visible approach="monotonic" />
+
+**Why it's O(n), even with a loop inside a loop:** count pushes and pops instead of iterations. Each index is
+pushed exactly once and popped at most once, so all the inner `while` loops together run at most n times. The
+same idea solves [Daily Temperatures](/dsa/daily-temperatures/), stock spans and the largest rectangle in a histogram.
+
+## Interview theory
+
+<QA q="How would you implement a queue using two stacks?">
+Push new items onto an "in" stack. To dequeue, pop from an "out" stack; if it's empty, first move everything from
+"in" to "out", which reverses the order. Each item moves at most once between the stacks, so every operation is
+O(1) amortised.
+</QA>
+
+<QA q="Is a priority queue a queue?">
+Not in the FIFO sense. A priority queue always gives back the item with the highest priority (smallest or largest
+key), whatever order it arrived in. It's usually built on a heap, with O(log n) insert and remove.
+</QA>
+
+<QA q="Why does breadth-first search use a queue and depth-first search use a stack?">
+BFS must finish everything at distance 1 before distance 2, so it needs the oldest discovered node first (FIFO).
+DFS goes as deep as possible before backing up, so it needs the most recently discovered node first (LIFO).
+</QA>
+
+<QA q="In Java, should you use the Stack class?">
+Prefer `ArrayDeque`. `Stack` is an old class that synchronises every method, which is slower and unnecessary;
+`ArrayDeque` works as both a stack (`push`/`pop`) and a queue (`offer`/`poll`).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "You push 1, 2, 3 onto a stack and then pop twice. Which items come out?", options: ["3, then 2", "1, then 2", "3, then 1"], answer: 0, why: "A stack returns the most recent item first: 3, then 2." },
+  { q: "You need to process print jobs in the order they were sent. Which structure fits?", options: ["Queue", "Stack", "Hash set"], answer: 0, why: "First come, first served is exactly FIFO." },
+  { q: "Why is list.pop(0) a bad way to dequeue in Python?", options: ["It shifts every remaining element: O(n)", "It removes the wrong element", "It isn't allowed on lists"], answer: 0, why: "Removing from the front moves all the others left. collections.deque.popleft() is O(1)." },
+  { q: "In a monotonic stack for 'next greater element', what happens when a bigger number arrives?", options: ["It pops and answers every smaller waiting number", "It's pushed underneath the waiting numbers", "It's ignored"], answer: 0, why: "The new number is the first bigger value to the right of each smaller waiting number, so it answers them, most recent first." },
+  { q: "A monotonic-stack solution has a while loop inside a for loop. What's its time complexity?", options: ["O(n)", "O(n²)", "O(n log n)"], answer: 0, why: "Each index is pushed once and popped at most once, so the total inner work across the whole run is at most n." },
+]} />
