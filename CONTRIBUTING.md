@@ -108,6 +108,11 @@ paragraph of `## The problem` and the blockquote under `## The key question`. Ke
 Question ids are stable (`p:<slug>`, `t:<slug>`, `c:<concept>:<question text>`), so renaming a slug or rewording a
 quiz question resets readers' history for it.
 
+## Studio (reel recording)
+`/studio/<slug>/` shows one problem's animation in a 9:16 frame (432 × 768 CSS px) with large text, for screen
+recording. It reads the same `steps.ts`, so nothing extra is needed per problem. It isn't linked anywhere and is
+kept out of search and the sitemap. `?approach=<id>` opens a specific approach.
+
 ## Look and feel
 Light only, warm: cream paper, brown ink, terracotta accent; Fraunces headings, Inter body, JetBrains Mono code.
 All colours are tokens in `packages/ui/src/tokens.css`. The chart series (terracotta, teal, plum) were validated

@@ -1,0 +1,84 @@
+---
+/**
+ * Recording mode for reels: /studio/<slug>/. Not linked from the site, kept out of search and the sitemap.
+ * Uses its own bare layout so nothing but the 9:16 frame (and controls you can hide with H) is on screen.
+ */
+import { getCollection } from "astro:content";
+import "@firstprinciples/ui/tokens.css";
+import "../../styles/global.css";
+import StudioApp from "../../components/StudioApp.tsx";
+
+export async function getStaticPaths() {
+  const problems = await getCollection("dsa");
+  return problems.map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const folder = p.filePath!.split("/").slice(-2, -1)[0];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Studio · {p.data.title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+  </head>
+  <body class="studio-body">
+    <StudioApp client:only="react" folder={folder} title={p.data.title} number={p.data.leetcode.number} />
+    <noscript>Studio needs JavaScript.</noscript>
+  </body>
+</html>
+
+<style is:global>
+  .studio-body { margin: 0; min-height: 100vh; background: var(--surface-2); }
+  .st { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 28px; padding: 20px; box-sizing: border-box; flex-wrap: wrap; }
+  .st.is-bare { padding: 0; background: var(--bg); }
+  /* 9:16, 432 × 768 CSS px: 1080 × 1920 when the browser zoom × screen scale is 2.5 (or record and scale). */
+  .st-frame {
+    width: 432px; height: 768px; box-sizing: border-box; padding: 34px 26px 22px;
+    display: flex; flex-direction: column; background: var(--bg); overflow: hidden; position: relative;
+    border-radius: 18px; box-shadow: 0 20px 50px -20px rgb(60 40 20 / .35);
+  }
+  .st.is-bare .st-frame { border-radius: 0; box-shadow: none; }
+  .st-head { text-align: center; margin-bottom: 14px; }
+  .st-brand { font: 600 14px var(--font-serif); color: var(--text-2); letter-spacing: .01em; }
+  .st-brand em { color: var(--accent); }
+  .st-title { margin: 6px 0 4px; font: 700 30px/1.1 var(--font-serif); color: var(--text); }
+  .st-sub { font: 600 13px var(--font-sans); color: var(--accent); }
+  .st-stage { flex: 0 0 auto; min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
+  .st-stage .fp-graph { max-width: 100%; }
+  .st-code {
+    display: block; margin: 6px 0 10px; padding: 8px 12px; border-radius: 10px; background: var(--surface-2);
+    border-left: 3px solid var(--accent); font: 600 14px var(--font-mono); color: var(--text); white-space: pre-wrap; word-break: break-word;
+  }
+  .st-msg { margin: 0 0 10px; font: 500 19px/1.4 var(--font-sans); color: var(--text); animation: st-in .35s ease-out; }
+  .st-msg.is-found { color: var(--tone-found-border); font-weight: 600; }
+  .st-msg.is-notfound { color: var(--tone-miss-border); font-weight: 600; }
+  @keyframes st-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .st-panels { display: grid; gap: 6px; margin-bottom: 8px; }
+  .st-panel { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .st-panel__t { font: 600 11px var(--font-sans); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .st-panel__items { display: flex; flex-wrap: wrap; gap: 4px; }
+  .st-chip { font: 600 13px var(--font-mono); padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+  .st-chip.is-hl { background: var(--tone-found-bg); border-color: var(--tone-found-border); }
+  .st-chip.is-empty { color: var(--muted); font-weight: 500; }
+  .st-bar { margin-top: auto; height: 5px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .st-bar span { display: block; height: 100%; background: var(--accent); transition: width .4s ease; }
+  .st-foot { display: flex; justify-content: space-between; margin-top: 10px; font: 600 12px var(--font-sans); color: var(--muted); }
+  .st-controls { width: 300px; padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: grid; gap: 12px; font: 14px var(--font-sans); color: var(--text-2); }
+  .st-controls label { display: grid; gap: 6px; font-weight: 600; }
+  .st-controls select { font: 500 14px var(--font-sans); padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  .st-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .st-row button { font: 600 14px var(--font-sans); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; }
+  .st-row button.is-main { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 76px; }
+  .st-row button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .st-row button:disabled { opacity: .45; cursor: default; }
+  .st-controls .st-check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .st-help { margin: 0; font-size: 13px; line-height: 1.6; }
+  .st-help kbd { font: 600 12px var(--font-mono); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); }
+  .st-error { padding: 40px; font: 16px var(--font-sans); }
+</style>
