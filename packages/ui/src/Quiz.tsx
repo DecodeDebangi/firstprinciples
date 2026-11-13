@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./quiz.css";
+import { seededOrder } from "./shuffle";
 
 export interface QuizQuestion {
   q: string;
@@ -33,7 +34,9 @@ export function Quiz({ title = "Check yourself", questions }: { title?: string; 
             <li key={k} className="fp-quiz__item">
               <p className="fp-quiz__q">{item.q}</p>
               <div className="fp-quiz__opts" role="group" aria-label={`Question ${k + 1}`}>
-                {item.options.map((o, i) => {
+                {/* Options are stored with the answer anywhere (often first); show them in a fixed shuffled order. */}
+                {seededOrder(item.q, item.options.length).map((i) => {
+                  const o = item.options[i];
                   const state = choice === null ? "" : i === item.answer ? " is-right" : i === choice ? " is-wrong" : " is-dim";
                   return (
                     <button type="button" key={i} className={`fp-quiz__opt${state}`} disabled={choice !== null}

@@ -42,11 +42,12 @@ const steps = roadmap.map((step) => ({
                 <span class="rm__count">{[t.reads ? `${t.reads} read${t.reads > 1 ? "s" : ""}` : "", t.list.length ? `${t.list.length} problem${t.list.length > 1 ? "s" : ""}` : t.also.length ? `${t.also.length} related` : ""].filter(Boolean).join(" · ") || "Coming soon"}</span>
               </div>
               <p class="rm__blurb">{t.blurb}</p>
+              {t.list.length > 0 && <span class="pcount rm__done" data-pcount={t.list.map((p) => p.id).join(" ")} hidden></span>}
               {t.list.length > 0 && (
                 <ul class="rm__problems">
                   {t.list.slice(0, SHOW).map((p) => (
                     <li>
-                      <a href={`/dsa/${p.id}/`}>
+                      <a href={`/dsa/${p.id}/`} data-pslug={p.id}>
                         <span class={`rm__diff rm__diff--${p.data.difficulty}`} title={p.data.difficulty} aria-label={p.data.difficulty}></span>
                         <span class="rm__num">#{p.data.leetcode.number}</span>
                         {p.data.title}
@@ -103,6 +104,7 @@ const steps = roadmap.map((step) => ({
     background: var(--surface); border: 1.5px dashed var(--border); color: var(--muted);
   }
   .rm__topic.is-ready { border-style: solid; border-color: var(--border); color: var(--text); box-shadow: var(--shadow); }
+  .rm__done { margin: 0 0 10px; }
   .rm__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .rm__name { font: 600 17px var(--font-serif); }
   .rm__link { color: var(--text); text-decoration: none; }

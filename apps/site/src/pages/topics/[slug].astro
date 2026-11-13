@@ -76,7 +76,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
     )}
 
     <section>
-      <h2>Problems</h2>
+      <h2>Problems <span class="pcount" data-pcount={all.map((p) => p.id).join(" ")} hidden></span></h2>
       {all.length === 0 ? <p class="sub">Problems for this topic are on the way.</p> : <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>}
       <ol class="plist">
         {all.map((p) => (
@@ -84,7 +84,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
             <a href={`/dsa/${p.id}/`}>
               <span class="num">#{p.data.leetcode.number}</span>
               <span class="main">
-                <span class="title">{p.data.title}</span>
+                <span class="title" data-pslug={p.id}>{p.data.title}</span>
                 <span class="summary">{p.data.summary}</span>
               </span>
               <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>

@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { practisedTopics } from "../../data/roadmap";
+import ProgressToggle from "../../components/ProgressToggle.tsx";
 
 export async function getStaticPaths() {
   const problems = await getCollection("dsa");
@@ -20,7 +21,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
   imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`}>
   <article class="prose">
     <a class="back" href="/problems/">← All problems</a>
-    <h1>{p.data.title}</h1>
+    <h1 data-pslug={p.id}>{p.data.title}</h1>
     <div class="meta">
       <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
       {p.data.topics.map((t) => <span class="pill">{t}</span>)}
@@ -57,6 +58,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
       <a class="act act--primary" href={p.data.leetcode.url} target="_blank" rel="noopener">
         Solve {p.data.title} on LeetCode <span aria-hidden="true">↗</span>
       </a>
+      <ProgressToggle client:visible slug={p.id} />
     </aside>
   </article>
 </Base>

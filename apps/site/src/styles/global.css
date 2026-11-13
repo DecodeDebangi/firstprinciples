@@ -74,6 +74,30 @@ blockquote p { margin: 0; }
 /* Phones: the four nav links get their own row under the logo. */
 @media (max-width: 560px) {
   .site-header .wrap { height: auto; flex-wrap: wrap; row-gap: 2px; padding-block: 10px; }
-  .site-header nav { width: 100%; gap: 18px; overflow-x: auto; }
+  .site-header nav { width: 100%; gap: 12px; overflow-x: auto; justify-content: space-between; }
   .site-header nav a { font-size: 14px; white-space: nowrap; }
 }
+
+/* The reader's own progress marks (added by lib/marks.ts from this browser's storage) */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pmark { display: inline-grid; place-items: center; width: 1.25em; height: 1.25em; margin-left: .4em; border-radius: 50%;
+  font: 700 .72em/1 var(--font-sans); vertical-align: .12em; }
+.pmark--solved { background: var(--tone-found-bg); color: var(--tone-found-border); border: 1px solid var(--tone-found-border); }
+.pmark--shaky { background: var(--tone-compare-bg); color: var(--tone-compare-border); border: 1px solid var(--tone-compare-border); }
+
+/* "How did it go?" on problem pages */
+.ptoggle { margin: 22px auto 0; max-width: 46ch; }
+.ptoggle__q { margin: 0 0 8px; font-weight: 600; color: var(--text); }
+.ptoggle__opts { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ptoggle__opt { font: 600 14px var(--font-sans); padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2); transition: background-color .15s, border-color .15s; }
+.ptoggle__opt:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.ptoggle__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ptoggle__opt:disabled { opacity: .6; cursor: default; }
+.ptoggle__opt.is-on { border-color: var(--accent); background: var(--accent); color: #fff; }
+.ptoggle__opt--solved.is-on { border-color: var(--tone-found-border); background: var(--tone-found-border); }
+.ptoggle__opt--shaky.is-on { border-color: var(--tone-compare-border); background: var(--tone-compare-border); }
+.ptoggle__note { margin: 10px auto 0 !important; font-size: 13px; color: var(--muted) !important; line-height: 1.5; }
+.pcount { display: inline-block; margin-left: .5em; padding: 1px 8px; border-radius: 999px; vertical-align: middle;
+  font: 600 12px var(--font-sans); background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+.pcount.is-complete { background: var(--tone-found-bg); color: var(--tone-found-border); border-color: var(--tone-found-border); }

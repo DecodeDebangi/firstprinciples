@@ -92,9 +92,21 @@ topic name; add a topic to `roadmap.ts` if needed), `kind` (`Explainer`, `Compar
 
 A concept page explains the idea in our own words, uses animations where they help (a `steps.ts` + `Viz.tsx` like a
 problem, e.g. the six sorts), and ends with `<QA q="…">answer</QA>` interview questions and a
-`<Quiz client:visible questions={[{ q, options, answer, why }]} />`. It appears automatically under "Read first" on its
+`<Quiz client:visible questions={questions} />`, with the questions in a `quiz.ts` next to the page
+(`export const questions: QuizQuestion[] = [{ q, options, answer, why }]`). Each `why` must make sense on its own:
+the same questions feed the question bank on `/practice/`. Options are shown in a fixed shuffled order, so `answer`
+can point anywhere. It appears automatically under "Read first" on its
 topic page, on the roadmap card ("1 read"), at `/concepts/`, and as background reading on every problem that
 practises its topic. Test any algorithm it animates against a reference, and check every quiz answer.
+
+## Progress and practice
+Readers can mark a problem solved or shaky, and practise on `/practice/`. Everything is stored in the reader's
+browser (`apps/site/src/lib/progress.ts`, one localStorage key); there are no accounts, and a backup file or code
+moves it between devices. The practice bank (`lib/bank.ts`) is built from every concept's `quiz.ts`, plus a
+"which technique?" and (unless the answer is O(n)) a "best complexity?" question per problem, using the first
+paragraph of `## The problem` and the blockquote under `## The key question`. Keep both sections self-contained.
+Question ids are stable (`p:<slug>`, `t:<slug>`, `c:<concept>:<question text>`), so renaming a slug or rewording a
+quiz question resets readers' history for it.
 
 ## Look and feel
 Light only, warm: cream paper, brown ink, terracotta accent; Fraunces headings, Inter body, JetBrains Mono code.

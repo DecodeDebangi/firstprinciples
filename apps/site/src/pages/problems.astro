@@ -47,6 +47,15 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
           <button type="button" data-diff={d === "All" ? "" : d} aria-pressed={d === "All" ? "true" : "false"}>{d}</button>
         ))}
       </div>
+      <label class="sel" id="status-wrap" hidden>
+        <span>Progress</span>
+        <select id="status">
+          <option value="">All</option>
+          <option value="solved">Solved</option>
+          <option value="shaky">Shaky</option>
+          <option value="todo">Not yet</option>
+        </select>
+      </label>
       <label class="sel">
         <span>Sort</span>
         <select id="sort">
@@ -61,13 +70,13 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
 
     <ol class="list" id="list">
       {rows.map(({ p, newest, slugs }) => (
-        <li class="row" data-search={`${p.data.title} ${p.data.leetcode.number} ${p.data.topics.join(" ")}`.toLowerCase()}
+        <li class="row" data-slug={p.id} data-search={`${p.data.title} ${p.data.leetcode.number} ${p.data.topics.join(" ")}`.toLowerCase()}
           data-diff={p.data.difficulty} data-topics={slugs.join(" ")} data-newest={newest}
           data-number={p.data.leetcode.number} data-rank={{ Easy: 0, Medium: 1, Hard: 2 }[p.data.difficulty]}>
           <a href={`/dsa/${p.id}/`}>
             <span class="num">#{p.data.leetcode.number}</span>
             <span class="main">
-              <span class="title">{p.data.title}</span>
+              <span class="title" data-pslug={p.id}>{p.data.title}</span>
               <span class="meta">{subtitle(p.data.topics)}</span>
             </span>
             <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
@@ -82,7 +91,10 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
 </Base>
 
 <script>
+  import { load, onChange } from "../lib/progress";
   const q = document.getElementById("q") as HTMLInputElement;
+  const status = document.getElementById("status") as HTMLSelectElement;
+  const statusWrap = document.getElementById("status-wrap")!;
   const topic = document.getElementById("topic") as HTMLSelectElement;
   const sort = document.getElementById("sort") as HTMLSelectElement;
   const list = document.getElementById("list")!;
@@ -98,14 +110,19 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
   if ([...topic.options].some((o) => o.value === params.get("topic"))) topic.value = params.get("topic")!;
   diff = ["Easy", "Medium", "Hard"].includes(params.get("difficulty") ?? "") ? params.get("difficulty")! : "";
   if (["newest", "number", "difficulty"].includes(params.get("sort") ?? "")) sort.value = params.get("sort")!;
+  if (["solved", "shaky", "todo"].includes(params.get("status") ?? "")) status.value = params.get("status")!;
 
   function apply() {
+    // The reader's own marks, from this browser. The filter only appears once something is marked (or it's in the URL).
+    const marks = load().problems;
+    statusWrap.hidden = !Object.keys(marks).length && !status.value;
     const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     let shown = 0;
     for (const r of rows) {
       const ok = words.every((w) => r.dataset.search!.includes(w))
         && (!diff || r.dataset.diff === diff)
-        && (!topic.value || r.dataset.topics!.split(" ").includes(topic.value));
+        && (!topic.value || r.dataset.topics!.split(" ").includes(topic.value))
+        && (!status.value || (marks[r.dataset.slug!]?.status ?? "todo") === status.value);
       r.hidden = !ok;
       if (ok) shown++;
     }
@@ -121,6 +138,7 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
     if (topic.value) next.set("topic", topic.value);
     if (diff) next.set("difficulty", diff);
     if (sort.value !== "newest") next.set("sort", sort.value);
+    if (status.value) next.set("status", status.value);
     const qs = next.toString();
     history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
   }
@@ -128,8 +146,10 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
   q.addEventListener("input", apply);
   topic.addEventListener("change", apply);
   sort.addEventListener("change", apply);
+  status.addEventListener("change", apply);
+  onChange(apply);
   diffBtns.forEach((b) => b.addEventListener("click", () => { diff = b.dataset.diff ?? ""; apply(); }));
-  document.getElementById("clear")!.addEventListener("click", () => { q.value = ""; topic.value = ""; diff = ""; apply(); q.focus(); });
+  document.getElementById("clear")!.addEventListener("click", () => { q.value = ""; topic.value = ""; diff = ""; status.value = ""; apply(); q.focus(); });
   apply();
 </script>
 

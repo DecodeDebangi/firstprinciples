@@ -1,6 +1,7 @@
 export * from "./trace";
 export * from "./heap";
 export * from "./calltree";
+export * from "./shuffle";
 export { ArrayPlayer } from "./ArrayPlayer";
 export type { ArrayPlayerProps } from "./ArrayPlayer";
 export { InputForm } from "./input";
