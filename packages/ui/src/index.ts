@@ -10,6 +10,7 @@ export { GrowthChart } from "./GrowthChart";
 export { ArrayCells } from "./ArrayCells";
 export { ListView } from "./ListView";
 export { TreeView } from "./TreeView";
+export { GraphView, BoardView } from "./GraphView";
 export { AutoDemo } from "./AutoDemo";
 export { Quiz } from "./Quiz";
 export type { QuizQuestion } from "./Quiz";

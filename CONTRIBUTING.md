@@ -76,8 +76,14 @@ narrows the cells, e.g. for a timeline).
 The growth chart may be left out when every approach does the same amount of work (e.g. two O(n) tree walks):
 say so in one sentence under the comparison table instead of drawing identical lines.
 
-A new data structure (linked list, tree, graph, DP table) needs a new renderer in `packages/ui` alongside
-`ArrayPlayer`, with its own step type in `trace.ts`.
+Graphs use `graphs: [{ nodes, edges, directed, tones, edgeTones, notes, pointers }]` (nodes sit on a circle unless
+you pass `pos`; edge tones are keyed `"a>b"` in the edge's listed order). A 2D map or maze uses `board: { rows, tones }`
+as the main view, since the race lanes only draw the main view. Heaps: `Heap` (counts every comparison) and
+`heapTree` turn a heap array into a tree. Recursion trees (backtracking, call trees): record calls with `CallTree`
+(`add`, `log`), then `replay` draws the whole tree faded and lights each call; nodes may have any number of `kids`.
+
+A new data structure needs a new renderer in `packages/ui` alongside `ArrayPlayer`, with its own step type in
+`trace.ts`.
 
 ## Adding a concept (theory)
 Create `apps/site/src/content/concepts/<order>-<slug>/index.mdx`. Frontmatter: `title`, `topic` (must be a roadmap

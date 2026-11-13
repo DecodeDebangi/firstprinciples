@@ -1,0 +1,91 @@
+---
+title: Find if Path Exists in Graph
+leetcode: { number: 1971, url: "https://leetcode.com/problems/find-if-path-exists-in-graph/" }
+difficulty: Easy
+topics: [Graph, BFS, DFS]
+added: 2026-11-13
+summary: Can you get from one node to another by following edges? The first graph problem to learn. Builds an adjacency list, then searches outward with a queue (BFS) or a stack (DFS), never visiting a node twice.
+best: { time: "O(V + E)", space: "O(V + E)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` nodes numbered `0` to `n − 1`, and a list of **undirected** edges, each joining two nodes. Given a
+`source` and a `destination`, return whether you can get from one to the other by walking along edges.
+
+With 7 nodes and edges 0–1, 0–2, 1–3, 2–3, 3–4, 5–6: from 0 you can reach 4 (0 → 1 → 3 → 4), but not 6.
+Nodes 5 and 6 are a separate piece of the graph.
+
+## The key question
+
+> **Starting from the source, how do I visit everything reachable exactly once?**
+
+Edges let you wander in circles (0 → 1 → 3 → 2 → 0 …), so the one thing every graph search needs is a **set of
+nodes already seen**. With it, each node is visited once; without it, the search can loop forever.
+
+## First: an adjacency list
+
+An edge list is awkward to search: "who are 3's neighbours?" means scanning every edge. So turn it into an
+**adjacency list** first: for each node, a list of its neighbours. Each undirected edge `a–b` goes in twice, once
+in each direction. It's in the panel next to each animation.
+
+## Approach 1: Breadth-first search (queue)
+
+Put the source in a queue. Repeatedly take the **oldest** node from the front, and add each neighbour you haven't
+seen to the back. The search spreads out in rings: everything 1 edge away, then 2, and so on.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(V + E)" space="O(V + E)">
+**Time.** Building the adjacency list touches each edge twice. Then each node is taken from the queue at most
+once, and each edge is looked at from both ends: **O(V + E)**.
+
+**Space.** The adjacency list is O(V + E); the queue and the seen set are O(V).
+</Complexity>
+
+## Approach 2: Depth-first search (stack)
+
+The same loop with a **stack** instead of a queue: take the **newest** node. Now the search runs down one path as
+far as it can before trying others. A recursive DFS does the same thing with the call stack.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(V + E)" space="O(V + E)">
+**Time.** Each node is pushed at most once (it's marked seen when pushed), and each edge is checked from both ends:
+**O(V + E)**.
+
+**Space.** The adjacency list, the stack and the seen set: **O(V + E)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race the two on the same graph. Both share one clock that ticks once per operation. Which one reaches the
+destination first depends on where it is: BFS finds near targets fast, while DFS can get lucky (or unlucky) down one path.
+Try destination `6` to see both give up after exploring everything they can reach.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Visits nodes… |
+|---|---|---|---|
+| BFS (queue) | O(V + E) | O(V + E) | in order of distance from the source |
+| DFS (stack) | O(V + E) | O(V + E) | one path at a time, deepest first |
+
+Both do the same O(V + E) work in the worst case, so there's no growth chart. For a yes/no "is there a path?",
+either is fine. When you need the **shortest** path, BFS is the one: see [Graphs](/concepts/graphs/).
+
+## Common mistakes
+
+- **Marking nodes as seen when they're taken out, instead of when they're added.** Then the same node can be added
+  many times before it's processed. Mark it the moment it joins the queue or stack.
+- **Adding each edge only one way.** The graph is undirected: `a–b` means `b` is `a`'s neighbour and vice versa.
+- **Searching the edge list directly.** Finding neighbours by scanning all edges makes each step O(E), and the
+  whole search O(V · E).
+- **Forgetting `source == destination`.** The answer is true straight away; the code above handles it on the first pop.
+
+## Related problems
+
+- Number of Islands (LeetCode 200). The same search on a grid, run once per island.
+- Course Schedule (LeetCode 207). Directed edges, and the question becomes "is there a cycle?".
+- Number of Provinces (LeetCode 547). Count the separate pieces of a graph: one search per unvisited node.

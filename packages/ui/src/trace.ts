@@ -29,6 +29,22 @@ export interface TreeNodeData {
   kids?: string[];
 }
 
+/** One graph for GraphView. */
+export interface GraphData {
+  nodes: { id: string; label: number | string }[];
+  edges: { a: string; b: string }[];
+  /** Draw an arrow from a to b on each edge. */
+  directed?: boolean;
+  /** Fixed positions, 0..1 across and down. Without them, nodes sit evenly on a circle in the order given. */
+  pos?: Record<string, { x: number; y: number }>;
+  tones?: Record<string, Tone>;
+  /** Edge tones keyed "a>b", in the edge's listed order. */
+  edgeTones?: Record<string, Tone>;
+  /** A short label under a node: a distance, an order, a count. */
+  notes?: Record<string, string>;
+  pointers?: Record<string, string | null>;
+}
+
 /** One tree for TreeView. Node ids stay stable across steps, so moved subtrees slide instead of jumping. */
 export interface TreeData {
   label?: string;
@@ -69,6 +85,10 @@ export interface ArrayStep {
   lists?: ListRow[];
   /** Binary trees drawn instead of the array (pass `array: []`). */
   trees?: TreeData[];
+  /** Graphs drawn instead of the array (pass `array: []`). */
+  graphs?: GraphData[];
+  /** A 2D board of cells drawn instead of the array (pass `array: []`), e.g. a map of land and water. Tones keyed "r,c". */
+  board?: { rows: (number | string)[][]; tones?: Record<string, Tone> };
   /** Named pointers, e.g. { lo: 0, hi: 7 }. */
   pointers?: Record<string, number>;
   tones?: Record<number, Tone>;

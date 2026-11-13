@@ -1,0 +1,113 @@
+---
+title: "Graphs: adjacency lists, BFS, DFS and the visited set"
+topic: Graphs
+kind: Explainer
+order: 1
+summary: How to store a graph so searching it is fast, why breadth-first search finds shortest paths and depth-first search doesn't, what goes wrong without a visited set, and a map of which graph algorithm answers which question.
+added: 2026-11-13
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## What a graph is
+
+A **graph** is a set of **nodes** joined by **edges**. Cities and roads, people and friendships, web pages and
+links, courses and prerequisites. Some words you'll meet:
+
+- **Undirected** edges work both ways (friendship); **directed** edges have an arrow (a follows b).
+- **Weighted** edges carry a number: a distance, a cost, a time.
+- A **cycle** is a path that comes back to where it started. A **tree** is a connected graph with no cycles.
+- Trees, linked lists and grids are all graphs with extra rules, which is why the same searches keep showing up.
+
+## Storing a graph
+
+Problems usually hand you an **edge list**: pairs like `(0, 1), (0, 2), (1, 3)`. It's a poor shape for searching,
+because "who are 3's neighbours?" means scanning every edge. Convert it first:
+
+| Representation | Space | Neighbours of a node | Is a–b an edge? | Best for |
+|---|---|---|---|---|
+| Edge list | O(E) | O(E) | O(E) | input, sorting edges (Kruskal) |
+| **Adjacency list** | O(V + E) | **O(its degree)** | O(degree) | almost every search |
+| Adjacency matrix | O(V²) | O(V) | **O(1)** | small, dense graphs |
+
+```python
+graph = [[] for _ in range(n)]
+for a, b in edges:
+    graph[a].append(b)
+    graph[b].append(a)   # leave this out if edges are directed
+```
+
+## Breadth-first search: shortest paths, level by level
+
+BFS starts at one node and visits everything **1 edge** away, then everything **2 edges** away, and so on. A queue
+makes that happen: the oldest discovery is always handled first. So the first time BFS reaches a node, it's by the
+**fewest possible edges**. Each node's distance is its parent's plus one.
+
+<Viz client:visible approach="bfs" />
+
+## Depth-first search: go deep, then back up
+
+DFS follows one path as far as it can, then backs up to the most recent node that still has an unexplored neighbour.
+Recursion does this naturally, with the call stack remembering the way back.
+
+<Viz client:visible approach="dfs" />
+
+DFS visits the same nodes as BFS in the same O(V + E) time, but in a different order, and its paths can be long
+detours. Its strengths are elsewhere: it naturally explores "everything below this node", which is exactly what
+cycle detection, topological sorting and connected-component counting need.
+
+## Why you need a visited set
+
+A tree search can't revisit a node, because there's only one path to each. A graph search can: every undirected
+edge leads straight back the way you came, and cycles lead around in circles. Here's DFS without a visited set:
+
+<Viz client:visible approach="no-seen" />
+
+The fix is one line: a `seen` set, checked before visiting and updated when you first reach a node. That's what
+makes every graph search O(V + E): each node is processed once, and each edge is looked at once from each end.
+
+## Which algorithm answers which question?
+
+| Question | Tool | Example |
+|---|---|---|
+| Can I get from a to b? | BFS or DFS | [Find if Path Exists](/dsa/find-if-path-exists-in-graph/) |
+| Fewest edges from a to b | **BFS** | word ladder, knight moves |
+| How many separate pieces? | BFS/DFS from every unvisited node | [Number of Islands](/dsa/number-of-islands/) |
+| Is there a cycle? An order that respects every arrow? | DFS (three states) or Kahn's | [Course Schedule](/dsa/course-schedule/) |
+| Cheapest path with weights | Dijkstra (BFS with a heap) | network delay |
+| Are a and b connected, with edges arriving over time? | Union-find | redundant connection |
+
+## Interview theory
+
+<QA q="Why can't DFS find shortest paths in an unweighted graph?">
+It commits to one path and follows it as far as it goes. It may reach the target first by a long detour, and
+nothing tells it a shorter route exists. BFS explores in order of distance, so the first time it reaches a node is
+always by a shortest path.
+</QA>
+
+<QA q="When should a node be marked visited in BFS: when it's queued or when it's taken out?">
+When it's queued. Otherwise the same node can be queued once per neighbour before it's processed, wasting time and
+memory. (Dijkstra is the exception: it marks a node final when it's taken out, because a cheaper route might still
+arrive.)
+</QA>
+
+<QA q="What's the difference between BFS on a tree and on a graph?">
+Only the visited set. A tree has exactly one path to each node, so nothing can be reached twice. A graph can have
+several paths and cycles, so you must remember what you've seen.
+</QA>
+
+<QA q="How do you handle a graph given as a grid?">
+Treat each cell as a node and its up, down, left and right neighbours as edges. You don't need to build an adjacency
+list: compute neighbours on the fly with direction offsets, and check the bounds before reading a cell.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "What's the usual way to store a graph for BFS or DFS?", options: ["An adjacency list", "An edge list", "A sorted array of nodes"], answer: 0, why: "It gives each node's neighbours directly, in O(V + E) space." },
+  { q: "Which search finds the fewest edges from a start node to every other node?", options: ["BFS", "DFS", "Both equally"], answer: 0, why: "BFS visits nodes in order of distance, so the first visit to each is by a shortest path." },
+  { q: "What happens to DFS on an undirected graph with no visited set?", options: ["It bounces back along edges forever", "It finishes, just more slowly", "It visits each node exactly twice"], answer: 0, why: "Each edge leads back to the node you came from, and nothing remembers that you've been there." },
+  { q: "What's the time complexity of BFS or DFS with an adjacency list?", options: ["O(V + E)", "O(V²)", "O(V · E)"], answer: 0, why: "Each node is processed once and each edge is checked once from each end." },
+  { q: "You need the cheapest route where each road has a different length. Which algorithm?", options: ["Dijkstra's", "Plain BFS", "DFS"], answer: 0, why: "Plain BFS counts edges, not lengths. Dijkstra's uses a heap to always expand the cheapest known node next." },
+]} />

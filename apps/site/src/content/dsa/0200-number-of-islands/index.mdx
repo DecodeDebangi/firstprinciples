@@ -1,0 +1,90 @@
+---
+title: Number of Islands
+leetcode: { number: 200, url: "https://leetcode.com/problems/number-of-islands/" }
+difficulty: Medium
+topics: [Graph, DFS, BFS]
+added: 2026-11-13
+summary: Count the islands on a map of land and water. A grid is a graph in disguise. Scan for land nobody has claimed, then flood the whole island with DFS or BFS so it's counted once.
+best: { time: "O(rows × cols)", space: "O(rows × cols)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a map as a grid of `1`s (land) and `0`s (water). An **island** is a group of land cells joined up, down,
+left or right (not diagonally). Count the islands. Everything beyond the edge of the map is water.
+
+For this map there are **4** islands:
+
+```
+1 1 0 0 1
+1 0 0 1 1
+0 0 1 0 0
+1 0 1 1 0
+```
+
+## The key question
+
+> **When the scan reaches a land cell, how do I make sure the rest of its island is never counted again?**
+
+A grid is a graph: each cell is a node, joined to its four neighbours. Each island is one connected piece of that
+graph. So: scan the cells, and the first time you meet unclaimed land, count a new island and immediately visit
+**all** of it, marking each cell. Later, the scan skips marked land.
+
+## Approach 1: Depth-first, sink each island
+
+`sink(r, c)` marks a land cell (here by turning it into water) and calls itself on its four neighbours. Calls that
+land on water, a marked cell or off the map return immediately. When the first `sink` returns, the whole island is
+gone.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(rows × cols)" space="O(rows × cols)">
+**Time.** The scan visits each cell once; each land cell is sunk once and tries 4 neighbours: **O(rows × cols)**.
+
+**Space.** The recursion can be as deep as the biggest island. A map that's all land, snaking through every cell,
+would recurse rows × cols deep: **O(rows × cols)** in the worst case (and Python's recursion limit could be hit).
+</Complexity>
+
+## Approach 2: Breadth-first, flood with a queue
+
+Same scan, but flood each island with a queue: mark the first cell and queue it; then repeatedly take a cell and
+mark-and-queue its unmarked land neighbours. The island fills outward ring by ring.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(rows × cols)" space="O(rows × cols) worst case">
+**Time.** Each cell is scanned once and queued at most once: **O(rows × cols)**.
+
+**Space.** The queue holds an island's current frontier, which is usually much smaller than the island, and there's
+no recursion to overflow. In the worst case it's still O(rows × cols).
+</Complexity>
+
+## Comparing the approaches
+
+Race the two on the same map. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Fills an island… |
+|---|---|---|---|
+| DFS (sink) | O(rows × cols) | O(rows × cols) call stack | one long arm at a time |
+| BFS (queue) | O(rows × cols) | O(rows × cols) worst case | ring by ring, no recursion |
+
+Both touch every cell a constant number of times, so there's no growth chart. In an interview, DFS is the shortest
+to write; mention BFS if the map could be huge (no recursion limit).
+
+## Common mistakes
+
+- **Not marking cells as visited.** The scan then counts the same island once per land cell, and DFS loops forever.
+- **Checking diagonals.** Only up, down, left and right connect land here.
+- **Marking in BFS when a cell is taken out instead of when it's queued.** The same cell can be queued many times.
+- **Checking bounds after reading the cell.** Test `0 ≤ r < rows` and `0 ≤ c < cols` first, or the code reads off
+  the edge (or, in Python, wraps around with a negative index).
+
+## Related problems
+
+- Find if Path Exists in Graph (LeetCode 1971). The same search on an ordinary graph.
+- Max Area of Island (LeetCode 695). Same flood fill, returning each island's size.
+- Rotting Oranges (LeetCode 994). BFS from many starting cells at once, counting rings as minutes.

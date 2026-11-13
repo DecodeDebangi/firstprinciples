@@ -1,0 +1,90 @@
+---
+title: Course Schedule
+leetcode: { number: 207, url: "https://leetcode.com/problems/course-schedule/" }
+difficulty: Medium
+topics: [Graph, BFS, DFS]
+added: 2026-11-13
+summary: Given courses and their prerequisites, can you finish them all? Yes exactly when the prerequisite arrows have no cycle. Two ways to check, taking whatever is ready (Kahn's topological sort) or a depth-first search that spots a path looping back on itself.
+best: { time: "O(V + E)", space: "O(V + E)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` courses, numbered `0` to `n − 1`. Each prerequisite is a pair `(a, b)`: to take course `a`, you must
+first take course `b`. Return whether it's possible to take every course.
+
+With 6 courses and prerequisites (2, 0), (2, 1), (3, 2), (4, 2), (5, 3), (5, 4): take 0 and 1, then 2, then 3 and 4,
+then 5. Possible. But with (1, 0) and (0, 1), each of the two courses waits for the other, which is impossible.
+
+## The key question
+
+> **Draw an arrow b → a for each prerequisite. When is there an order that respects every arrow?**
+
+Exactly when the arrows contain **no cycle**. A cycle means a group of courses that all wait on each other, so none
+of them can go first. Without a cycle, there's always a course with nothing left to wait for, and you can keep
+taking one. An order like that is called a **topological order**.
+
+## Approach 1: Take what's ready (Kahn's algorithm)
+
+Count each course's unfinished prerequisites (its **in-degree**). Courses with zero are ready: put them in a queue.
+Take a ready course, and for every course that depended on it, subtract one; any that reach zero become ready. If you
+manage to take all `n`, there's no cycle. If you get stuck, the courses left over are waiting on each other.
+
+<Viz client:visible approach="kahn" />
+
+<Complexity time="O(V + E)" space="O(V + E)">
+**Time.** Building the lists touches each prerequisite once. Each course is taken at most once, and each arrow is
+followed once when its course is taken: **O(V + E)**.
+
+**Space.** The adjacency lists are O(V + E); the counts and the queue are O(V).
+</Complexity>
+
+As a bonus, the order the courses come out in **is** a valid order to take them. That's Course Schedule II (LeetCode 210).
+
+## Approach 2: Depth-first cycle check (three states)
+
+Walk forward along the arrows from each course. Each course is in one of three states: **new**, **on the current
+path** (being explored), or **done** (everything after it is known to be cycle-free). Reaching a course that's still
+on the path means the arrows looped back: a cycle. Reaching a done course is fine; skip it.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(V + E)" space="O(V + E)">
+**Time.** Each course is explored once (done courses return immediately), and each arrow is followed once:
+**O(V + E)**.
+
+**Space.** The adjacency lists, the states, and a call stack up to V deep: **O(V + E)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race the two on the same courses. Both share one clock that ticks once per operation. To see a cycle, try
+prerequisites `1, 0, 2, 1, 0, 2` with 3 courses.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Detects a cycle by… |
+|---|---|---|---|
+| Kahn's (in-degrees + queue) | O(V + E) | O(V + E) | getting stuck before taking every course |
+| DFS, three states | O(V + E) | O(V + E) | meeting a course that's still on the current path |
+
+Both follow each arrow once, so there's no growth chart. Kahn's is often easier to get right and gives the order
+directly; DFS is shorter if you're comfortable with recursion.
+
+## Common mistakes
+
+- **Using two states instead of three.** "Visited" alone can't tell a course on the current path (a cycle) from one
+  finished earlier through a different branch (fine). That mistake reports cycles that aren't there.
+- **Drawing the arrow the wrong way.** `(a, b)` means b comes first: the arrow goes **b → a**. (Getting it backwards
+  still detects cycles correctly, but the order from Kahn's comes out reversed.)
+- **Only starting the DFS from course 0.** The graph may have separate pieces; start from every course that's
+  still new.
+- **Forgetting to reset "on path" to "done".** Then every later visit looks like a cycle.
+
+## Related problems
+
+- Course Schedule II (LeetCode 210). Return the order itself: Kahn's output, or DFS finish order reversed.
+- Find if Path Exists in Graph (LeetCode 1971). The basic search, on an undirected graph.
+- Alien Dictionary (LeetCode 269). Build the arrows from sorted words, then topologically sort.
