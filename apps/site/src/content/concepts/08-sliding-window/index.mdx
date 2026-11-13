@@ -1,0 +1,125 @@
+---
+title: "Sliding window: grow, shrink, and why it's O(n)"
+topic: Sliding window
+kind: Explainer
+order: 1
+summary: The fixed window that adds one item and drops one instead of starting over, the variable window that grows until a rule holds and shrinks while it still does, why a loop inside a loop is still O(n), and the inputs that break it.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The idea
+
+Lots of problems ask about **runs of neighbours**: the best k days in a row, the shortest stretch that adds up to
+enough, the longest substring with no repeated letter. There are about n²/2 runs, so checking each one from scratch
+is slow.
+
+A **sliding window** is a run marked by two pointers, `lo` and `hi`. Instead of starting over for each run, you
+move one edge at a time and **update** what you know about the window: add what joins, remove what leaves.
+
+## The slow way: start every window from scratch
+
+Here's the largest sum of k = 3 neighbours, adding up each window again. Watch how most of the numbers are added
+again for the next window.
+
+<Viz client:visible approach="recompute" />
+
+## Fixed window: add one, drop one
+
+Two neighbouring windows share all but two numbers. So when the window moves right, the new sum is the old sum,
+plus the number that joins, minus the number that leaves. One addition and one subtraction, however big k is.
+
+<Viz client:visible approach="slide" />
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Additions and subtractions to find the best window, with k = n / 2." />
+
+## Variable window: grow, then shrink
+
+Sometimes the window's size is the answer. "What's the shortest run that adds up to at least the target?" There's no
+fixed k, so the window changes size as it goes:
+
+1. **Grow**: move `hi` right and add the new number, until the window satisfies the rule.
+2. **Shrink**: while it still satisfies the rule, record its length and move `lo` right, removing the number that leaves.
+
+<Viz client:visible approach="grow-shrink" />
+
+## Why it's O(n), with a loop inside a loop
+
+Count pointer moves, not loop iterations. `hi` moves right n times in total. `lo` only ever moves right too, and it
+can't pass the end, so it moves at most n times **across the whole run**, not per value of `hi`. That's at most 2n
+moves, each O(1): **O(n)**.
+
+The same argument works for every sliding window: if neither pointer ever moves backwards, the total work is
+linear.
+
+## The template
+
+```python
+lo = 0
+for hi, x in enumerate(a):
+    add(x)            # grow right
+    while broken():   # or: while valid()
+        remove(a[lo]) # shrink left
+        lo += 1
+    record(lo, hi)    # or record inside the loop
+```
+
+Two versions, depending on what you're looking for:
+
+| Looking for | Shrink while… | Record the answer… |
+|---|---|---|
+| The **longest** valid window | the window is **broken** | after shrinking, when it's valid again |
+| The **shortest** valid window | the window is **still valid** | inside the shrink loop, before each removal |
+
+[Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/) is the
+longest-window version: the window breaks when a letter repeats, and a set tracks what's inside.
+
+## When the window doesn't work
+
+Shrinking is only safe if the rule is **monotonic**: widening a window can only push it one way. With positive
+numbers, a wider window always has a bigger sum, so once the sum is big enough, shrinking is the only way to find
+a shorter answer, and once it's too small, only growing can help.
+
+With **negative numbers**, that breaks: adding an item can lower the sum, so a window that's too small might become
+big enough later. Problems like "count subarrays that sum to k" with negatives use **prefix sums and a hash map**
+instead.
+
+## Interview theory
+
+<QA q="What do you track besides the two pointers?">
+Whatever lets you update in O(1) when one item joins or leaves: a running sum, a count of each character (a hash map
+or an array of 26), or a set of what's inside. If updating needs a scan of the window, the window isn't saving
+anything.
+</QA>
+
+<QA q="How do you find the maximum of every window of size k in O(n)?">
+Keep a deque of indices whose values decrease from front to back. When a number arrives, pop smaller ones from the
+back (they can never be a maximum again); pop the front if it has left the window. The front is always the current
+maximum. It's the monotonic stack idea, with removals from the front too.
+</QA>
+
+<QA q="Is Best Time to Buy and Sell Stock a sliding window?">
+It's often taught as one: `lo` is the cheapest day so far and `hi` scans forward. It's just as easy to see as "remember
+the minimum so far"; [the problem page](/dsa/best-time-to-buy-and-sell-stock/) draws it as a window. The key property
+is the same: neither pointer goes backwards.
+</QA>
+
+<QA q="Sliding window or two pointers?">
+Both move two indices. A sliding window cares about **everything between** them (a sum, a count, a set); classic two
+pointers usually cares only about the **two ends** (`a[lo] + a[hi]`). See [Two pointers](/concepts/two-pointers/).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "A window of size 3 holds [4, 1, 2], summing to 7. It moves right and 6 joins. What's the new sum?", options: ["9", "13", "7"], answer: 0, why: "4 leaves and 6 joins: 7 − 4 + 6 = 9." },
+  { q: "Recomputing every window of size k from scratch costs…", options: ["O(n·k)", "O(n)", "O(k)"], answer: 0, why: "There are about n windows, and each one adds up k numbers." },
+  { q: "In the grow-and-shrink window, how many times can lo move in total?", options: ["At most n", "Up to n for every value of hi", "Exactly k"], answer: 0, why: "lo only moves right and can't pass the end, so across the whole run it moves at most n times." },
+  { q: "For the shortest window with sum ≥ target, when do you record an answer?", options: ["Inside the shrink loop, while the window is still valid", "Only after the loop ends", "Every time hi moves"], answer: 0, why: "Each valid window is a candidate; you record it before shrinking to try a shorter one." },
+  { q: "Why does the grow-and-shrink window need positive numbers here?", options: ["So a wider window always has a bigger sum", "So the array can be sorted", "So k stays fixed"], answer: 0, why: "With negatives, adding an item can lower the sum, so shrinking can skip valid answers." },
+]} />
