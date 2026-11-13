@@ -62,6 +62,10 @@ first specific tag (generic tags like "Array", "String" and "Math" count only wh
 other topics it practises show it as "Also used in". Put the main technique first in `topics`. If you use a new
 tag, add it to a topic there.
 
+Each roadmap topic gets its own page at `/topics/<slug>/` once a problem practises it. The page's idea, "when to
+reach for it" signals and Python template live in `apps/site/src/data/topicGuides.ts`; keep the template short
+enough to fit a phone (comments under about 25 characters).
+
 A new data structure (linked list, tree, graph, DP table) needs a new renderer in `packages/ui` alongside
 `ArrayPlayer`, with its own step type in `trace.ts`.
 

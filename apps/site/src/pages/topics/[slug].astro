@@ -1,0 +1,116 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { roadmap, allTopics, homeTopic, practisedTopics, topicSlug, type RoadmapTopic } from "../../data/roadmap";
+import { topicGuides } from "../../data/topicGuides";
+
+const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
+const order = (a: CollectionEntry<"dsa">, b: CollectionEntry<"dsa">) =>
+  rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number;
+
+export async function getStaticPaths() {
+  const problems = await getCollection("dsa");
+  // A page exists only for topics that at least one problem practises.
+  const live = allTopics.filter((t) => problems.some((p) => practisedTopics(p.data.topics).includes(t)));
+  return live.map((topic, k) => ({
+    params: { slug: topicSlug(topic.name) },
+    props: { topic, problems, prev: live[k - 1] ?? null, next: live[k + 1] ?? null },
+  }));
+}
+
+interface Props {
+  topic: RoadmapTopic;
+  problems: CollectionEntry<"dsa">[];
+  prev: RoadmapTopic | null;
+  next: RoadmapTopic | null;
+}
+const { topic, problems, prev, next } = Astro.props;
+const guide = topicGuides[topic.name];
+const stepIndex = roadmap.findIndex((s) => s.topics.includes(topic));
+const step = roadmap[stepIndex];
+const main = problems.filter((p) => homeTopic(p.data.topics) === topic).sort(order);
+const also = problems.filter((p) => homeTopic(p.data.topics) !== topic && practisedTopics(p.data.topics).includes(topic)).sort(order);
+const all = [...main, ...also].sort(order);
+const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
+---
+<Base title={`${topic.name}: pattern and problems`} description={`${topic.name}: ${topic.blurb} When to use it, a Python template, and ${count(all.length)} explained step by step from brute force to optimal.`}>
+  <article class="tp">
+    <a class="back" href="/topics/">← All topics</a>
+    <p class="eyebrow">Step {stepIndex + 1} · {step.title}</p>
+    <h1>{topic.name}</h1>
+    <p class="lead">{guide?.idea ?? topic.blurb}</p>
+    <p class="meta">{count(all.length)} on this pattern · <a href="/#roadmap">See it on the roadmap</a></p>
+
+    {guide && (
+      <div class="cols">
+        <section class="card">
+          <h2>When to reach for it</h2>
+          <ul class="signals">{guide.signals.map((s) => <li>{s}</li>)}</ul>
+          <p class="payoff">{guide.payoff}</p>
+        </section>
+        <section class="card">
+          <h2>Template</h2>
+          <pre class="tpl"><code>{guide.template.replace(/ {2,}#/g, "  #")}</code></pre>
+        </section>
+      </div>
+    )}
+
+    <section>
+      <h2>Problems</h2>
+      <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>
+      <ol class="plist">
+        {all.map((p) => (
+          <li>
+            <a href={`/dsa/${p.id}/`}>
+              <span class="num">#{p.data.leetcode.number}</span>
+              <span class="main">
+                <span class="title">{p.data.title}</span>
+                <span class="summary">{p.data.summary}</span>
+              </span>
+              <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
+              <span class="best"><code>{p.data.best.time}</code></span>
+            </a>
+            {homeTopic(p.data.topics) !== topic && <span class="also">Main topic: {homeTopic(p.data.topics)?.name}</span>}
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <nav class="pn" aria-label="Other topics">
+      {prev ? <a href={`/topics/${topicSlug(prev.name)}/`}>← {prev.name}</a> : <span></span>}
+      {next ? <a href={`/topics/${topicSlug(next.name)}/`}>{next.name} →</a> : <span></span>}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .eyebrow { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .lead { font-size: 19px; color: var(--text-2); max-width: 62ch; margin: 0 0 10px; }
+  .meta { font-size: 14px; color: var(--muted); margin: 0 0 28px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
+  .card h2 { margin: 0 0 10px; font-size: 20px; }
+  .signals { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); font-size: 15px; }
+  .payoff { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 15px; }
+  .tpl { margin: 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13.5px/1.6 var(--font-mono); }
+  .sub { color: var(--text-2); margin: 0 0 14px; }
+  .plist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .plist li + li { border-top: 1px solid var(--border); }
+  .plist a { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) auto 6em; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text); text-decoration: none; }
+  .plist a:hover { background: var(--accent-soft); }
+  .num { font: 500 13px var(--font-mono); color: var(--muted); }
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .title { font: 600 17px var(--font-serif); }
+  .summary { font-size: 13.5px; color: var(--text-2); line-height: 1.45; }
+  .best code { font-size: 13px; }
+  .also { display: block; padding: 0 16px 10px calc(4.2em + 28px); margin-top: -8px; font-size: 12.5px; color: var(--muted); }
+  .pn { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-weight: 600; }
+  .pn a { text-decoration: none; }
+  @media (max-width: 640px) {
+    .plist a { grid-template-columns: 3.4em minmax(0, 1fr) auto; }
+    .best { display: none; }
+    .summary { display: none; }
+    .also { padding-left: 16px; }
+  }
+</style>

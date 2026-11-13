@@ -8,7 +8,7 @@ interface Props {
 const { problems } = Astro.props;
 
 const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
-/** Each card shows at most this many; the rest are one click away on /problems/. */
+/** Each card shows at most this many; the rest are on the topic's own page. */
 const SHOW = 3;
 const order = (a: CollectionEntry<"dsa">, b: CollectionEntry<"dsa">) =>
   rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number;
@@ -34,7 +34,9 @@ const steps = roadmap.map((step) => ({
           {step.topics.map((t) => (
             <li class={`rm__topic${t.list.length || t.also.length ? " is-ready" : ""}`}>
               <div class="rm__head">
-                <span class="rm__name">{t.name}</span>
+                {t.list.length || t.also.length
+                  ? <a class="rm__name rm__link" href={`/topics/${t.slug}/`}>{t.name}</a>
+                  : <span class="rm__name">{t.name}</span>}
                 <span class="rm__count">{t.list.length ? `${t.list.length} problem${t.list.length > 1 ? "s" : ""}` : t.also.length ? `${t.also.length} related` : "Coming soon"}</span>
               </div>
               <p class="rm__blurb">{t.blurb}</p>
@@ -52,7 +54,7 @@ const steps = roadmap.map((step) => ({
                 </ul>
               )}
               {t.list.length > SHOW && (
-                <a class="rm__more" href={`/problems/?topic=${t.slug}`}>+ {t.list.length - SHOW} more in {t.name} →</a>
+                <a class="rm__more" href={`/topics/${t.slug}/`}>+ {t.list.length - SHOW} more in {t.name} →</a>
               )}
               {t.also.length > 0 && (
                 <p class="rm__also">Also used in {t.also.map((p, k) => (
@@ -101,6 +103,8 @@ const steps = roadmap.map((step) => ({
   .rm__topic.is-ready { border-style: solid; border-color: var(--border); color: var(--text); box-shadow: var(--shadow); }
   .rm__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .rm__name { font: 600 17px var(--font-serif); }
+  .rm__link { color: var(--text); text-decoration: none; }
+  .rm__link:hover { color: var(--accent); text-decoration: underline; }
   .rm__count { font-size: 12px; font-weight: 600; white-space: nowrap; }
   .rm__topic.is-ready .rm__count { color: var(--tone-found-border); }
   .rm__blurb { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--text-2); }

@@ -1,0 +1,18 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import StudyRoadmap from "../../components/StudyRoadmap.astro";
+
+const problems = await getCollection("dsa");
+---
+<Base title="Topics" description={`Every DSA pattern on firstprinciples in study order, from arrays and hashing to dynamic programming, with the ${problems.length} problems that practise each one.`}>
+  <a class="back" href="/">← Home</a>
+  <h1>Topics</h1>
+  <p class="lead">The patterns behind the problems, in the order they build on each other. Open a topic for when to use it, a template, and every problem that practises it.</p>
+  <StudyRoadmap problems={problems} />
+</Base>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .lead { font-size: 18px; color: var(--text-2); max-width: 62ch; margin: 0 0 28px; }
+</style>
