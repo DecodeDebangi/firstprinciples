@@ -1,0 +1,104 @@
+---
+title: "Binary search invariants: avoiding off-by-one bugs"
+topic: Binary search
+kind: Explainer
+order: 1
+summary: Why binary search is easy to describe and easy to get wrong, the one idea (an invariant) that makes it correct every time, two templates that never go wrong, and a one-character bug that loops forever.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## Why it's easy to get wrong
+
+Binary search fits in eight lines, yet small variations break it: `<` or `<=`, `mid` or `mid + 1`, `len(a)` or
+`len(a) − 1`. Each choice looks harmless on its own. The trouble is that they have to **agree** with each other,
+and guessing them one at a time is how off-by-one bugs happen.
+
+## The fix: decide your invariant first
+
+An **invariant** is a sentence that stays true at every step of the loop. For binary search it describes where
+the answer can still be:
+
+> *"If the target is present, it's somewhere in `a[lo..hi]`."*
+
+Once you've written that sentence down, every other choice follows from it:
+
+1. **Initialise** so it's true at the start: the whole array, `lo = 0, hi = len(a) − 1`.
+2. **Loop while the range is non-empty**: for an inclusive range, that's `lo <= hi`.
+3. **Update so it stays true**: you've checked `mid` and it isn't the target, so exclude it: `lo = mid + 1` or `hi = mid − 1`.
+
+The animations below show the current range in the Variables panel at every step, so you can check the invariant holds.
+
+## Template 1: Closed interval, find a match
+
+Both ends are candidates. Use it when you just need to know whether the target is there.
+
+<Viz client:visible approach="closed" />
+
+## Template 2: Half-open interval, find the first position
+
+Here the invariant is *"the first index with `a[i] >= target` is in `[lo, hi)`"*, and `hi` itself is never a
+candidate. This version finds the **first** of several equal values, returns the **insertion point** when the
+target is missing, and has no special cases.
+
+<Viz client:visible approach="lower" />
+
+| | Closed `[lo, hi]` | Half-open `[lo, hi)` |
+|---|---|---|
+| Start | `lo, hi = 0, len(a) − 1` | `lo, hi = 0, len(a)` |
+| Loop | `while lo <= hi` | `while lo < hi` |
+| Move right | `lo = mid + 1` | `lo = mid + 1` |
+| Move left | `hi = mid − 1` | `hi = mid` |
+| Returns | an index of the target, or −1 | first index with `a[i] >= target` |
+| Use for | "Is it there?" | First/last occurrence, insertion point, "first true" |
+
+## Spot the bug
+
+This version mixes the two templates: an inclusive `hi` with `lo < hi`, and `lo = mid` instead of `mid + 1`. When
+the range shrinks to two items, `mid` equals `lo`, so `lo = mid` changes nothing and the loop runs forever.
+
+<Viz client:visible approach="buggy" />
+
+The rule that prevents it: **every iteration must shrink the range.** If an update can leave `lo` and `hi` both
+unchanged, it's a bug.
+
+## The same idea, everywhere
+
+Many problems that don't look like binary search are "find the first position where a condition becomes true":
+the first bad version, the smallest speed that finishes in time, the first day a plant blooms. The half-open
+template handles all of them: replace `a[mid] < target` with `not condition(mid)`.
+
+## Interview theory
+
+<QA q="Why write mid = lo + (hi − lo) // 2 instead of (lo + hi) // 2?">
+In languages with fixed-size integers (Java, C++), `lo + hi` can overflow when both are large. `lo + (hi − lo) // 2`
+computes the same midpoint without the overflow. Python's integers don't overflow, but the habit is worth keeping.
+</QA>
+
+<QA q="How do you find the last occurrence of a value?">
+Find the first index with `a[i] > target` (the same template, with `<=` instead of `<`), then step back one. That's
+`bisect_right(a, target) − 1` in Python.
+</QA>
+
+<QA q="What do Python's bisect_left and bisect_right return?">
+`bisect_left` is the half-open lower bound above: the first index with `a[i] >= x`. `bisect_right` returns the first
+index with `a[i] > x`. Together they bracket every copy of `x`.
+</QA>
+
+<QA q="Why must the update be mid + 1 in the closed template, but can be mid in the half-open one?">
+In the closed template, `mid` has been checked and ruled out, so keeping it would break the invariant (and can loop
+forever). In the half-open lower bound, `a[mid] >= target` means `mid` might be the answer, so `hi = mid` keeps it,
+while the shrinking is guaranteed because `mid < hi`.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "With lo, hi = 0, len(a) − 1, which loop condition is correct?", options: ["while lo <= hi", "while lo < hi", "while hi - lo > 1"], answer: 0, why: "Both ends are included, so a range with one element (lo == hi) is still non-empty and must be checked." },
+  { q: "In the half-open template, a[mid] >= target. What's the update?", options: ["hi = mid", "hi = mid − 1", "lo = mid"], answer: 0, why: "mid could be the first value ≥ target, so it must stay a candidate: hi = mid (hi itself is excluded)." },
+  { q: "a = [1, 3, 3, 3, 8]. What does the lower bound for target 3 return?", options: ["1", "2", "3"], answer: 0, why: "The first index with a value ≥ 3 is 1." },
+  { q: "a = [1, 3, 3, 3, 8]. What does the lower bound for target 5 return?", options: ["4", "-1", "3"], answer: 0, why: "5 isn't there; index 4 (where 8 is) is the first value ≥ 5, which is where 5 would be inserted." },
+  { q: "What's the simplest test that a binary search update is safe?", options: ["Every iteration must shrink the range", "lo must always be even", "mid must never equal hi"], answer: 0, why: "If an update can leave lo and hi unchanged, the loop can run forever." },
+]} />
