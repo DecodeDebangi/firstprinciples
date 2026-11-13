@@ -1,0 +1,127 @@
+---
+title: "Heaps: how push and pop stay O(log n)"
+topic: Heaps
+kind: Explainer
+order: 1
+summary: A heap is a tree stored in a plain array, ordered just enough to always know the smallest item. Watch push swap a leaf up, pop sink a value down, and heapify build a heap in O(n). Plus how to use Python's heapq, including the max-heap trick.
+added: 2026-11-13
+---
+import Viz from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## Just enough order
+
+Many problems keep asking the same question: **"what's the smallest (or largest) item right now?"**, while items
+keep arriving and leaving. A sorted list answers instantly but costs O(n) to insert into. An unsorted list inserts
+instantly but costs O(n) to search.
+
+A **heap** sits in between. It keeps items only **partly** ordered: just enough that the smallest is always on top,
+and cheap enough to repair after every change, in O(log n).
+
+## The shape: a complete tree in an array
+
+A **min-heap** is a binary tree with two rules:
+
+1. **Order**: every parent is ≤ its children. So the smallest item is at the root. (Siblings can be in any order.)
+2. **Shape**: every level is full except possibly the last, which fills from the left. A **complete** tree.
+
+The shape rule means the tree packs into an array with no gaps and no pointers. For the item at index `i`:
+
+| | Index |
+|---|---|
+| Left child | `2i + 1` |
+| Right child | `2i + 2` |
+| Parent | `(i − 1) // 2` |
+
+A complete tree with n items has about log₂ n levels, so anything that moves one level per step takes O(log n).
+
+## Push: add a leaf, swap it up
+
+A new item goes in the only place that keeps the tree complete: the end of the array. That may break the order
+rule with its parent, so swap it upward while it's smaller than its parent. This is called **sifting up**.
+
+<Viz client:visible approach="push" />
+
+## Pop: move the last leaf up, swap it down
+
+Removing the top leaves a hole at the root. Fill it with the **last** item, the only one that can move without
+breaking the shape, then sink it: swap it with its **smaller** child while it's bigger than that child. This is
+**sifting down**.
+
+<Viz client:visible approach="pop" />
+
+Popping everything returns the items in sorted order. That's **heapsort**: O(n log n), in place.
+
+## Heapify: build a heap in O(n)
+
+Pushing n items one by one costs O(n log n). But if you already have all the items, you can do better: treat the
+array as a tree as-is, and sift down every parent, **from the last parent back to the root**. Each one's subtrees
+are already heaps by the time it's fixed.
+
+<Viz client:visible approach="heapify" />
+
+Why O(n)? Half the nodes are leaves and don't move. A quarter can sink at most one level, an eighth at most two, and
+so on. The total, n/4 · 1 + n/8 · 2 + n/16 · 3 + …, adds up to less than n.
+
+<GrowthChart client:visible series={growth} caption="Comparisons to build a heap from n numbers in decreasing order: n pushes vs one heapify." />
+
+## Using heaps in Python
+
+Python's `heapq` works on a plain list, and it's always a **min-heap**:
+
+| Operation | Code | Time |
+|---|---|---|
+| Build from a list | `heapq.heapify(a)` | O(n) |
+| Add | `heapq.heappush(a, x)` | O(log n) |
+| Remove the smallest | `heapq.heappop(a)` | O(log n) |
+| Look at the smallest | `a[0]` | O(1) |
+| Push, then pop (faster) | `heapq.heappushpop(a, x)` | O(log n) |
+| k smallest / largest | `heapq.nsmallest(k, a)`, `heapq.nlargest(k, a)` | O(n log k) |
+
+**Need a max-heap?** Push `-x` and negate what you pop. **Need to order by something else?** Push tuples, like
+`(count, value)`: tuples compare by their first item, then the second to break ties.
+
+## Which problems want a heap?
+
+- **"Top k", "kth largest", "k closest"**: keep a heap of size k. Its top is the boundary of the answer.
+  See [Kth Largest Element in a Stream](/dsa/kth-largest-element-in-a-stream/) and
+  [Top K Frequent Elements](/dsa/top-k-frequent-elements/).
+- **"Repeatedly take the best remaining"**: a simulation, a scheduler, a greedy choice that keeps changing.
+  See [Last Stone Weight](/dsa/last-stone-weight/).
+- **"Merge k sorted lists or streams"**: a heap of the k current heads picks the next smallest.
+- **"Shortest path with weights"**: Dijkstra's algorithm is BFS with a heap instead of a queue.
+
+## Interview theory
+
+<QA q="Is a heap the same as a binary search tree?">
+No. A BST orders left < node < right, so it can find any value in O(log n) (if balanced) and list everything in
+order. A heap only orders parent ≤ children: it finds the minimum in O(1), but finding any other value is O(n).
+In exchange, a heap is a simple array, always balanced, with no pointers.
+</QA>
+
+<QA q="Why does pop swap with the smaller child?">
+Whichever child moves up becomes the parent of the other. Only the smaller child can be ≤ its sibling, so swapping
+with the larger one would break the order rule immediately.
+</QA>
+
+<QA q="How do you find the median of a stream of numbers?">
+Keep two heaps: a max-heap of the smaller half and a min-heap of the larger half, balanced so their sizes differ by
+at most one. The median is one top, or the average of both tops. Each new number costs O(log n).
+</QA>
+
+<QA q="Can you change an item's priority inside a heap?">
+Not with `heapq` directly: you'd have to find it (O(n)). The usual trick is lazy deletion: push the new version,
+and when an outdated version reaches the top later, skip it.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "In a heap stored as an array, where are the children of index 3?", options: ["7 and 8", "6 and 7", "4 and 5"], answer: 0, why: "Children of i are at 2i + 1 and 2i + 2: 7 and 8." },
+  { q: "Where does a newly pushed item first go?", options: ["At the end of the array", "At the top", "Next to the equal value"], answer: 0, why: "The end is the next free leaf, which keeps the tree complete. Then it sifts up." },
+  { q: "During pop, which item fills the empty top?", options: ["The last item in the array", "The smaller child of the root", "The largest item"], answer: 0, why: "Moving the last leaf keeps the shape complete. Then it sinks down to its place." },
+  { q: "What does building a heap with heapify cost, compared with n pushes?", options: ["O(n) vs O(n log n)", "Both O(n log n)", "O(log n) vs O(n)"], answer: 0, why: "Most nodes are near the bottom and sink only a level or two, so the total work is linear." },
+  { q: "Python's heapq is a min-heap. How do you get the largest item first?", options: ["Push negated values, and negate on the way out", "Call heapq.reverse()", "Pop from the end of the list"], answer: 0, why: "The most negative stored value is the largest original one." },
+]} />

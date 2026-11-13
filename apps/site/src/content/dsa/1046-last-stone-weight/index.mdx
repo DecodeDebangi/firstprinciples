@@ -1,0 +1,96 @@
+---
+title: Last Stone Weight
+leetcode: { number: 1046, url: "https://leetcode.com/problems/last-stone-weight/" }
+difficulty: Easy
+topics: [Heap, Array]
+added: 2026-11-13
+summary: Keep smashing the two heaviest stones together and report what's left. Goes from re-sorting the pile every round to a max-heap that always knows the heaviest stone.
+best: { time: "O(n log n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You have a pile of stones, each with a whole-number weight. Each round, take the **two heaviest** stones, `y` and
+`x` with `y ≥ x`, and smash them together:
+
+- If they weigh the same, both are destroyed.
+- Otherwise `x` is destroyed and `y` becomes a stone of weight `y − x`, which goes back on the pile.
+
+Stop when at most one stone is left. Return its weight, or `0` if none is left.
+
+For stones `[3, 9, 4, 6, 2, 5]`: smash 9 and 6 (3 goes back), then 5 and 4 (1 goes back), then 3 and 3 (both gone),
+then 2 and 1. The answer is `1`.
+
+## The key question
+
+> **How do I keep getting the two largest items from a collection that keeps changing?**
+
+Sorting answers "what are the largest?" once. But every round adds a new stone, so the order breaks and you'd have to
+sort again. A **heap** is built for exactly this: take the largest in O(log n), add a new item in O(log n).
+
+## Approach 1: Re-sort every round
+
+Sort the pile, take the last two, push the remainder back, repeat.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n² log n)" space="O(1) extra">
+**Time.** Each round removes at least one stone, so there are at most `n − 1` rounds, and each one sorts up to `n`
+stones: O(n log n). Together: **O(n² log n)**. (Python's sort is fast on an almost-sorted list, but you can't rely
+on that in an interview.)
+
+**Space.** Sorting in place: **O(1) extra** beyond Python's sort buffer.
+
+**What it wastes:** after one round, the pile is still almost sorted, yet the whole thing is sorted again from scratch.
+</Complexity>
+
+## Approach 2: Max-heap (optimal)
+
+A **max-heap** keeps the heaviest stone at the top and only partly orders the rest: every parent is at least as heavy
+as its children. That's just enough order to pop the heaviest and repair the heap in O(log n). The tree and the array
+below are the same heap: item `i`'s children sit at `2i + 1` and `2i + 2`.
+
+Python's `heapq` only offers a **min-heap**, so the standard trick is to store negated weights: the most negative
+number is the heaviest stone.
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** `heapify` is O(n). Each of the at most `n − 1` rounds does two pops and at most one push, each
+O(log n): **O(n log n)** overall.
+
+**Space.** The heap holds up to `n` stones: **O(n)** (or O(1) extra if you negate the input list in place).
+</Complexity>
+
+## Comparing the approaches
+
+Race the two on the same input. Both share one clock that ticks once per operation. On a pile this small they finish about even: the heap's advantage is in how the cost **grows**, which the chart below shows as the pile gets bigger.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Re-sort every round | O(n² log n) | O(1) | Sort, take the last two, repeat |
+| Max-heap | **O(n log n)** | O(n) | The heaviest is always on top |
+
+<GrowthChart client:visible series={growth} caption="Comparisons for stones weighing 1 to n, where almost every round leaves a stone behind." />
+
+## Common mistakes
+
+- **Forgetting to negate on the way out.** `heappop` returns the negated weight; negate it again before comparing
+  or returning.
+- **Pushing a zero.** When the two stones are equal, nothing goes back. Pushing `0` gives the right answer here but
+  adds a pointless round.
+- **Returning `heap[0]` on an empty heap.** If every stone was destroyed, return `0`.
+- **Using `heap[0]` and `heap[1]` as the two largest.** Only the top is guaranteed; the second largest is one of the
+  top's children, so pop twice.
+
+## Related problems
+
+- Kth Largest Element in a Stream (LeetCode 703). A min-heap that keeps only the k largest.
+- Kth Largest Element in an Array (LeetCode 215). The same size-k heap, or quickselect.
+- Top K Frequent Elements (LeetCode 347). Count first, then a heap of the most frequent.

@@ -1,0 +1,106 @@
+---
+title: Top K Frequent Elements
+leetcode: { number: 347, url: "https://leetcode.com/problems/top-k-frequent-elements/" }
+difficulty: Medium
+topics: [Heap, Hash map, Sorting]
+added: 2026-11-13
+summary: Return the k values that appear most often. Every approach counts first; the difference is how you pick the top k. Goes from sorting the counts, to a size-k heap, to buckets indexed by count.
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given a list of numbers `nums` and a number `k`, return the `k` values that appear **most often**, in any order. You
+can assume the answer is unique: there's no tie for the last place.
+
+For `nums = [4, 1, 4, 2, 3, 4, 2, 1, 4, 2]` and `k = 2`: 4 appears four times, 2 three times, 1 twice and 3 once,
+so the answer is `[4, 2]`.
+
+## The key question
+
+> **Once I know every value's count, how do I find the k biggest counts without sorting all of them?**
+
+Counting is the easy, unavoidable part: one pass with a hash map, O(n). The three approaches differ only in step two,
+picking the top k.
+
+## Approach 1: Count, then sort
+
+Sort the distinct values by count, most frequent first, and take the first `k`.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Counting is O(n). Sorting the `m` distinct values is O(m log m), and `m` can be as large as `n`:
+**O(n log n)**.
+
+**Space.** The count map and the sorted list: **O(n)**.
+
+**What it wastes:** it puts every value in order, when only the top `k` matter.
+</Complexity>
+
+## Approach 2: Count, then a heap of size k
+
+Keep the `k` most frequent values seen so far in a **min-heap ordered by count**. When a `(k + 1)`th value arrives,
+pop the least frequent: it can't be in the answer, because `k` others appear at least as often.
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(n log k)" space="O(n)">
+**Time.** Counting is O(n). Each of the `m` distinct values is pushed (and maybe popped) on a heap of at most
+`k + 1` items: O(m log k). Together **O(n + m log k)**, which is at most O(n log k). When `k` is small, that's
+close to linear.
+
+**Space.** The count map is O(n); the heap is only O(k).
+</Complexity>
+
+## Approach 3: Count, then buckets by frequency (optimal)
+
+A value can appear at most `n` times. So instead of sorting counts, make `n + 1` **buckets** where bucket `c` holds
+the values that appear exactly `c` times. Then walk the buckets from `n` down and collect values until you have `k`.
+
+<Viz client:visible approach="bucket" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Counting is O(n), filling the buckets is O(m), and walking them is O(n) for the bucket indices plus O(m)
+for the values inside: **O(n)** overall.
+
+**Space.** The count map and `n + 1` buckets: **O(n)**.
+</Complexity>
+
+This works because counts are small whole numbers with a known maximum, so they can be used directly as array
+indices. That's the idea behind counting sort and bucket sort, which beat the O(n log n) limit for comparison sorts.
+
+## Comparing the approaches
+
+Race any two on the same input. Both share one clock that ticks once per operation. On ten numbers the three are close, and buckets can even lose to their fixed overhead (walking every bucket). What matters is how the cost **grows**, in the chart below.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count, then sort | O(n log n) | O(n) | Order every value by count |
+| Count, then heap of size k | O(n log k) | O(n) | Keep only the k most frequent |
+| Count, then buckets | **O(n)** | O(n) | Use the count as an index |
+
+<GrowthChart client:visible series={growth} caption="Operations with mostly distinct values (k = 3), where sorting the counts costs the most." />
+
+In an interview, the heap is the answer most people expect, and it's the one that still works when the data is a
+stream or too big to hold. Mention the bucket version as the O(n) follow-up.
+
+## Common mistakes
+
+- **Pushing every value into one big heap and popping k times.** That works, but it's O(m log m), no better than
+  sorting. Keep the heap at size `k`.
+- **Using a max-heap of size k.** Then the item you need to drop (the least frequent) isn't on top.
+- **Making buckets by value instead of by count.** The bucket's index is how often a value appears, not the value.
+- **Sizing the buckets `len(count)` instead of `len(nums) + 1`.** A value can appear `n` times, so bucket `n` must exist.
+
+## Related problems
+
+- Kth Largest Element in a Stream (LeetCode 703). The same size-k min-heap, on values instead of counts.
+- Sort Characters By Frequency (LeetCode 451). Count, then output by frequency: buckets work there too.
+- Top K Frequent Words (LeetCode 692). The same idea, with alphabetical order breaking ties.

@@ -1,0 +1,90 @@
+---
+title: Kth Largest Element in a Stream
+leetcode: { number: 703, url: "https://leetcode.com/problems/kth-largest-element-in-a-stream/" }
+difficulty: Easy
+topics: [Heap, Binary search]
+added: 2026-11-13
+summary: Numbers keep arriving, and after each one you report the kth largest so far. Goes from keeping every number sorted to a min-heap that keeps only the k largest.
+best: { time: "O(log k) per add", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a class that's given a number `k` and some starting numbers. Then numbers arrive one at a time through
+`add(val)`, and after each one, `add` returns the **kth largest** number seen so far (counting duplicates).
+
+With `k = 3` and starting numbers `[5, 1, 8, 3]`, adding `6, 2, 9, 4` returns `5, 5, 6, 6`. After adding 6, the
+numbers are 1, 3, 5, 6, 8, and the third largest is 5.
+
+## The key question
+
+> **To know the kth largest, which numbers do I actually need to remember?**
+
+Only the **k largest** so far. Anything smaller than all of them can never become the kth largest, however many
+numbers arrive later. And of those k, the answer is the **smallest**: exactly what a min-heap keeps on top.
+
+## Approach 1: Keep everything sorted
+
+Store every number in a sorted list. Binary search finds where a new number goes, then everything after it shifts
+right one place. The kth largest is `k` places from the end.
+
+<Viz client:visible approach="sorted" />
+
+<Complexity time="O(n) per add" space="O(n)">
+**Time.** The binary search is O(log n), but inserting into the middle of a list shifts every larger value: **O(n)**
+per add, where `n` is how many numbers have arrived so far.
+
+**Space.** Every number ever added is kept: **O(n)**, growing forever on an endless stream.
+
+**What it wastes:** it keeps, and keeps shifting, numbers far too small to ever be the answer.
+</Complexity>
+
+## Approach 2: Min-heap of the k largest (optimal)
+
+Keep at most `k` numbers in a **min-heap**. Push each new number; if that makes `k + 1`, pop the smallest. The
+top of the heap is then the smallest of the k largest: the kth largest.
+
+It feels backwards at first: we want the *largest* numbers, so why a *min*-heap? Because the number we need to
+look at, and the one we need to throw away, are both the **smallest of the ones we keep**.
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(log k) per add" space="O(k)">
+**Time.** Each add is one push and at most one pop on a heap of at most `k + 1` items: **O(log k)**. Reading the
+top is O(1). Building from `n` starting numbers costs O(n log k).
+
+**Space.** Never more than `k + 1` numbers, however long the stream: **O(k)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race the two on the same input. Both share one clock that ticks once per operation. With only a few numbers they're close; the gap is in how the cost **grows**: the sorted list shifts more with every number it stores, while the heap never holds more than k + 1. The chart below shows it.
+
+<Compare client:visible />
+
+| Approach | Each add | Space | Idea |
+|---|---|---|---|
+| Keep everything sorted | O(n) | O(n) | Insert in order, read k from the end |
+| Min-heap of size k | **O(log k)** | **O(k)** | Keep only the k largest; the top is the answer |
+
+<GrowthChart client:visible series={growth} caption="Operations for n starting numbers then n adds (k = 3), each add smaller than everything stored." />
+
+## Common mistakes
+
+- **Using a max-heap.** Then the kth largest is buried k levels down. A min-heap of size k puts it on top.
+- **Popping before pushing.** Push the new number first, then pop if the heap has `k + 1`. Popping first can throw
+  away a number that should stay.
+- **Building the heap with all starting numbers and never trimming it.** Trim to `k` (or route the starting numbers
+  through `add`) or the top isn't the kth largest.
+- **`>= k` instead of `> k`.** Pop only when the heap holds more than `k`. Popping at `k` leaves `k − 1` numbers, and
+  the top becomes the (k − 1)th largest.
+
+## Related problems
+
+- Kth Largest Element in an Array (LeetCode 215). The same size-k heap over a fixed array, or quickselect in average O(n).
+- Last Stone Weight (LeetCode 1046). A max-heap that keeps handing out the largest.
+- Top K Frequent Elements (LeetCode 347). A size-k heap ordered by frequency.

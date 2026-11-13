@@ -1,4 +1,5 @@
 export * from "./trace";
+export * from "./heap";
 export { ArrayPlayer } from "./ArrayPlayer";
 export type { ArrayPlayerProps } from "./ArrayPlayer";
 export { InputForm } from "./input";
