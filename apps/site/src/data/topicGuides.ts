@@ -30,6 +30,20 @@ for i, x in enumerate(nums):
     seen[x] = i`,
     payoff: "An O(n²) \"compare every pair\" becomes one O(n) pass, at the cost of O(n) memory.",
   },
+  Sorting: {
+    idea: "Put items in order so equal or related values sit together and binary search, two pointers and merging become possible. Which sort to use depends on the data and on what you need to preserve.",
+    signals: [
+      "Pairs, duplicates or neighbours are easier to spot in order",
+      "You need the kth smallest, a median, or ranks",
+      "Merging, scheduling or sweeping over intervals",
+      "The input is almost sorted already, or has a small value range",
+    ],
+    template: `# In practice: Python's built-in sort (Timsort)
+items.sort()                  # in place, stable
+by_end = sorted(intervals, key=lambda iv: iv[1])
+by_score = sorted(people, key=lambda p: -p.score)`,
+    payoff: "A comparison sort costs O(n log n) once, and then many questions about the data become O(n) or O(log n).",
+  },
   "Two pointers": {
     idea: "Walk two indices through the data, either inward from both ends or one reading and one writing, so each step rules something out for good.",
     signals: [

@@ -1,0 +1,106 @@
+---
+title: Big-O in plain words
+topic: Big-O & complexity
+kind: Explainer
+order: 1
+summary: What O(1), O(log n), O(n), O(n log n) and O(n²) actually mean, how to read them off code, and why Big-O is about growth, not seconds.
+added: 2026-11-13
+---
+import { gentle, steep } from "./curves";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## What Big-O measures
+
+Big-O describes **how the work grows as the input grows**. It doesn't tell you how many seconds something takes;
+that depends on the machine. It tells you what happens when the input gets 10× or 1,000× bigger.
+
+If an algorithm is **O(n)**, doubling the input roughly doubles the work. If it's **O(n²)**, doubling the input
+roughly *quadruples* the work. That difference is invisible at n = 10 and decisive at n = 1,000,000.
+
+## The classes you'll meet most
+
+| Big-O | Name | n = 10 | n = 1,000 | n = 1,000,000 | Typical example |
+|---|---|---|---|---|---|
+| O(1) | constant | 1 | 1 | 1 | Look up a key in a hash map |
+| O(log n) | logarithmic | 3 | 10 | 20 | [Binary search](/dsa/binary-search/) |
+| O(n) | linear | 10 | 1,000 | 1,000,000 | One pass over a list |
+| O(n log n) | linearithmic | 33 | 10,000 | 20,000,000 | [Merge sort](/concepts/sorting-which-one-when/) |
+| O(n²) | quadratic | 100 | 1,000,000 | 10¹² | Comparing every pair |
+| O(2ⁿ) | exponential | 1,024 | 10³⁰¹ | — | Trying every subset |
+
+At a billion simple steps per second, the O(n²) column at a million items takes about 17 minutes; the O(n log n)
+column takes 0.02 seconds.
+
+<GrowthChart client:visible series={gentle} caption="Steps for O(log n), O(n) and O(n log n) up to n = 1024. O(log n) barely leaves the floor." />
+
+Quadratic growth is on another scale entirely:
+
+<GrowthChart client:visible series={steep} caption="O(n²) against O(n) up to n = 128: 16,384 steps against 128." />
+
+## Reading Big-O off code
+
+You rarely need maths. Four rules cover most code:
+
+1. **A loop over the input is O(n).** A loop inside a loop over the same input is O(n × n) = **O(n²)**.
+2. **Steps one after another add; keep the biggest.** An O(n) pass followed by an O(n²) pass is O(n + n²) = **O(n²)**.
+3. **Constants and smaller terms drop out.** `3n + 7` is O(n); `n²/2 + n` is O(n²). Big-O is about the shape, not the exact count.
+4. **Halving each step gives a log.** If each step cuts the remaining work in half, there are about log₂ n steps.
+
+```python
+for x in nums:            # n times
+    for y in nums:        #   n times each
+        compare(x, y)     # → O(n²)
+
+lo, hi = 0, n - 1
+while lo <= hi:           # range halves every loop
+    mid = (lo + hi) // 2  # → O(log n)
+    ...
+```
+
+## Space complexity
+
+The same idea applies to memory: how much *extra* memory grows with the input. A hash map of everything you've seen
+is **O(n)** space; three loop variables are **O(1)**. Recursion counts too: each waiting call takes a stack frame,
+so recursing `n` levels deep is O(n) space even if each call stores nothing else. Many optimisations trade one for
+the other, like [Two Sum](/dsa/two-sum/)'s hash map, which spends O(n) memory to save O(n²) time.
+
+## Best, average and worst case
+
+One algorithm can behave differently on different inputs of the same size. Quicksort is O(n log n) on average but
+O(n²) in its worst case; insertion sort is O(n) on nearly sorted input. Unless someone says otherwise, a plain
+"O(…)" usually means the **worst case**, the guarantee you can rely on.
+
+**Amortised** cost is a related idea. Appending to a Python list is occasionally slow (the list must grow and copy
+itself), but those copies are rare enough that each append averages out to O(1).
+
+## Interview theory
+
+<QA q="Is O(2n) different from O(n)?">
+No. Constants drop out: both grow linearly. O(2n) might be twice as slow in practice, but it scales the same way.
+</QA>
+
+<QA q="Can an O(n²) algorithm be faster than an O(n log n) one?">
+Yes, for small inputs. Big-O ignores constants, so an O(n²) algorithm with tiny overhead can win below some size.
+That's why real sorting libraries use insertion sort for small pieces.
+</QA>
+
+<QA q="Why is binary search O(log n) and not O(n/2)?">
+It doesn't look at half the items; it halves the *remaining range* every step. After k steps, n / 2ᵏ items
+remain, and that reaches 1 after k = log₂ n steps.
+</QA>
+
+<QA q="What is the time complexity of looking up a key in a hash map?">
+O(1) on average: the key's hash points straight to its slot. In the worst case, when many keys collide in one
+slot, it degrades to O(n), but good hash functions make that very unlikely.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "A function loops over a list of n items, and inside that loop does a binary search over the same list. What's its time complexity?", options: ["O(n)", "O(n log n)", "O(n²)"], answer: 1, why: "n iterations, each doing an O(log n) search: n × log n." },
+  { q: "What is O(n² + 5n + 100) simplified?", options: ["O(n²)", "O(n² + n)", "O(5n)"], answer: 0, why: "Keep only the fastest-growing term and drop constants." },
+  { q: "An O(n) algorithm takes 2 seconds on 1 million items. Roughly how long on 4 million?", options: ["2 seconds", "8 seconds", "32 seconds"], answer: 1, why: "Linear: 4× the input means about 4× the time." },
+  { q: "An O(n²) algorithm takes 2 seconds on 1 million items. Roughly how long on 4 million?", options: ["8 seconds", "16 seconds", "32 seconds"], answer: 2, why: "Quadratic: 4× the input means 4² = 16× the time." },
+  { q: "A recursive function calls itself n levels deep but stores nothing else. What's its space complexity?", options: ["O(1)", "O(log n)", "O(n)"], answer: 2, why: "Each waiting call keeps a frame on the call stack: n frames at the deepest point." },
+]} />

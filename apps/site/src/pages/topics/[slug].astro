@@ -10,21 +10,24 @@ const order = (a: CollectionEntry<"dsa">, b: CollectionEntry<"dsa">) =>
 
 export async function getStaticPaths() {
   const problems = await getCollection("dsa");
-  // A page exists only for topics that at least one problem practises.
-  const live = allTopics.filter((t) => problems.some((p) => practisedTopics(p.data.topics).includes(t)));
+  const concepts = await getCollection("concepts");
+  // A page exists once a topic has at least one problem or one concept to read.
+  const live = allTopics.filter((t) => problems.some((p) => practisedTopics(p.data.topics).includes(t)) || concepts.some((c) => c.data.topic === t.name));
   return live.map((topic, k) => ({
     params: { slug: topicSlug(topic.name) },
-    props: { topic, problems, prev: live[k - 1] ?? null, next: live[k + 1] ?? null },
+    props: { topic, problems, concepts, prev: live[k - 1] ?? null, next: live[k + 1] ?? null },
   }));
 }
 
 interface Props {
   topic: RoadmapTopic;
   problems: CollectionEntry<"dsa">[];
+  concepts: CollectionEntry<"concepts">[];
   prev: RoadmapTopic | null;
   next: RoadmapTopic | null;
 }
-const { topic, problems, prev, next } = Astro.props;
+const { topic, problems, concepts, prev, next } = Astro.props;
+const reads = concepts.filter((c) => c.data.topic === topic.name).sort((a, b) => a.data.order - b.data.order);
 const guide = topicGuides[topic.name];
 const stepIndex = roadmap.findIndex((s) => s.topics.includes(topic));
 const step = roadmap[stepIndex];
@@ -39,7 +42,24 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
     <p class="eyebrow">Step {stepIndex + 1} · {step.title}</p>
     <h1>{topic.name}</h1>
     <p class="lead">{guide?.idea ?? topic.blurb}</p>
-    <p class="meta">{count(all.length)} on this pattern · <a href="/#roadmap">See it on the roadmap</a></p>
+    <p class="meta">{reads.length > 0 && `${reads.length} read${reads.length === 1 ? "" : "s"} · `}{count(all.length)} · <a href="/#roadmap">See it on the roadmap</a></p>
+
+    {reads.length > 0 && (
+      <section class="reads">
+        <h2>Read first</h2>
+        <ol>
+          {reads.map((c) => (
+            <li>
+              <a href={`/concepts/${c.id}/`}>
+                <span class="rkind">{c.data.kind}</span>
+                <span class="rtitle">{c.data.title}</span>
+                <span class="rsum">{c.data.summary}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
 
     {guide && (
       <div class="cols">
@@ -57,7 +77,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
 
     <section>
       <h2>Problems</h2>
-      <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>
+      {all.length === 0 ? <p class="sub">Problems for this topic are on the way.</p> : <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>}
       <ol class="plist">
         {all.map((p) => (
           <li>
@@ -88,6 +108,14 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
   .eyebrow { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   .lead { font-size: 19px; color: var(--text-2); max-width: 62ch; margin: 0 0 10px; }
   .meta { font-size: 14px; color: var(--muted); margin: 0 0 28px; }
+  .reads { margin-bottom: 28px; }
+  .reads ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .reads a { display: grid; gap: 2px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--accent); background: var(--accent-soft); color: var(--text); text-decoration: none; }
+  .reads a:hover { box-shadow: var(--shadow); }
+  .rkind { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+  .rtitle { font: 600 18px var(--font-serif); }
+  .rsum { font-size: 14px; color: var(--text-2); }
+  .plist:empty { display: none; }
   .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
   .card h2 { margin: 0 0 10px; font-size: 20px; }

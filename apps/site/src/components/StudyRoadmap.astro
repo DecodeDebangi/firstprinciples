@@ -4,8 +4,9 @@ import { roadmap, homeTopic, practisedTopics, topicSlug } from "../data/roadmap"
 
 interface Props {
   problems: CollectionEntry<"dsa">[];
+  concepts?: CollectionEntry<"concepts">[];
 }
-const { problems } = Astro.props;
+const { problems, concepts = [] } = Astro.props;
 
 const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
 /** Each card shows at most this many; the rest are on the topic's own page. */
@@ -20,7 +21,8 @@ const steps = roadmap.map((step) => ({
     const also = problems
       .filter((p) => homeTopic(p.data.topics) !== t && practisedTopics(p.data.topics).includes(t))
       .sort(order);
-    return { ...t, list, also, slug: topicSlug(t.name) };
+    const reads = concepts.filter((c) => c.data.topic === t.name).length;
+    return { ...t, list, also, reads, slug: topicSlug(t.name) };
   }),
 }));
 ---
@@ -32,12 +34,12 @@ const steps = roadmap.map((step) => ({
         <h3 class="rm__title"><span class="rm__k">Step {i + 1}</span>{step.title}</h3>
         <ul class="rm__topics">
           {step.topics.map((t) => (
-            <li class={`rm__topic${t.list.length || t.also.length ? " is-ready" : ""}`}>
+            <li class={`rm__topic${t.list.length || t.also.length || t.reads ? " is-ready" : ""}`}>
               <div class="rm__head">
-                {t.list.length || t.also.length
+                {t.list.length || t.also.length || t.reads
                   ? <a class="rm__name rm__link" href={`/topics/${t.slug}/`}>{t.name}</a>
                   : <span class="rm__name">{t.name}</span>}
-                <span class="rm__count">{t.list.length ? `${t.list.length} problem${t.list.length > 1 ? "s" : ""}` : t.also.length ? `${t.also.length} related` : "Coming soon"}</span>
+                <span class="rm__count">{[t.reads ? `${t.reads} read${t.reads > 1 ? "s" : ""}` : "", t.list.length ? `${t.list.length} problem${t.list.length > 1 ? "s" : ""}` : t.also.length ? `${t.also.length} related` : ""].filter(Boolean).join(" · ") || "Coming soon"}</span>
               </div>
               <p class="rm__blurb">{t.blurb}</p>
               {t.list.length > 0 && (

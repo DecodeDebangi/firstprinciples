@@ -76,6 +76,17 @@ say so in one sentence under the comparison table instead of drawing identical l
 A new data structure (linked list, tree, graph, DP table) needs a new renderer in `packages/ui` alongside
 `ArrayPlayer`, with its own step type in `trace.ts`.
 
+## Adding a concept (theory)
+Create `apps/site/src/content/concepts/<order>-<slug>/index.mdx`. Frontmatter: `title`, `topic` (must be a roadmap
+topic name; add a topic to `roadmap.ts` if needed), `kind` (`Explainer`, `Comparison guide` or `Interview theory`),
+`order` (reading order within the topic), `summary`, `added`. Quote a title that contains a colon.
+
+A concept page explains the idea in our own words, uses animations where they help (a `steps.ts` + `Viz.tsx` like a
+problem, e.g. the six sorts), and ends with `<QA q="…">answer</QA>` interview questions and a
+`<Quiz client:visible questions={[{ q, options, answer, why }]} />`. It appears automatically under "Read first" on its
+topic page, on the roadmap card ("1 read"), at `/concepts/`, and as background reading on every problem that
+practises its topic. Test any algorithm it animates against a reference, and check every quiz answer.
+
 ## Look and feel
 Light only, warm: cream paper, brown ink, terracotta accent; Fraunces headings, Inter body, JetBrains Mono code.
 All colours are tokens in `packages/ui/src/tokens.css`. The chart series (terracotta, teal, plum) were validated

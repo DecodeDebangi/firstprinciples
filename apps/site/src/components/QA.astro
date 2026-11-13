@@ -1,0 +1,25 @@
+---
+/** One interview-theory question; the answer opens on click. */
+interface Props {
+  q: string;
+}
+const { q } = Astro.props;
+---
+<details class="qa">
+  <summary>{q}</summary>
+  <div class="qa__a"><slot /></div>
+</details>
+
+<style>
+  .qa { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin: 10px 0; }
+  .qa summary {
+    cursor: pointer; list-style: none; padding: 12px 16px; font-weight: 600;
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary::after { content: "+"; color: var(--accent); font: 600 18px/1 var(--font-mono); }
+  .qa[open] summary::after { content: "−"; }
+  .qa summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+  .qa__a { padding: 0 16px 12px; color: var(--text-2); }
+  .qa__a :global(p) { margin: 0 0 8px; }
+</style>

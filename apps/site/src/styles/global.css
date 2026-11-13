@@ -71,3 +71,9 @@ blockquote p { margin: 0; }
 .pill--Easy { color: var(--tone-found-border); background: var(--tone-found-bg); border-color: transparent; }
 .pill--Medium { color: var(--tone-compare-border); background: var(--tone-compare-bg); border-color: transparent; }
 .pill--Hard { color: var(--tone-miss-border); background: var(--tone-miss-bg); border-color: transparent; }
+/* Phones: the four nav links get their own row under the logo. */
+@media (max-width: 560px) {
+  .site-header .wrap { height: auto; flex-wrap: wrap; row-gap: 2px; padding-block: 10px; }
+  .site-header nav { width: 100%; gap: 18px; overflow-x: auto; }
+  .site-header nav a { font-size: 14px; white-space: nowrap; }
+}

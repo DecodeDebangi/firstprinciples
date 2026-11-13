@@ -19,7 +19,9 @@ function stepAt(steps: ArrayStep[], clock: number) {
  * operations, not animation steps. Each tick is the next moment either side does
  * work, so the slower approach visibly falls behind.
  */
-export function ComparePlayer<I extends InputValues>({ approaches, initialInput, fields, prepare, maxLength = 14 }: {
+export function ComparePlayer<I extends InputValues>({ approaches, initialInput, fields, prepare, maxLength = 14, pair }: {
+  /** Which two approaches race first (indexes); defaults to the first and the last. */
+  pair?: [number, number];
   approaches: Approach<I>[];
   initialInput: I;
   fields: InputField[];
@@ -27,7 +29,7 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
   maxLength?: number;
 }) {
   const [input, setInput] = useState<I>(initialInput);
-  const [pick, setPick] = useState<[number, number]>([0, approaches.length - 1]);
+  const [pick, setPick] = useState<[number, number]>(pair ?? [0, approaches.length - 1]);
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);

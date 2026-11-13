@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { allTopics } from "./data/roadmap";
 
 /**
  * One folder per problem: src/content/dsa/<number>-<slug>/index.mdx
@@ -28,4 +29,27 @@ const dsa = defineCollection({
   }),
 });
 
-export const collections = { dsa };
+/**
+ * Concept articles (theory): src/content/concepts/<order>-<slug>/index.mdx → /concepts/<slug>
+ * Each one belongs to a roadmap topic and is listed on that topic's page under "Read first".
+ */
+const topicNames = allTopics.map((t) => t.name) as [string, ...string[]];
+const concepts = defineCollection({
+  loader: glob({
+    pattern: "*/index.mdx",
+    base: "./src/content/concepts",
+    generateId: ({ entry }) => entry.split("/")[0].replace(/^\d+-/, ""),
+  }),
+  schema: z.object({
+    title: z.string(),
+    /** Must be a roadmap topic name, e.g. "Sorting". */
+    topic: z.enum(topicNames),
+    kind: z.enum(["Explainer", "Comparison guide", "Interview theory"]),
+    /** Reading order within its topic (1 first). */
+    order: z.number().int().min(1),
+    summary: z.string(),
+    added: z.coerce.date(),
+  }),
+});
+
+export const collections = { dsa, concepts };

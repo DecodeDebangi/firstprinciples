@@ -1,0 +1,44 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { roadmap, topicSlug } from "../../data/roadmap";
+
+const concepts = await getCollection("concepts");
+const groups = roadmap.flatMap((s) => s.topics)
+  .map((t) => ({ t, list: concepts.filter((c) => c.data.topic === t.name).sort((a, b) => a.data.order - b.data.order) }))
+  .filter((g) => g.list.length);
+---
+<Base title="Concepts" description="The theory behind the problems: explainers, comparison guides and interview questions, each with a short quiz.">
+  <a class="back" href="/">← Home</a>
+  <h1>Concepts</h1>
+  <p class="lead">The theory behind the problems: what each idea is, when to use it, and the questions interviewers ask about it. Each read ends with a short quiz and links to problems to practise on.</p>
+  {groups.map(({ t, list }) => (
+    <section class="group">
+      <h2><a href={`/topics/${topicSlug(t.name)}/`}>{t.name}</a></h2>
+      <ul class="cards">
+        {list.map((c) => (
+          <li>
+            <a class="card" href={`/concepts/${c.id}/`}>
+              <span class="kind">{c.data.kind}</span>
+              <span class="title">{c.data.title}</span>
+              <span class="summary">{c.data.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</Base>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .lead { font-size: 18px; color: var(--text-2); max-width: 62ch; margin: 0 0 12px; }
+  .group h2 a { color: var(--text); text-decoration: none; }
+  .group h2 a:hover { color: var(--accent); }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .card { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 18px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: inherit; text-decoration: none; transition: border-color .15s, box-shadow .15s; }
+  .card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .kind { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+  .title { font: 600 21px var(--font-serif); }
+  .summary { font-size: 14.5px; color: var(--text-2); line-height: 1.5; }
+</style>

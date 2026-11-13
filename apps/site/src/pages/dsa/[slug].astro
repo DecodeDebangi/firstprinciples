@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import { practisedTopics } from "../../data/roadmap";
 
 export async function getStaticPaths() {
   const problems = await getCollection("dsa");
@@ -10,6 +11,8 @@ export async function getStaticPaths() {
 const { p } = Astro.props;
 const { Content, headings } = await render(p);
 const toc = headings.filter((h) => h.depth === 2);
+const topicNames = practisedTopics(p.data.topics).map((t) => t.name);
+const background = (await getCollection("concepts")).filter((c) => topicNames.includes(c.data.topic)).sort((a, b) => a.data.order - b.data.order);
 const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 ---
 <Base title={p.data.title} description={p.data.summary} type="article"
@@ -41,6 +44,9 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
         </a>
       )}
     </div>
+    {background.length > 0 && (
+      <p class="bg">Background reading: {background.map((c, k) => <>{k > 0 && " · "}<a href={`/concepts/${c.id}/`}>{c.data.title}</a></>)}</p>
+    )}
     <nav class="toc" aria-label="On this page">
       {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
     </nav>
@@ -56,6 +62,8 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
 </Base>
 
 <style>
+  .bg { margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); font-size: 14.5px; }
+  .bg a { font-weight: 600; }
   .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; }
   .added { color: var(--muted); }

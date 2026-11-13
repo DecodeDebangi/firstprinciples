@@ -19,7 +19,9 @@ export const roadmap: RoadmapStep[] = [
   {
     title: "Foundations",
     topics: [
+      { name: "Big-O & complexity", blurb: "How to measure and compare an algorithm's cost.", tags: ["Complexity"] },
       { name: "Arrays & hashing", blurb: "Store, look up and count in one pass.", tags: ["Array", "Hash map", "Prefix sum", "Math", "String"] },
+      { name: "Sorting", blurb: "Put things in order, and know which sort to use when.", tags: ["Sorting"] },
     ],
   },
   {

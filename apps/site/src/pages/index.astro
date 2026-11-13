@@ -5,6 +5,7 @@ import HeroDemo from "../components/HeroDemo.tsx";
 import StudyRoadmap from "../components/StudyRoadmap.astro";
 
 const all = await getCollection("dsa");
+const concepts = await getCollection("concepts");
 const problems = [...all].sort(
   (a, b) => b.data.added.getTime() - a.data.added.getTime() || (a.data.leetcode?.number ?? 0) - (b.data.leetcode?.number ?? 0),
 );
@@ -67,7 +68,7 @@ const how = [
   <section id="roadmap" class="path" aria-labelledby="path-title">
     <h2 id="path-title">Study roadmap</h2>
     <p class="sub">A suggested order: each step builds on the ones before it. Every topic links to its problems, and new ones appear here as they're added.</p>
-    <StudyRoadmap problems={all} />
+    <StudyRoadmap problems={all} concepts={concepts} />
   </section>
 
   <section id="recent" class="log" aria-labelledby="log-title">

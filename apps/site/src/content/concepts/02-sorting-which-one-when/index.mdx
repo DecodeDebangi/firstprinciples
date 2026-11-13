@@ -1,0 +1,169 @@
+---
+title: "Sorting algorithms: which one when"
+topic: Sorting
+kind: Comparison guide
+order: 1
+summary: Six sorting algorithms animated side by side, what makes them differ (speed, memory, stability, input shape), and how to pick the right one for the data in front of you.
+added: 2026-11-13
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growthRandom, growthNearly } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+
+## The short answer
+
+There's no single best sort. The right one depends on the data and on what you need to keep:
+
+| Situation | Reach for | Why |
+|---|---|---|
+| General purpose, in real code | Your language's built-in sort | Tuned hybrids (Timsort, introsort) beat anything hand-written |
+| Must keep equal items in their original order | **Merge sort** (or Timsort) | It's stable |
+| Data is nearly sorted already | **Insertion sort** | Close to O(n) when items are only slightly out of place |
+| Memory is tight, worst case must stay O(n log n) | **Heapsort** | In place, never degrades |
+| Fastest on average for random data in memory | **Quicksort** | Small constants, cache-friendly, in place |
+| Integers in a small range (ages, grades, 0–2) | **Counting sort** | O(n + k), no comparisons at all |
+| A tiny list (a dozen items or fewer) | **Insertion sort** | Simple, with almost no overhead |
+
+The rest of this page shows *why* each row is true.
+
+## Four properties that separate them
+
+- **Time**, especially how it changes with the input's shape: random, nearly sorted, reversed, many duplicates.
+- **Extra memory.** *In place* means O(1) extra (or O(log n) for recursion). Merge sort needs O(n).
+- **Stability.** A *stable* sort keeps equal items in their original order. Sort people by age with a stable sort and those of the same age stay in the order they arrived, which matters when you sort by one key and then another.
+- **Comparison or not.** Any sort that only compares items needs at least about `n log₂ n` comparisons in the worst case. Counting sort escapes that limit by never comparing, but only for small integer ranges.
+
+## Meet the sorts
+
+Every animation runs the real algorithm on `[5, 2, 8, 1, 9, 3, 7]`. Type your own list into any of them.
+
+### Bubble sort
+
+Swap out-of-order neighbours, pass after pass. Each pass carries the largest remaining value to the end. Simple, but
+it does about `n²/2` comparisons on most inputs. It stops early on sorted input.
+
+<Viz client:visible approach="bubble" />
+
+### Selection sort
+
+Find the smallest remaining value and swap it into place. Always about `n²/2` comparisons, even on sorted input, but
+at most `n − 1` swaps, which helps only when writes are very expensive.
+
+<Viz client:visible approach="selection" />
+
+### Insertion sort
+
+Grow a sorted part on the left, sliding each new value into position. O(n²) in general, but on nearly sorted data
+each value moves only a step or two, so it runs close to O(n). Stable and in place. Real-world sorts switch to
+insertion sort for small pieces.
+
+<Viz client:visible approach="insertion" />
+
+### Merge sort
+
+Split in half, sort each half, merge. Always about `n log₂ n`, whatever the input, and stable. The cost is O(n) extra
+memory for merging.
+
+<Viz client:visible approach="merge" />
+
+### Quicksort
+
+Pick a pivot, move smaller values to its left, recurse on both sides. O(n log n) on average with very small constants,
+and in place. But a bad pivot choice makes it O(n²): here the pivot is the last value, so already-sorted input
+splits off just one element each time. Real implementations pick pivots more carefully.
+
+<Viz client:visible approach="quick" />
+
+### Counting sort
+
+Count how often each value appears, then write them back in order. O(n + k) for `k` possible values, with no
+comparisons. Ideal for small ranges like exam scores 0–100; useless for arbitrary 64-bit numbers.
+
+<Viz client:visible approach="counting" />
+
+## Race them
+
+Pick any two sorts and race them on the same input. On the seven-item example, bubble sort can even beat merge sort:
+with so few items, merge sort's extra copying costs more than it saves, which is exactly why real libraries use a
+simple sort for small pieces. Bigger and messier inputs flip the result. Try these in the box below:
+
+- **Reversed, 12 items:** `12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1`. Merge sort pulls well ahead of bubble sort.
+
+- **Nearly sorted:** `1, 2, 3, 5, 4, 6, 7, 8, 9`. Insertion sort flies; quicksort with a last-value pivot crawls.
+- **Reversed:** `9, 8, 7, 6, 5, 4, 3, 2, 1`. The worst case for bubble and insertion sort.
+- **Many duplicates:** `3, 1, 3, 1, 3, 1, 3, 1`. Counting sort barely notices.
+
+<Compare client:visible />
+
+## What the data does to them
+
+On shuffled input, the O(n²) sorts fall far behind merge sort:
+
+<GrowthChart client:visible series={growthRandom} caption="Comparisons plus writes on shuffled input of size n." />
+
+On nearly sorted input (one pair swapped), the picture flips: insertion sort becomes the fastest, and quicksort
+with a naive pivot becomes the slowest:
+
+<GrowthChart client:visible series={growthNearly} caption="Comparisons plus writes on sorted input with one adjacent pair swapped." />
+
+## Cheat sheet
+
+| Sort | Best | Average | Worst | Extra space | Stable | In place |
+|---|---|---|---|---|---|---|
+| Bubble | O(n) | O(n²) | O(n²) | O(1) | Yes | Yes |
+| Selection | O(n²) | O(n²) | O(n²) | O(1) | No | Yes |
+| Insertion | O(n) | O(n²) | O(n²) | O(1) | Yes | Yes |
+| Merge | O(n log n) | O(n log n) | O(n log n) | O(n) | Yes | No |
+| Quick | O(n log n) | O(n log n) | O(n²) | O(log n) | No | Yes |
+| Heap | O(n log n) | O(n log n) | O(n log n) | O(1) | No | Yes |
+| Counting | O(n + k) | O(n + k) | O(n + k) | O(k) | Yes | No |
+
+**What languages use:** Python's `sort` and `sorted` use **Timsort** (merge sort plus insertion sort, stable).
+Java sorts primitives with a dual-pivot quicksort and objects with Timsort. C++'s `std::sort` is an introsort
+(quicksort that falls back to heapsort) and isn't stable; use `std::stable_sort` when order of equals matters.
+JavaScript's `Array.prototype.sort` is required to be stable since ES2019.
+
+## Interview theory
+
+<QA q="Why is quicksort usually faster than merge sort if both are O(n log n)?">
+Big-O hides constants. Quicksort works in place on one array, so it moves less data and makes good use of the
+CPU cache; merge sort copies into a buffer at every level. On random data quicksort's constant is smaller.
+</QA>
+
+<QA q="When does quicksort hit O(n²), and how do real implementations avoid it?">
+When the pivot keeps splitting off almost nothing, such as the last element on already-sorted input. Real
+implementations choose a random pivot or the median of three, and introsort switches to heapsort if recursion gets
+too deep, guaranteeing O(n log n).
+</QA>
+
+<QA q="What does it mean for a sort to be stable, and when does it matter?">
+Equal items keep their original relative order. It matters when you sort by several keys: sort by name, then
+stably by department, and each department stays alphabetical.
+</QA>
+
+<QA q="Can any sort beat O(n log n)?">
+Not a comparison sort: there are n! possible orderings, and each comparison at best halves the possibilities, so
+you need about log₂(n!) ≈ n log₂ n comparisons. Counting sort and radix sort beat it by not comparing, which only
+works for integers or short keys in a limited range.
+</QA>
+
+<QA q="Which sort would you use to sort 1 GB of data with 100 MB of memory?">
+An external merge sort: sort chunks that fit in memory, write each to disk, then merge the sorted chunks in one
+streaming pass, since merging only needs to read each chunk sequentially.
+</QA>
+
+<QA q="Why does Timsort use insertion sort inside a merge sort?">
+Real data often contains runs that are already in order, and on small or nearly sorted pieces insertion sort beats
+everything. Timsort finds those runs, extends short ones with insertion sort, then merges the runs.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={[
+  { q: "You need to sort 5 million records by timestamp, keeping records with the same timestamp in arrival order. Which property must the sort have?", options: ["Stable", "In place", "Adaptive"], answer: 0, why: "Keeping equal keys in their original order is exactly what stability means." },
+  { q: "A list is sorted except for two neighbouring items that are swapped. Which sort finishes fastest?", options: ["Merge sort", "Insertion sort", "Selection sort"], answer: 1, why: "Insertion sort only shifts the one out-of-place item a single step, so it does about n operations. Merge sort still does n·log n; selection sort still does n²/2." },
+  { q: "Quicksort always picks the last element as its pivot. Which input makes it slowest?", options: ["Random order", "Already sorted", "All values distinct"], answer: 1, why: "On sorted input the last element is the largest, so every partition splits off nothing: O(n²)." },
+  { q: "You must sort 10 million exam scores, each between 0 and 100. What's the best choice?", options: ["Quicksort", "Counting sort", "Merge sort"], answer: 1, why: "With only 101 possible values, counting sort runs in O(n + 101) with no comparisons at all." },
+  { q: "Which of these sorts needs O(n) extra memory?", options: ["Heapsort", "Insertion sort", "Merge sort"], answer: 2, why: "Merging two sorted halves needs a buffer as big as the data. Heapsort and insertion sort work in place." },
+]} />
