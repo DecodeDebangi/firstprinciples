@@ -14,7 +14,7 @@ import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
 
-You get the `root` of a binary tree. Return `True` if it's a valid **binary search tree**: for every node, *all*
+You get the `root` of a binary tree. Return `true` if it's a valid **binary search tree**: for every node, *all*
 values in its left subtree are smaller than it and *all* values in its right subtree are bigger.
 
 `[8, 3, 10, 1, 6, null, 14, null, null, 4, 9]` is **not** valid, even though every node is in the right place
@@ -86,7 +86,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 - **Comparing a node only with its children.** The example above passes that check and still isn't a BST.
 - **Allowing equal values.** Here a BST needs strictly smaller on the left and strictly bigger on the right, so `[2, 2]` is invalid.
-- **Using the smallest possible integer as a starting bound.** A node may hold exactly that value; use infinity or `None`.
+- **Using the smallest possible integer as a starting bound.** A node may hold exactly that value; use infinity or `none`.
 
 ## Related problems
 

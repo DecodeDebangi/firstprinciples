@@ -13,15 +13,15 @@ export function prepare(raw: Input): Prepared<Input> {
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: look ahead from each day",
-  code: `def daily_temperatures(temps):
-    n = len(temps)
-    answer = [0] * n
-    for i in range(n):
-        for j in range(i + 1, n):
-            if temps[j] > temps[i]:
-                answer[i] = j - i
-                break
-    return answer
+  code: `function dailyTemperatures(temps)
+  n ← length(temps)
+  answer ← array of n, all 0
+  for i ← 0 to n - 1
+    for j ← i + 1 to n - 1
+      if temps[j] > temps[i]
+        answer[i] ← j - i
+        break
+  return answer
 `,
   run({ temps: a }, t) {
     const n = a.length;
@@ -49,15 +49,15 @@ const bruteForce: Approach<Input> = {
 const monoStack: Approach<Input> = {
   id: "stack",
   name: "Monotonic stack",
-  code: `def daily_temperatures(temps):
-    answer = [0] * len(temps)
-    stack = []  # days still waiting for a warmer day
-    for i, t in enumerate(temps):
-        while stack and temps[stack[-1]] < t:
-            j = stack.pop()
-            answer[j] = i - j
-        stack.append(i)
-    return answer
+  code: `function dailyTemperatures(temps)
+  answer ← array of length(temps), all 0
+  stack ← empty stack  // days still waiting
+  for each index i, value t in temps
+    while stack's top day is colder than t
+      j ← stack.pop()
+      answer[j] ← i - j
+    stack.push(i)
+  return answer
 `,
   run({ temps: a }, t) {
     const n = a.length;

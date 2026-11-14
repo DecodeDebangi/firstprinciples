@@ -36,7 +36,7 @@ Drop `nums2` into the empty slots and sort the whole array.
 <Complexity time="O((m + n) log(m + n))" space="O(1)*">
 **Time.** The copy is O(n); sorting `m + n` values dominates: **O((m + n) log(m + n))**.
 
-**Space.** Python's sort needs up to O(m + n) scratch space internally; a heap sort would be O(1). Either way, it's
+**Space.** Library sorts like Timsort (Python, and Java for objects) need up to O(m + n) scratch space internally; a heap sort would be O(1). Either way, it's
 not the bottleneck.
 
 **What it wastes:** both halves were already sorted. Sorting throws that away and finds the order again.
@@ -73,8 +73,8 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 ## Common mistakes
 
 - **Merging from the front.** It overwrites `nums1`'s values before they're used, unless you copy them out first (O(m) extra space).
-- **Looping while `i >= 0`.** The loop must run while `nums2` has values (`j >= 0`); leftovers in `nums1` are already in place.
-- **Forgetting `i >= 0`.** When `nums1`'s values are used up, take from `nums2` without reading `nums1[-1]`.
+- **Looping while `i ≥ 0`.** The loop must run while `nums2` has values (`j ≥ 0`); leftovers in `nums1` are already in place.
+- **Forgetting `i ≥ 0`.** When `nums1`'s values are used up, take from `nums2` without reading `nums1[-1]`.
 
 ## Related problems
 

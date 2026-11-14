@@ -13,18 +13,18 @@ export function prepare(raw: Input): Prepared<Input> {
 const sortScan: Approach<Input> = {
   id: "sort",
   name: "Sort, then count runs",
-  code: `def longest_consecutive(nums):
-    if not nums:
-        return 0
-    nums = sorted(set(nums))
-    best = run = 1
-    for i in range(1, len(nums)):
-        if nums[i] == nums[i - 1] + 1:
-            run += 1
-        else:
-            run = 1
-        best = max(best, run)
-    return best
+  code: `function longestConsecutive(nums)
+  if nums is empty
+    return 0
+  nums ← unique values of nums, sorted
+  best ← 1, run ← 1
+  for i ← 1 to length(nums) - 1
+    if nums[i] = nums[i - 1] + 1
+      run += 1
+    else
+      run ← 1
+    best ← max(best, run)
+  return best
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -50,16 +50,16 @@ const sortScan: Approach<Input> = {
 const hashSet: Approach<Input> = {
   id: "set",
   name: "Hash set: count only from run starts",
-  code: `def longest_consecutive(nums):
-    seen = set(nums)
-    best = 0
-    for x in seen:
-        if x - 1 not in seen:
-            length = 1
-            while x + length in seen:
-                length += 1
-            best = max(best, length)
-    return best
+  code: `function longestConsecutive(nums)
+  seen ← set of nums
+  best ← 0
+  for each x in seen
+    if x - 1 not in seen
+      run ← 1
+      while x + run in seen
+        run += 1
+      best ← max(best, run)
+  return best
 `,
   run({ nums: a }, t) {
     const seen = new Set(a);

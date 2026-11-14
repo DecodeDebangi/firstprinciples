@@ -14,23 +14,23 @@ export function prepare(raw: Input): Prepared<Input> {
 const rewalk: Approach<Input> = {
   id: "rewalk",
   name: "One walk per level",
-  code: `def level_order(root):
-    result, depth = [], 0
-    while True:
-        level = []
-        collect(root, 0, depth, level)   # walk from the root
-        if not level:
-            return result
-        result.append(level)
-        depth += 1
+  code: `function levelOrder(root)
+  result, depth ← [], 0
+  while true
+    level ← empty list
+    collect(root, 0, depth, level)
+    if level is empty
+      return result
+    result.push(level)
+    depth += 1
 
-def collect(node, d, target, level):
-    if node is None or d > target:
-        return
-    if d == target:
-        level.append(node.val)
-    collect(node.left, d + 1, target, level)
-    collect(node.right, d + 1, target, level)
+function collect(node, d, target, level)
+  if node = none or d > target
+    return
+  if d = target
+    level.push(node.val)
+  collect(node.left, d + 1, target, level)
+  collect(node.right, d + 1, target, level)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -70,18 +70,18 @@ def collect(node, d, target, level):
 const bfs: Approach<Input> = {
   id: "bfs",
   name: "Queue, one level at a time",
-  code: `def level_order(root):
-    result = []
-    queue = deque([root] if root else [])
-    while queue:
-        level = []
-        for _ in range(len(queue)):
-            node = queue.popleft()
-            level.append(node.val)
-            if node.left: queue.append(node.left)
-            if node.right: queue.append(node.right)
-        result.append(level)
-    return result
+  code: `function levelOrder(root)
+  result ← empty list
+  queue ← root = none ? [] : queue of [root]
+  while queue not empty
+    level ← empty list
+    repeat length(queue) times
+      node ← queue.popFront()
+      level.push(node.val)
+      queue.push(node.left) if it exists
+      queue.push(node.right) if it exists
+    result.push(level)
+  return result
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

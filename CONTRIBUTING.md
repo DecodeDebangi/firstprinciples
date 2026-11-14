@@ -17,7 +17,19 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
    solution, and `growth` (from `measureGrowth` on a worst-case input generator).
    - Each approach's `id` appears in shareable links (`?approach=<id>&step=<n>`), so never rename it once
      the page is live, or old links will open at the wrong place.
-   - Each approach's `code` is Python. Every `t.step({ line })` must point at the line actually executing.
+   - Each approach's `code` is **language-agnostic pseudocode** (the same style as the Instagram reels), never a real
+     language. Every `t.step({ line })` must point at the line actually executing. The style:
+     - `function twoSum(nums, target)`, camelCase names, no colons, 2-space indents.
+     - `←` assigns; `=` `≠` `<` `≤` `>` `≥` compare; `+=` and `-=` are fine. `true`, `false`, `none`.
+     - Loops: `for i ← 0 to n - 1`, `for i ← n - 1 down to 0`, `for each x in nums`,
+       `for each index i, value x in nums`, `repeat k times`, `while stack not empty`.
+     - Structures: `empty map`, `empty set`, `empty stack`, `empty queue`, `queue of [root]`, `empty min-heap`,
+       `array of n, all 0`, `n empty lists`, `a[i..j]` (inclusive), `copy(path)`, `length(x)`, `floor(x / 2)`.
+     - Calls: `.push(x)`, `.pop()`, `.top()`, `.last()`, `.popFront()`, `.popMin()`, `.add(x)`, `swap a[i] and a[j]`.
+     - A short `// comment` is fine, and plain English is fine where code would be cryptic (`sort meetings by end
+       time`). No language-specific tricks (no negated min-heaps, list comprehensions or slicing tricks).
+     - **Every line fits 48 characters** (indent and comment included), or the panel scrolls sideways at desktop
+       width. Shorten the comment first.
    - `message` states the *decision* in words, with the real numbers ("27 < 63, so drop the left half"), not just
      what happened.
    - Call `t.op()` once per basic operation (comparison, lookup) so the chart counts real work.
@@ -63,7 +75,7 @@ other topics it practises show it as "Also used in". Put the main technique firs
 tag, add it to a topic there.
 
 Each roadmap topic gets its own page at `/topics/<slug>/` once a problem practises it. The page's idea, "when to
-reach for it" signals and Python template live in `apps/site/src/data/topicGuides.ts`; keep the template short
+reach for it" signals and pseudocode template live in `apps/site/src/data/topicGuides.ts`; keep the template short
 enough to fit a phone (comments under about 25 characters).
 
 Trees: use the `"tree"` input kind (LeetCode's level order with `null`), build with `treeFromLevelOrder`, and

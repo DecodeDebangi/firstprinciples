@@ -32,11 +32,11 @@ because "who are 3's neighbours?" means scanning every edge. Convert it first:
 | **Adjacency list** | O(V + E) | **O(its degree)** | O(degree) | almost every search |
 | Adjacency matrix | O(V²) | O(V) | **O(1)** | small, dense graphs |
 
-```python
-graph = [[] for _ in range(n)]
-for a, b in edges:
-    graph[a].append(b)
-    graph[b].append(a)   # leave this out if edges are directed
+```text
+graph ← n empty lists
+for each (a, b) in edges
+    graph[a].push(b)
+    graph[b].push(a)     // leave this out if edges are directed
 ```
 
 ## Breadth-first search: shortest paths, level by level

@@ -44,7 +44,7 @@ gone.
 **Time.** The scan visits each cell once; each land cell is sunk once and tries 4 neighbours: **O(rows × cols)**.
 
 **Space.** The recursion can be as deep as the biggest island. A map that's all land, snaking through every cell,
-would recurse rows × cols deep: **O(rows × cols)** in the worst case (and Python's recursion limit could be hit).
+would recurse rows × cols deep: **O(rows × cols)** in the worst case (deep enough to overflow the call stack: Python stops at 1,000 calls by default).
 </Complexity>
 
 ## Approach 2: Breadth-first, flood with a queue

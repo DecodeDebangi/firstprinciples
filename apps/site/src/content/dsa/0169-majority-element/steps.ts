@@ -17,15 +17,15 @@ export function prepare(raw: Input): Prepared<Input> {
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: count each value",
-  code: `def majority_element(nums):
-    n = len(nums)
-    for x in nums:
-        count = 0
-        for y in nums:
-            if y == x:
-                count += 1
-        if count > n // 2:
-            return x
+  code: `function majorityElement(nums)
+  n ← length(nums)
+  for each x in nums
+    count ← 0
+    for each y in nums
+      if y = x
+        count += 1
+    if count > floor(n / 2)
+      return x
 `,
   run({ nums: a }, t) {
     const n = a.length, half = Math.floor(n / 2);
@@ -49,12 +49,12 @@ const bruteForce: Approach<Input> = {
 const counting: Approach<Input> = {
   id: "hash",
   name: "Hash map of counts",
-  code: `def majority_element(nums):
-    counts = {}
-    for x in nums:
-        counts[x] = counts.get(x, 0) + 1
-        if counts[x] > len(nums) // 2:
-            return x
+  code: `function majorityElement(nums)
+  counts ← empty map
+  for each x in nums
+    counts[x] ← (counts[x] or 0) + 1
+    if counts[x] > floor(length(nums) / 2)
+      return x
 `,
   run({ nums: a }, t) {
     const n = a.length, half = Math.floor(n / 2);
@@ -80,22 +80,22 @@ const counting: Approach<Input> = {
 const voting: Approach<Input> = {
   id: "vote",
   name: "Boyer–Moore voting",
-  code: `def majority_element(nums):
-    candidate, count = None, 0
-    for x in nums:
-        if count == 0:
-            candidate = x
-        count += 1 if x == candidate else -1
-    return candidate
+  code: `function majorityElement(nums)
+  candidate, count ← none, 0
+  for each x in nums
+    if count = 0
+      candidate ← x
+    count += (x = candidate) ? 1 : -1
+  return candidate
 `,
   run({ nums: a }, t) {
     let candidate: number | null = null, count = 0;
-    t.step({ line: 2, array: a, vars: { candidate: "None", count }, message: "Pair each majority value off against a different value. The majority has more copies than everything else combined, so it's the one left standing." });
+    t.step({ line: 2, array: a, vars: { candidate: "none", count }, message: "Pair each majority value off against a different value. The majority has more copies than everything else combined, so it's the one left standing." });
     for (let i = 0; i < a.length; i++) {
       const x = a[i];
       t.op();
       const opts = ["count is 0: x becomes the candidate", "x matches the candidate: count goes up", "x differs: count goes down"];
-      const ask = { q: `candidate = ${candidate ?? "None"}, count = ${count}, x = ${x}. What happens?`, options: opts, answer: count === 0 ? 0 : x === candidate ? 1 : 2 };
+      const ask = { q: `candidate = ${candidate ?? "none"}, count = ${count}, x = ${x}. What happens?`, options: opts, answer: count === 0 ? 0 : x === candidate ? 1 : 2 };
       let what: string;
       let tone: Tone;
       if (count === 0) { candidate = x; count = 1; what = `count was 0, so ${x} becomes the candidate with count 1.`; tone = "active"; }

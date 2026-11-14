@@ -19,7 +19,7 @@ export function prepare(raw: Input): Prepared<Input> {
 }
 
 const chain = (vals: number[], ids: string[], pointers: Record<string, string | null> = {}, tones: Record<string, Tone> = {}): ListRow => ({
-  nodes: [...vals.map((v, i) => ({ id: ids[i], val: v })), { id: "none", val: "None", kind: "null" as const }],
+  nodes: [...vals.map((v, i) => ({ id: ids[i], val: v })), { id: "none", val: "none", kind: "null" as const }],
   arrows: vals.map(() => "right" as const),
   pointers, tones,
 });
@@ -27,11 +27,11 @@ const chain = (vals: number[], ids: string[], pointers: Record<string, string | 
 const arrayInsert: Approach<Input> = {
   id: "array-insert",
   name: "Array: insert at the front",
-  code: `def insert_front(arr, x):
-    arr.append(None)  # make room at the end
-    for i in range(len(arr) - 1, 0, -1):
-        arr[i] = arr[i - 1]  # shift right
-    arr[0] = x
+  code: `function insertFront(arr, x)
+  arr.push(none)  // make room at the end
+  for i ← length(arr) - 1 down to 1
+    arr[i] ← arr[i - 1]  // shift right
+  arr[0] ← x
 `,
   run({ nums, x }, t) {
     const a: (number | string)[] = [...nums, "_"];
@@ -40,7 +40,7 @@ const arrayInsert: Approach<Input> = {
     for (let i = a.length - 1; i > 0; i--) {
       t.op();
       a[i] = a[i - 1];
-      t.step({ ...(i === a.length - 1 ? { ask: { q: `To insert at the front of ${nums.length} items, how many existing items have to move?`, options: uniq([`All ${nums.length}`, "Just one", "None"]), answer: 0 } } : {}),
+      t.step({ ...(i === a.length - 1 ? { ask: { q: `To insert at the front of ${nums.length} items, how many existing items have to move?`, options: uniq([`All ${nums.length}`, "Just one", "none"]), answer: 0 } } : {}),
         line: 4, array: [...a], pointers: { i }, tones: { [i]: "compare" }, badge: { at: i, text: "shift" }, vars: { x, moved: a.length - i },
         message: `Copy ${a[i]} one place right, into slot ${i}.` });
     }
@@ -54,10 +54,10 @@ const arrayInsert: Approach<Input> = {
 const listInsert: Approach<Input> = {
   id: "list-insert",
   name: "Linked list: insert at the front",
-  code: `def insert_front(head, x):
-    node = ListNode(x)
-    node.next = head
-    return node  # the new head
+  code: `function insertFront(head, x)
+  node ← ListNode(x)
+  node.next ← head
+  return node  // the new head
 `,
   run({ nums, x }, t) {
     const ids = nums.map((_, i) => `n${i}`);
@@ -67,7 +67,7 @@ const listInsert: Approach<Input> = {
     t.step({ line: 3, array: [], lists: [{ ...chain([x, ...nums], ["new", ...ids], { node: "new", head: ids[0] ?? "none" }, { new: "active" }), arrows: [null, ...nums.map(() => "right" as const)] }], vars: { x },
       message: `Create a node for ${x}. It isn't linked to anything yet.` });
     t.op();
-    t.step({ ask: { q: `The list has ${nums.length} nodes. How many of them have to move to put ${x} in front?`, options: uniq(["None", `All ${nums.length}`]), answer: 0 },
+    t.step({ ask: { q: `The list has ${nums.length} nodes. How many of them have to move to put ${x} in front?`, options: uniq(["none", `All ${nums.length}`]), answer: 0 },
       line: 3, array: [], lists: [chain([x, ...nums], ["new", ...ids], { node: "new", head: ids[0] ?? "none" }, { new: "compare" })], vars: { x },
       message: `Point the new node at the old head. One pointer written.` });
     t.step({ line: 4, array: [], lists: [chain([x, ...nums], ["new", ...ids], { head: "new" }, { new: "found" })], vars: { x }, done: "found",
@@ -78,8 +78,8 @@ const listInsert: Approach<Input> = {
 const arrayRead: Approach<Input> = {
   id: "array-read",
   name: "Array: read item k",
-  code: `def get(arr, k):
-    return arr[k]  # address = start + k * size
+  code: `function get(arr, k)
+  return arr[k]  // address = start + k * size
 `,
   run({ nums, k }, t) {
     t.step({ line: 2, array: nums, vars: { k }, message: "Every slot is the same size and the slots are consecutive, so item k's address can be computed directly." });
@@ -93,11 +93,11 @@ const arrayRead: Approach<Input> = {
 const listRead: Approach<Input> = {
   id: "list-read",
   name: "Linked list: read item k",
-  code: `def get(head, k):
-    node = head
-    for _ in range(k):
-        node = node.next  # follow the chain
-    return node.val
+  code: `function get(head, k)
+  node ← head
+  repeat k times
+    node ← node.next  // follow the chain
+  return node.val
 `,
   run({ nums, k }, t) {
     const ids = nums.map((_, i) => `n${i}`);

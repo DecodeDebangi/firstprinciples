@@ -60,14 +60,14 @@ linear.
 
 ## The template
 
-```python
-lo = 0
-for hi, x in enumerate(a):
-    add(x)            # grow right
-    while broken():   # or: while valid()
-        remove(a[lo]) # shrink left
+```text
+lo ← 0
+for each index hi, value x in a
+    add(x)              // grow right
+    while broken()      // or: while valid()
+        remove(a[lo])   // shrink left
         lo += 1
-    record(lo, hi)    # or record inside the loop
+    record(lo, hi)      // or record inside the loop
 ```
 
 Two versions, depending on what you're looking for:

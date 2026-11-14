@@ -84,8 +84,8 @@ When every node is handled independently, any order works: [Invert Binary Tree](
 | Balanced tree | O(log n) | O(n): the bottom level holds about n/2 nodes |
 | A tree like a linked list | O(n) | O(1) |
 
-So DFS is usually lighter on balanced trees, and BFS on long, thin ones. In Python, very deep recursion hits the
-recursion limit (about 1,000 calls), so for trees that could be thousands of levels deep, write DFS with your own
+So DFS is usually lighter on balanced trees, and BFS on long, thin ones. Very deep recursion can run out of call
+stack (Python stops at about 1,000 calls by default; other languages crash a little later), so for trees that could be thousands of levels deep, write DFS with your own
 stack. See [Stacks vs queues](/concepts/stacks-queues-monotonic/) for why a stack gives depth-first and a queue gives
 breadth-first.
 

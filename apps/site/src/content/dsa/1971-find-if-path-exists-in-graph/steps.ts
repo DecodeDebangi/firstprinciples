@@ -55,33 +55,33 @@ function search(kind: "bfs" | "dfs"): Approach<Input> {
   return {
     id: kind,
     name: bfs ? "Breadth-first search (queue)" : "Depth-first search (stack)",
-    code: bfs ? `from collections import deque
-def valid_path(n, edges, source, destination):
-    graph = [[] for _ in range(n)]
-    for a, b in edges:
-        graph[a].append(b); graph[b].append(a)
-    seen, queue = {source}, deque([source])
-    while queue:
-        node = queue.popleft()  # oldest first
-        if node == destination:
-            return True
-        for nxt in graph[node]:
-            if nxt not in seen:
-                seen.add(nxt); queue.append(nxt)
-    return False
-` : `def valid_path(n, edges, source, destination):
-    graph = [[] for _ in range(n)]
-    for a, b in edges:
-        graph[a].append(b); graph[b].append(a)
-    seen, stack = {source}, [source]
-    while stack:
-        node = stack.pop()  # newest first
-        if node == destination:
-            return True
-        for nxt in graph[node]:
-            if nxt not in seen:
-                seen.add(nxt); stack.append(nxt)
-    return False
+    code: bfs ? `// queue: join at back, leave from front
+function validPath(n, edges, source, dest)
+  graph ← n empty lists
+  for each (a, b) in edges
+    graph[a].push(b); graph[b].push(a)
+  seen, queue ← set {source}, queue of [source]
+  while queue not empty
+    node ← queue.popFront()  // oldest first
+    if node = dest
+      return true
+    for each nxt in graph[node]
+      if nxt not in seen
+        seen.add(nxt); queue.push(nxt)
+  return false
+` : `function validPath(n, edges, source, dest)
+  graph ← n empty lists
+  for each (a, b) in edges
+    graph[a].push(b); graph[b].push(a)
+  seen, stack ← set {source}, [source]
+  while stack not empty
+    node ← stack.pop()  // newest first
+    if node = dest
+      return true
+    for each nxt in graph[node]
+      if nxt not in seen
+        seen.add(nxt); stack.push(nxt)
+  return false
 `,
     run(input, t) {
       const { source: s, destination: d } = input;
@@ -112,7 +112,7 @@ def valid_path(n, edges, source, destination):
         notes[node] = `#${++order}`;
         if (node === d) {
           t.step({ ...(ask && ask.options.length > 1 ? { ask } : {}), line: L.found, array: [], graphs: G.draw(tones({ [node]: "found" }), notes, {}, node), map: G.adjMap(node), ...panel(), vars: { node, visited: order }, done: "found",
-            message: `${node} is the destination: a path exists. Return True after visiting ${order} node${order === 1 ? "" : "s"}. The green edges show how each node was first reached.` });
+            message: `${node} is the destination: a path exists. Return true after visiting ${order} node${order === 1 ? "" : "s"}. The green edges show how each node was first reached.` });
           return;
         }
         const fresh: number[] = [];
@@ -125,7 +125,7 @@ def valid_path(n, edges, source, destination):
           message: `Visit ${node}. ${G.adj[node].length ? `Its neighbours: ${G.adj[node].join(", ")}.` : "It has no neighbours."} ${fresh.length ? `New: ${fresh.join(", ")} → ${bfs ? "back of the queue" : "top of the stack"}.` : "All already seen."}` });
       }
       t.step({ line: L.none, array: [], graphs: G.draw(tones({ [d]: "miss" }), notes), map: G.adjMap(), ...panel(), vars: { visited: order }, done: "notfound",
-        message: `The ${bfs ? "queue" : "stack"} is empty: every node reachable from ${s} has been visited, and ${d} isn't one of them. Return False.` });
+        message: `The ${bfs ? "queue" : "stack"} is empty: every node reachable from ${s} has been visited, and ${d} isn't one of them. Return false.` });
     },
   };
 }

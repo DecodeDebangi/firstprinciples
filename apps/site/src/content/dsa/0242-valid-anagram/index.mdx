@@ -14,7 +14,7 @@ import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
 
-You get two strings `s` and `t`. Return `True` if `t` is an **anagram** of `s`: the same letters, each used the
+You get two strings `s` and `t`. Return `true` if `t` is an **anagram** of `s`: the same letters, each used the
 same number of times, in any order.
 
 `"listen"` and `"silent"` are anagrams. `"rat"` and `"car"` are not.
@@ -72,7 +72,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 - **Skipping the length check.** Without it, counting would accept `t` as a "match" when it's missing letters `s` has.
 - **Checking only that the same letters appear.** `"aab"` and `"abb"` use the same letters but different counts.
-- **Unicode.** For non-English text, use a dictionary (or `collections.Counter`), not a fixed array of 26.
+- **Unicode.** For non-English text, use a hash map, not a fixed array of 26.
 
 ## Related problems
 

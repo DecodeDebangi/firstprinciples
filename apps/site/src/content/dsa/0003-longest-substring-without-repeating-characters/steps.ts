@@ -17,16 +17,16 @@ const span = (a: number, b: number, tone: Tone): Record<number, Tone> =>
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: grow from every start",
-  code: `def length_of_longest_substring(s):
-    best = 0
-    for i in range(len(s)):
-        seen = set()
-        for j in range(i, len(s)):
-            if s[j] in seen:
-                break
-            seen.add(s[j])
-            best = max(best, j - i + 1)
-    return best
+  code: `function lengthOfLongestSubstring(s)
+  best ← 0
+  for i ← 0 to length(s) - 1
+    seen ← empty set
+    for j ← i to length(s) - 1
+      if s[j] in seen
+        break
+      seen.add(s[j])
+      best ← max(best, j - i + 1)
+  return best
 `,
   run({ s }, t) {
     const a = [...s];
@@ -55,16 +55,16 @@ const bruteForce: Approach<Input> = {
 const windowSet: Approach<Input> = {
   id: "window",
   name: "Sliding window with a set",
-  code: `def length_of_longest_substring(s):
-    seen = set()
-    left = best = 0
-    for right, ch in enumerate(s):
-        while ch in seen:
-            seen.remove(s[left])
-            left += 1
-        seen.add(ch)
-        best = max(best, right - left + 1)
-    return best
+  code: `function lengthOfLongestSubstring(s)
+  seen ← empty set
+  left ← 0, best ← 0
+  for each index right, value ch in s
+    while ch in seen
+      seen.remove(s[left])
+      left += 1
+    seen.add(ch)
+    best ← max(best, right - left + 1)
+  return best
 `,
   run({ s }, t) {
     const a = [...s];
@@ -103,15 +103,15 @@ const windowSet: Approach<Input> = {
 const jump: Approach<Input> = {
   id: "jump",
   name: "Sliding window, jump with last index",
-  code: `def length_of_longest_substring(s):
-    last = {}
-    left = best = 0
-    for right, ch in enumerate(s):
-        if ch in last and last[ch] >= left:
-            left = last[ch] + 1
-        last[ch] = right
-        best = max(best, right - left + 1)
-    return best
+  code: `function lengthOfLongestSubstring(s)
+  last ← empty map
+  left ← 0, best ← 0
+  for each index right, value ch in s
+    if ch in last and last[ch] ≥ left
+      left ← last[ch] + 1
+    last[ch] ← right
+    best ← max(best, right - left + 1)
+  return best
 `,
   run({ s }, t) {
     const a = [...s];

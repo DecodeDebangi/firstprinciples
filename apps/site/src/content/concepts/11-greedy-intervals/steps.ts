@@ -48,33 +48,33 @@ const keyOf: Record<Rule, (m: M) => number> = { start: (m) => m.s, short: (m) =>
 const ruleWords: Record<Rule, string> = { start: "the earliest start", short: "the shortest length", end: "the earliest end" };
 
 const codes: Record<Rule, string> = {
-  start: `def max_meetings(meetings):
-    meetings.sort(key=lambda m: m[0])  # by start
-    count, free_at = 0, 0
-    for start, end in meetings:
-        if start >= free_at:  # room is free
-            count += 1
-            free_at = end
-    return count
+  start: `function maxMeetings(meetings)
+  sort meetings by start time
+  count, freeAt ← 0, 0
+  for each (start, end) in meetings
+    if start ≥ freeAt  // room is free
+      count += 1
+      freeAt ← end
+  return count
 `,
-  short: `def max_meetings(meetings):
-    meetings.sort(key=lambda m: m[1] - m[0])
-    kept = []
-    for s, e in meetings:
-        ok = all(e <= a or b <= s
-                 for a, b in kept)
-        if ok:  # clashes with nothing kept
-            kept.append((s, e))
-    return len(kept)
+  short: `function maxMeetings(meetings)
+  sort meetings by length (end - start)
+  kept ← empty list
+  for each (s, e) in meetings
+    ok ← no (a, b) in kept overlaps (s, e)
+          // they overlap when s < b and a < e
+    if ok  // clashes with nothing kept
+      kept.push((s, e))
+  return length(kept)
 `,
-  end: `def max_meetings(meetings):
-    meetings.sort(key=lambda m: m[1])  # by end
-    count, free_at = 0, 0
-    for start, end in meetings:
-        if start >= free_at:  # room is free
-            count += 1
-            free_at = end
-    return count
+  end: `function maxMeetings(meetings)
+  sort meetings by end time
+  count, freeAt ← 0, 0
+  for each (start, end) in meetings
+    if start ≥ freeAt  // room is free
+      count += 1
+      freeAt ← end
+  return count
 `,
 };
 
@@ -104,12 +104,12 @@ function greedy(rule: Rule, id: string, name: string): Approach<Input> {
           taken.push(m);
           freeAt = Math.max(freeAt, m.e);
           state[m.id] = "found";
-          t.step({ ask, line: line.take, array: cells, pointers: { next: k }, tones: arrTones(), grid: tl(state), vars: { count: taken.length, ...(rule === "short" ? {} : { free_at: freeAt }) },
+          t.step({ ask, line: line.take, array: cells, pointers: { next: k }, tones: arrTones(), grid: tl(state), vars: { count: taken.length, ...(rule === "short" ? {} : { freeAt: freeAt }) },
             message: `${label(m)}: ${why} Take it.` });
           state[m.id] = "settled";
         } else {
           state[m.id] = "miss";
-          t.step({ ask, line: line.check, array: cells, pointers: { next: k }, tones: arrTones(), grid: tl(state), vars: { count: taken.length, ...(rule === "short" ? {} : { free_at: freeAt }) },
+          t.step({ ask, line: line.check, array: cells, pointers: { next: k }, tones: arrTones(), grid: tl(state), vars: { count: taken.length, ...(rule === "short" ? {} : { freeAt: freeAt }) },
             message: `${label(m)}: ${why} Skip it.` });
           state[m.id] = "discard";
         }

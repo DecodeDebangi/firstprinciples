@@ -69,8 +69,8 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 ## Common mistakes
 
-- **Not fixing the level size first.** Read `len(queue)` *before* the inner loop; children added during it belong to the next level.
-- **Using a list as a queue.** `list.pop(0)` is O(n); use `collections.deque`.
+- **Not fixing the level size first.** Read `length(queue)` *before* the inner loop; children added during it belong to the next level.
+- **Using a plain array as a queue.** Removing from the front (`list.pop(0)` in Python, `shift()` in JavaScript) is O(n); use a real queue (`collections.deque`, Java's `ArrayDeque`).
 - **Empty tree.** Return `[]`, not `[[]]`.
 
 ## Related problems

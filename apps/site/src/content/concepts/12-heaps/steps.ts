@@ -25,15 +25,15 @@ function views(a: Item[], tones: Record<number, Tone>) {
 const push: Approach<Input> = {
   id: "push",
   name: "Push: add a leaf, swap it up",
-  code: `def push(heap, x):
-    heap.append(x)  # new leaf at the end
-    i = len(heap) - 1
-    while i > 0:
-        parent = (i - 1) // 2
-        if heap[parent] <= heap[i]:
-            break  # order restored
-        heap[i], heap[parent] = heap[parent], heap[i]
-        i = parent
+  code: `function push(heap, x)
+  heap.push(x)  // new leaf at the end
+  i ← length(heap) - 1
+  while i > 0
+    parent ← floor((i - 1) / 2)
+    if heap[parent] ≤ heap[i]
+      break  // order restored
+    swap heap[i] and heap[parent]
+    i ← parent
 `,
   run({ nums }, t) {
     const a: Item[] = [];
@@ -68,20 +68,20 @@ const push: Approach<Input> = {
 const pop: Approach<Input> = {
   id: "pop",
   name: "Pop: move the last leaf up, swap it down",
-  code: `def pop(heap):
-    top = heap[0]
-    heap[0] = heap[-1]  # last leaf to the top
-    heap.pop()
-    i = 0
-    while True:
-        small = i
-        for c in (2 * i + 1, 2 * i + 2):
-            if c < len(heap) and heap[c] < heap[small]:
-                small = c
-        if small == i:
-            return top  # order restored
-        heap[i], heap[small] = heap[small], heap[i]
-        i = small
+  code: `function pop(heap)
+  top ← heap[0]
+  heap[0] ← heap.last()  // last leaf to top
+  heap.pop()
+  i, n ← 0, length(heap)
+  while true
+    small ← i
+    for each c in [2 * i + 1, 2 * i + 2]
+      if c < n and heap[c] < heap[small]
+        small ← c
+    if small = i
+      return top  // order restored
+    swap heap[i] and heap[small]
+    i ← small
 `,
   run({ nums }, t) {
     // Start from a valid heap, built quietly (the heapify animation shows how).
@@ -145,9 +145,9 @@ const pop: Approach<Input> = {
 const heapify: Approach<Input> = {
   id: "heapify",
   name: "Heapify: build from the bottom up",
-  code: `def heapify(a):
-    for i in range(len(a) // 2 - 1, -1, -1):
-        sift_down(a, i)  # the loop from pop()
+  code: `function heapify(a)
+  for i ← floor(length(a) / 2) - 1 down to 0
+    siftDown(a, i)  // the loop from pop()
 `,
   run({ nums }, t) {
     const a: Item[] = nums.map((v, k) => ({ id: `n${k}`, val: v }));

@@ -16,14 +16,14 @@ const fmt = (x: number) => (x === Infinity ? "∞" : x === -Infinity ? "−∞" 
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Check every subtree against every node",
-  code: `def is_valid_bst(root):
-    if root is None:
-        return True
-    if not all(v < root.val for v in values(root.left)):
-        return False
-    if not all(v > root.val for v in values(root.right)):
-        return False
-    return is_valid_bst(root.left) and is_valid_bst(root.right)
+  code: `function valid(root)
+  if root = none
+    return true
+  if any value under root.left ≥ root.val
+    return false
+  if any value under root.right ≤ root.val
+    return false
+  return valid(root.left) and valid(root.right)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -59,19 +59,19 @@ const bruteForce: Approach<Input> = {
 const inorder: Approach<Input> = {
   id: "inorder",
   name: "In-order traversal must increase",
-  code: `def is_valid_bst(root):
-    prev = None
-    def inorder(node):
-        nonlocal prev
-        if node is None:
-            return True
-        if not inorder(node.left):
-            return False
-        if prev is not None and node.val <= prev:
-            return False
-        prev = node.val
-        return inorder(node.right)
-    return inorder(root)
+  code: `function valid(root)
+  prev ← none
+  function inorder(node)
+    // prev is shared by every call
+    if node = none
+      return true
+    if not inorder(node.left)
+      return false
+    if prev ≠ none and node.val ≤ prev
+      return false
+    prev ← node.val
+    return inorder(node.right)
+  return inorder(root)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -80,7 +80,7 @@ const inorder: Approach<Input> = {
     const seen: string[] = [];
     const tones = (extra: Record<string, Tone> = {}) => ({ ...Object.fromEntries(seen.map((x) => [x, "settled" as Tone])), ...extra });
     const notes = () => Object.fromEntries(seen.map((x, k) => [x, `#${k + 1}`]));
-    t.step({ line: 2, array: [], trees: [{ root, nodes }], vars: { prev: "None" },
+    t.step({ line: 2, array: [], trees: [{ root, nodes }], vars: { prev: "none" },
       message: "In-order means left subtree, node, right subtree. For a BST that visits the values in increasing order, so just check each value beats the previous one." });
     let failed = false;
     const go = (id: string | null) => {
@@ -113,13 +113,13 @@ const inorder: Approach<Input> = {
 const bounds: Approach<Input> = {
   id: "bounds",
   name: "Pass down allowed ranges",
-  code: `def is_valid_bst(root, lo=-inf, hi=inf):
-    if root is None:
-        return True
-    if not (lo < root.val < hi):
-        return False
-    return (is_valid_bst(root.left, lo, root.val) and
-            is_valid_bst(root.right, root.val, hi))
+  code: `function valid(root, lo, hi)  // start: -∞, ∞
+  if root = none
+    return true
+  if not (lo < root.val and root.val < hi)
+    return false
+  return valid(root.left, lo, root.val)
+      and valid(root.right, root.val, hi)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -137,7 +137,7 @@ const bounds: Approach<Input> = {
       t.op();
       notes[id] = `(${fmt(lo)}, ${fmt(hi)})`;
       const inside = lo < v && v < hi;
-      const ask = { q: `${v} must be inside (${fmt(lo)}, ${fmt(hi)}). Is it?`, options: ["Yes: check its children with tighter ranges", "No: return False"], answer: inside ? 0 : 1 };
+      const ask = { q: `${v} must be inside (${fmt(lo)}, ${fmt(hi)}). Is it?`, options: ["Yes: check its children with tighter ranges", "No: return false"], answer: inside ? 0 : 1 };
       if (!inside) {
         failed = true;
         t.step({ ask, line: 5, array: [], trees: [{ root, nodes, tones: tones({ [id]: "miss" }), notes: { ...notes }, pointers: { node: id } }], vars: { lo: fmt(lo), hi: fmt(hi), node: v }, done: "notfound",

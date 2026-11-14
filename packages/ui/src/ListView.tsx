@@ -46,7 +46,7 @@ function Row({ row }: { row: ListRow }) {
       return { name, id: id!, r };
     });
   const rows = Math.max(1, ...ptrs.map((p) => p.r + 1));
-  const describe = row.nodes.map((n) => (n.kind === "null" ? "None" : String(n.val))).join(" → ");
+  const describe = row.nodes.map((n) => (n.kind === "null" ? "none" : String(n.val))).join(" → ");
 
   return (
     <div className={`fp-lrow${row.compact ? " is-compact" : ""}`}>
@@ -61,7 +61,7 @@ function Row({ row }: { row: ListRow }) {
               <Fragment key={n.id}>
                 <div data-node={n.id}
                   className={`fp-cell fp-lnode${n.kind ? ` is-${n.kind}` : ""}${tone ? ` fp-cell--${tone}` : ""}`}>
-                  <span className="fp-val" key={String(n.val)}>{n.kind === "null" ? "None" : n.val}</span>
+                  <span className="fp-val" key={String(n.val)}>{n.kind === "null" ? "none" : n.val}</span>
                 </div>
                 {i < row.nodes.length - 1 && (
                   <span className={`fp-larrow${arrow ? ` is-${arrow}` : " is-none"}`} aria-hidden="true">

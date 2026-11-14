@@ -31,32 +31,53 @@ const bigO = [
   { o: "O(n!)", name: "factorial", example: "every ordering", n: "≈ 11" },
 ];
 
-const toolbox = [
-  { what: "list (dynamic array)", code: "a.append(x) · a.pop() · a[i]", cost: "O(1) each; insert/pop at the front O(n)" },
-  { what: "dict / set (hash table)", code: "x in s · d[k] = v · d.get(k, 0)", cost: "O(1) average" },
-  { what: "collections.deque", code: "q.append(x) · q.popleft() · q.appendleft(x)", cost: "O(1) at both ends" },
-  { what: "heapq (min-heap)", code: "heappush(h, x) · heappop(h) · h[0] · heapify(a)", cost: "O(log n) push/pop, O(1) peek, O(n) heapify" },
-  { what: "collections.Counter", code: "Counter(nums) · c.most_common(k)", cost: "O(n) to count" },
-  { what: "collections.defaultdict", code: "g = defaultdict(list); g[a].append(b)", cost: "O(1) average" },
-  { what: "bisect", code: "bisect_left(a, x) · bisect_right(a, x) · insort(a, x)", cost: "O(log n) search, insort O(n)" },
-  { what: "sorted / list.sort", code: "sorted(a, key=lambda x: x[1], reverse=True)", cost: "O(n log n)" },
-  { what: "functools.cache", code: "@cache above a recursive function", cost: "memoises by arguments" },
+/** One row per idea; each language gives the type to reach for and its everyday calls. Shown one language at a time. */
+const LANGS = [
+  { id: "py", name: "Python" },
+  { id: "java", name: "Java" },
+  { id: "cpp", name: "C++" },
+  { id: "js", name: "JavaScript" },
+] as const;
+type Lang = (typeof LANGS)[number]["id"];
+const toolbox: { what: string; cost: string; use: Record<Lang, string> }[] = [
+  { what: "Dynamic array", cost: "O(1) add/remove at the end and index; O(n) at the front",
+    use: { py: "list: a.append(x) · a.pop() · a[i]", java: "ArrayList: add(x) · remove(size() - 1) · get(i)", cpp: "vector: push_back(x) · pop_back() · a[i]", js: "array: push(x) · pop() · a[i]" } },
+  { what: "Hash map", cost: "O(1) average",
+    use: { py: "dict: d[k] = v · d.get(k, 0) · k in d", java: "HashMap: put(k, v) · getOrDefault(k, 0) · containsKey(k)", cpp: "unordered_map: m[k] = v · m.count(k) · m.find(k)", js: "Map: set(k, v) · get(k) ?? 0 · has(k)" } },
+  { what: "Hash set", cost: "O(1) average",
+    use: { py: "set: s.add(x) · x in s · s.remove(x)", java: "HashSet: add(x) · contains(x) · remove(x)", cpp: "unordered_set: insert(x) · count(x) · erase(x)", js: "Set: add(x) · has(x) · delete(x)" } },
+  { what: "Stack", cost: "O(1) each",
+    use: { py: "list: append(x) · pop() · s[-1]", java: "ArrayDeque: push(x) · pop() · peek()", cpp: "stack: push(x) · pop() · top()", js: "array: push(x) · pop() · at(-1)" } },
+  { what: "Queue / deque", cost: "O(1) at both ends",
+    use: { py: "collections.deque: append(x) · popleft() · appendleft(x)", java: "ArrayDeque: offer(x) · poll() · offerFirst(x)", cpp: "deque: push_back(x) · pop_front() · push_front(x)", js: "none built in: an array plus a front index (shift() is O(n))" } },
+  { what: "Heap (priority queue)", cost: "O(log n) add/remove top; O(1) peek",
+    use: { py: "heapq, a min-heap: heappush(h, x) · heappop(h) · h[0] · heapify(a)", java: "PriorityQueue, a min-heap: offer(x) · poll() · peek()", cpp: "priority_queue, a max-heap: push(x) · pop() · top()", js: "none built in: write one or use a library" } },
+  { what: "Sort", cost: "O(n log n)",
+    use: { py: "a.sort() · sorted(a, key=lambda x: x[1])", java: "Arrays.sort(a) · list.sort((x, y) -> x[1] - y[1])", cpp: "sort(a.begin(), a.end()) · sort(..., comparator)", js: "a.sort((x, y) => x - y) (with no comparator it compares as strings)" } },
+  { what: "Binary search (sorted array)", cost: "O(log n)",
+    use: { py: "bisect_left(a, x) · bisect_right(a, x)", java: "Arrays.binarySearch(a, x) (index, or −(insertion point) − 1)", cpp: "lower_bound(a.begin(), a.end(), x) · upper_bound(...)", js: "none built in: write the loop" } },
+  { what: "Count occurrences", cost: "O(n) to count",
+    use: { py: "Counter(nums) · c.most_common(k)", java: "map.merge(x, 1, Integer::sum)", cpp: "unordered_map<int, int> m; m[x]++", js: "m.set(x, (m.get(x) ?? 0) + 1)" } },
+  { what: "Sorted map / set", cost: "O(log n) each",
+    use: { py: "none built in (the sortedcontainers library)", java: "TreeMap / TreeSet: floorKey(x) · ceilingKey(x)", cpp: "map / set: lower_bound(x) · upper_bound(x)", js: "none built in" } },
+  { what: "Memoisation", cost: "one stored answer per input",
+    use: { py: "@functools.cache above a recursive function", java: "a HashMap you fill yourself", cpp: "an unordered_map (or array) you fill yourself", js: "a Map you fill yourself" } },
 ];
 ---
-<Base title="Cheat sheet" description="Every DSA pattern on one page: when to reach for it, a Python template, Big-O at a glance and the standard library tools, with links to every problem. Printable.">
+<Base title="Cheat sheet" description="Every DSA pattern on one page: when to reach for it, a pseudocode template, Big-O at a glance and the standard library tools in Python, Java, C++ and JavaScript, with links to every problem. Printable.">
   <article class="cs">
     <a class="back" href="/">← Home</a>
     <div class="cs-top">
       <h1>Cheat sheet</h1>
       <button type="button" class="cs-print" id="print">Print or save as PDF</button>
     </div>
-    <p class="lead">Every pattern on one page: the idea, the clues that point to it, a Python template, and the problems that
+    <p class="lead">Every pattern on one page: the idea, the clues that point to it, a pseudocode template, and the problems that
       practise it with their best complexity. It updates as the site grows, and prints cleanly.</p>
 
     <nav class="cs-jump" aria-label="Jump to a topic">
       <a href="#big-o">Big-O</a>
       {cards.map((c) => <a href={`#${topicSlug(c.topic.name)}`}>{c.topic.name}</a>)}
-      <a href="#python">Python toolbox</a>
+      <a href="#toolbox">Toolbox in your language</a>
     </nav>
 
     <section class="cs-card" id="big-o">
@@ -106,12 +127,20 @@ const toolbox = [
       </section>
     ))}
 
-    <section class="cs-card" id="python">
-      <h2>Python toolbox</h2>
-      <p class="cs-idea">The standard-library pieces these solutions lean on, and what they cost.</p>
-      <table class="cs-table cs-table--tools">
-        <thead><tr><th>Tool</th><th>Usage</th><th>Cost</th></tr></thead>
-        <tbody>{toolbox.map((r) => <tr><td>{r.what}</td><td><code>{r.code}</code></td><td>{r.cost}</td></tr>)}</tbody>
+    <section class="cs-card" id="toolbox">
+      <div class="cs-tool-head">
+        <h2>Toolbox in your language</h2>
+        <div class="cs-langs" role="group" aria-label="Language">
+          {LANGS.map((l) => <button type="button" data-lang={l.id} aria-pressed={l.id === "py" ? "true" : "false"}>{l.name}</button>)}
+        </div>
+      </div>
+      <p class="cs-idea">The templates above are pseudocode. These are the standard-library pieces to write them with,
+        and what they cost.</p>
+      <table class="cs-table cs-table--tools" data-lang="py" id="tools">
+        <thead><tr><th>Idea</th>{LANGS.map((l) => <th class={`lang lang--${l.id}`}>{l.name}</th>)}<th>Cost</th></tr></thead>
+        <tbody>{toolbox.map((r) => (
+          <tr><td>{r.what}</td>{LANGS.map((l) => <td class={`lang lang--${l.id}`}><code>{r.use[l.id]}</code></td>)}<td>{r.cost}</td></tr>
+        ))}</tbody>
       </table>
     </section>
     <p class="cs-foot">From firstprinciples.debangi.com: every problem here has step-by-step animations of each approach.</p>
@@ -120,6 +149,21 @@ const toolbox = [
 
 <script>
   document.getElementById("print")?.addEventListener("click", () => window.print());
+
+  // Toolbox language: one column at a time, remembered in this browser. Without JS it stays on Python.
+  const KEY = "firstprinciples:lang";
+  const table = document.getElementById("tools");
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>(".cs-langs button")];
+  const pick = (lang: string) => {
+    if (!table || !buttons.some((b) => b.dataset.lang === lang)) return;
+    table.dataset.lang = lang;
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  };
+  try { pick(localStorage.getItem(KEY) ?? "py"); } catch { /* storage blocked: keep Python */ }
+  buttons.forEach((b) => b.addEventListener("click", () => {
+    pick(b.dataset.lang!);
+    try { localStorage.setItem(KEY, b.dataset.lang!); } catch { /* storage blocked: still switches */ }
+  }));
 </script>
 
 <style>
@@ -153,6 +197,17 @@ const toolbox = [
   .cs-table--problems .cs-cx { width: 17em; color: var(--muted); font-size: 13px; }
   .cs-diff { color: var(--muted); font-size: 13px; }
   .cs-more { margin: 12px 0 0; font-size: 14.5px; }
+  .cs-tool-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px; }
+  .cs-tool-head h2 { margin: 0 !important; }
+  .cs-langs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cs-langs button { font: 600 13.5px var(--font-sans); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+  .cs-langs button:hover { border-color: var(--accent); color: var(--accent); }
+  .cs-langs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .cs-table--tools .lang { display: none !important; }
+  .cs-table--tools[data-lang="py"] .lang--py, .cs-table--tools[data-lang="java"] .lang--java,
+  .cs-table--tools[data-lang="cpp"] .lang--cpp, .cs-table--tools[data-lang="js"] .lang--js { display: table-cell !important; }
+  .cs-table--tools code { white-space: normal; }
+  .cs-table--tools td:first-child { font-weight: 600; white-space: nowrap; }
   .cs-foot { color: var(--muted); font-size: 14px; }
   @media (max-width: 720px) {
     .cs-cols { grid-template-columns: minmax(0, 1fr); }
@@ -165,6 +220,9 @@ const toolbox = [
     .cs-table--tools td { border: 0; padding: 1px 0; }
     .cs-table--tools td:first-child { font-weight: 600; }
     .cs-table--tools code { white-space: normal; }
+    .cs-table--tools[data-lang="py"] .lang--py, .cs-table--tools[data-lang="java"] .lang--java,
+    .cs-table--tools[data-lang="cpp"] .lang--cpp, .cs-table--tools[data-lang="js"] .lang--js { display: block !important; }
+    .cs-table--tools td:first-child { white-space: normal; }
     .cs-table--problems, .cs-table--problems tbody { display: block; }
     .cs-table--problems tr { display: grid; grid-template-columns: 3.6em minmax(0, 1fr); padding: 6px 0; border-bottom: 1px solid var(--border); }
     .cs-table--problems tr:last-child { border-bottom: 0; }
@@ -175,7 +233,7 @@ const toolbox = [
   }
   @media print {
     @page { size: A4; margin: 12mm 12mm 14mm; }
-    :global(.site-header), :global(.site-footer), .back, .cs-print, .cs-jump, :global(.pmark) { display: none !important; }
+    :global(.site-header), :global(.site-footer), .back, .cs-print, .cs-jump, :global(.pmark), .cs-langs { display: none !important; }
     :global(body) { background: #fff; font-size: 9.5pt; }
     .lead { font-size: 9.5pt; margin: 4px 0 10px; }
     h1 { font-size: 20pt; }
@@ -200,7 +258,10 @@ const toolbox = [
     .cs-table--tools { display: table !important; }
     .cs-table--tools tbody { display: table-row-group !important; }
     .cs-table--tools tr { display: table-row !important; }
-    .cs-table--tools td { display: table-cell !important; padding: 2px 6px !important; border-bottom: 1px solid #e5e5e5 !important; }
+    .cs-table--tools td, .cs-table--tools th { padding: 2px 6px !important; border-bottom: 1px solid #e5e5e5 !important; }
+    .cs-table--tools td:not(.lang) { display: table-cell !important; }
+    .cs-table--tools[data-lang="py"] .lang--py, .cs-table--tools[data-lang="java"] .lang--java,
+    .cs-table--tools[data-lang="cpp"] .lang--cpp, .cs-table--tools[data-lang="js"] .lang--js { display: table-cell !important; }
     a { color: inherit; text-decoration: none; }
     .cs-foot { font-size: 8pt; }
   }

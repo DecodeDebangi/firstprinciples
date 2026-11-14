@@ -18,11 +18,11 @@ export function prepare(raw: Input): Prepared<Input> {
 const linear: Approach<Input> = {
   id: "linear",
   name: "Linear scan",
-  code: `def search_insert(nums, target):
-    for i, x in enumerate(nums):
-        if x >= target:
-            return i
-    return len(nums)
+  code: `function searchInsert(nums, target)
+  for each index i, value x in nums
+    if x ≥ target
+      return i
+  return length(nums)
 `,
   run({ nums: a, target }, t) {
     t.step({ line: 2, array: a, vars: { target }, message: `Walk from the left until a number is at least ${target}. That's where it is, or where it would go.` });
@@ -45,17 +45,17 @@ const linear: Approach<Input> = {
 const binary: Approach<Input> = {
   id: "binary",
   name: "Binary search",
-  code: `def search_insert(nums, target):
-    lo, hi = 0, len(nums) - 1
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if nums[mid] == target:
-            return mid
-        elif nums[mid] < target:
-            lo = mid + 1
-        else:
-            hi = mid - 1
-    return lo
+  code: `function searchInsert(nums, target)
+  lo, hi ← 0, length(nums) - 1
+  while lo ≤ hi
+    mid ← floor((lo + hi) / 2)
+    if nums[mid] = target
+      return mid
+    else if nums[mid] < target
+      lo ← mid + 1
+    else
+      hi ← mid - 1
+  return lo
 `,
   run({ nums: a, target }, t) {
     let lo = 0, hi = a.length - 1;

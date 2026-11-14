@@ -14,12 +14,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const recursive: Approach<Input> = {
   id: "dfs",
   name: "Recursive (depth-first)",
-  code: `def max_depth(root):
-    if root is None:
-        return 0
-    left = max_depth(root.left)
-    right = max_depth(root.right)
-    return 1 + max(left, right)
+  code: `function maxDepth(root)
+  if root = none
+    return 0
+  left ← maxDepth(root.left)
+  right ← maxDepth(root.right)
+  return 1 + max(left, right)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -34,7 +34,7 @@ const recursive: Approach<Input> = {
       if (!id) return 0;
       const n = by.get(id)!;
       t.op();
-      stack.push(`max_depth(${n.val})`);
+      stack.push(`maxDepth(${n.val})`);
       t.step({ line: 4, array: [], trees: view({ ...settled(), [id]: "active" }, id), stack: [...stack], vars: { node: n.val },
         message: `At ${n.val}: first find the depth of its left subtree.` });
       const l = go(n.left);
@@ -57,17 +57,17 @@ const recursive: Approach<Input> = {
 const bfs: Approach<Input> = {
   id: "bfs",
   name: "Level by level (breadth-first)",
-  code: `def max_depth(root):
-    if root is None:
-        return 0
-    depth, queue = 0, deque([root])
-    while queue:
-        depth += 1
-        for _ in range(len(queue)):
-            node = queue.popleft()
-            if node.left: queue.append(node.left)
-            if node.right: queue.append(node.right)
-    return depth
+  code: `function maxDepth(root)
+  if root = none
+    return 0
+  depth, queue ← 0, queue of [root]
+  while queue not empty
+    depth += 1
+    repeat length(queue) times
+      node ← queue.popFront()
+      queue.push(node.left) if it exists
+      queue.push(node.right) if it exists
+  return depth
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

@@ -25,25 +25,25 @@ function bucketOptions(right: number, m: number): { options: string[]; answer: n
 const chaining: Approach<Input> = {
   id: "chaining",
   name: "Separate chaining (with resizing)",
-  code: `class HashMap:
-    def __init__(self):
-        self.buckets = [[] for _ in range(4)]
-        self.size = 0
+  code: `class HashMap
+  constructor()
+    buckets ← 4 empty lists
+    size ← 0
 
-    def put(self, key):
-        b = self.buckets[hash(key) % len(self.buckets)]
-        if key in b:
-            return  # already stored
-        b.append(key)
-        self.size += 1
-        if self.size > 0.75 * len(self.buckets):
-            self.resize()
+  function put(key)
+    b ← buckets[hash(key) % length(buckets)]
+    if key in b
+      return  // already stored
+    b.push(key)
+    size += 1
+    if size > 0.75 * length(buckets)
+      resize()
 
-    def resize(self):
-        old = [k for b in self.buckets for k in b]
-        self.buckets = [[] for _ in range(2 * len(self.buckets))]
-        for k in old:
-            self.buckets[hash(k) % len(self.buckets)].append(k)
+  function resize()
+    old ← every key in every bucket
+    buckets ← 2 × length(buckets) empty lists
+    for each k in old
+      add k to its bucket in the new list
 `,
   run({ keys }, t) {
     let buckets: number[][] = Array.from({ length: 4 }, () => []);
@@ -94,14 +94,14 @@ const chaining: Approach<Input> = {
 const probing: Approach<Input> = {
   id: "probing",
   name: "Open addressing (linear probing)",
-  code: `def put(table, key):
-    m = len(table)
-    i = hash(key) % m
-    while table[i] is not None:
-        if table[i] == key:
-            return  # already stored
-        i = (i + 1) % m  # slot taken: try the next
-    table[i] = key
+  code: `function put(table, key)
+  m ← length(table)
+  i ← hash(key) % m
+  while table[i] ≠ none
+    if table[i] = key
+      return  // already stored
+    i ← (i + 1) % m  // taken: try the next
+  table[i] ← key
 `,
   run({ keys }, t) {
     const m = 10; // with 10 slots a key's home slot is just its last digit
@@ -138,7 +138,7 @@ const probing: Approach<Input> = {
     }
     const used = table.filter((v) => v !== "_").length;
     t.step({ line: 8, array: [...table], tones: filled(), vars: { m, key: null }, done: "found",
-      message: `${used} of ${m} slots used. Real tables resize well before they fill: Python's dict grows when it's about two-thirds full.` });
+      message: `${used} of ${m} slots used. Real tables resize well before they fill: Java's HashMap at 75% full, Python's dict at about two-thirds.` });
   },
 };
 

@@ -54,7 +54,7 @@ that confirms nothing changed.
 
 `n/2 passes × O(n) per pass` = **O(n²)**.
 
-**Space.** Strings can't be edited in place in Python, so each `replace` builds a new string of up to `n`
+**Space.** Strings can't be edited in place in most languages (Python, Java, JavaScript), so each removal pass builds a new string of up to `n`
 characters: **O(n)**.
 
 **What it wastes:** every pass re-reads characters it has already looked at, just to find the one or two
@@ -105,10 +105,10 @@ reads each character once. Pair-removal re-reads the shrinking string on every p
 ## Common mistakes
 
 - **Counting instead of stacking.** Equal counts of each type don't make a string valid. `"([)]"` balances every count and is still invalid.
-- **Popping an empty stack.** A closer with nothing waiting, as in `")"` or `"())"`, has to return `False` *before* you pop. Otherwise the code crashes or reads garbage.
+- **Popping an empty stack.** A closer with nothing waiting, as in `")"` or `"())"`, has to return `false` *before* you pop. Otherwise the code crashes or reads garbage.
 - **Forgetting the final check.** Getting through the loop isn't enough. `"(("` never hits a mismatch, but the stack isn't empty at the end, so it's invalid.
 - **Matching on the wrong side.** Store `closer → opener` (`")": "("`), so a closer can look up what the top of the stack should be in one step.
-- **A free early exit:** an odd-length string can never be valid, since brackets come in pairs. `if len(s) % 2: return False` skips the work, though it doesn't change the Big-O.
+- **A free early exit:** an odd-length string can never be valid, since brackets come in pairs. `if length(s) % 2: return false` skips the work, though it doesn't change the Big-O.
 
 ## Related problems
 

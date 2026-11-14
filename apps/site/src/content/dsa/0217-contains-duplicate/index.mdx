@@ -14,10 +14,10 @@ import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
 
-You get a list of integers `nums`. Return `True` if any value appears at least twice, and `False` if every value
+You get a list of integers `nums`. Return `true` if any value appears at least twice, and `false` if every value
 is distinct.
 
-For `nums = [4, 9, 2, 7, 9, 1]` the answer is `True`: `9` appears twice.
+For `nums = [4, 9, 2, 7, 9, 1]` the answer is `true`: `9` appears twice.
 
 ## The key question
 
@@ -49,7 +49,7 @@ After sorting, any duplicates sit side by side, so one pass comparing each numbe
 <Complexity time="O(n log n)" space="O(n)">
 **Time.** Sorting is **O(n log n)**; the neighbour pass is O(n). Sorting dominates: **O(n log n)**.
 
-**Space.** Python's `sorted` makes a copy: **O(n)**. Sorting in place (`nums.sort()`) avoids the copy but changes the input.
+**Space.** `sorted(nums)` makes a sorted copy: **O(n)**. Sorting in place avoids the copy but changes the input.
 
 **What it wastes:** it puts the whole list in order when all we need is "have I seen this?"
 </Complexity>
@@ -84,7 +84,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 - **Comparing a number with itself.** Start the inner loop at `i + 1`.
 - **Sorting and returning indices.** Fine here, since only a yes/no is asked, but sorting loses the original positions.
-- **`len(set(nums)) != len(nums)`.** Correct and short, but it always builds the whole set; the loop can stop at the first repeat.
+- **`length(set(nums)) ≠ length(nums)`.** Correct and short, but it always builds the whole set; the loop can stop at the first repeat.
 
 ## Related problems
 

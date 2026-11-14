@@ -15,7 +15,7 @@ import Complexity from "../../../components/Complexity.astro";
 ## The problem
 
 You get the `head` of a singly linked list: each node holds a value and a `next` pointer to the node after it,
-and the last node points to `None`. Reverse the list and return the new head.
+and the last node points to `none`. Reverse the list and return the new head.
 
 `1 → 2 → 3 → 4 → 5` becomes `5 → 4 → 3 → 2 → 1`.
 
@@ -44,7 +44,7 @@ to get right, but it duplicates the whole list.
 ## Approach 2: Three pointers, in place (optimal)
 
 Walk the list with `prev` (the part already reversed) and `curr` (the node being turned). For each node: save
-`nxt = curr.next`, point `curr.next` at `prev`, then step `prev` and `curr` forward. Watch each arrow flip from
+`nxt ← curr.next`, point `curr.next` at `prev`, then step `prev` and `curr` forward. Watch each arrow flip from
 pointing right to pointing left.
 
 <Viz client:visible approach="iterative" />
@@ -58,7 +58,7 @@ pointing right to pointing left.
 ## Approach 3: Recursive
 
 Reverse everything after `head` first, then fix the one arrow between `head` and the node after it:
-`head.next.next = head` makes that node point back, and `head.next = None` cuts the old forward arrow. For a moment
+`head.next.next ← head` makes that node point back, and `head.next ← none` cuts the old forward arrow. For a moment
 the two nodes point at each other, shown as a double arrow.
 
 <Viz client:visible approach="recursive" />
@@ -88,9 +88,9 @@ The recursive version does exactly as much work as the loop, so the chart compar
 
 ## Common mistakes
 
-- **Flipping before saving.** Write `nxt = curr.next` before `curr.next = prev`, or the rest of the list is lost.
+- **Flipping before saving.** Write `nxt ← curr.next` before `curr.next ← prev`, or the rest of the list is lost.
 - **Returning `head`.** At the end `head` is the new tail; the new head is `prev`.
-- **Forgetting `head.next = None`** in the recursive version, which leaves a two-node cycle at the end.
+- **Forgetting `head.next ← none`** in the recursive version, which leaves a two-node cycle at the end.
 
 ## Related problems
 

@@ -25,26 +25,26 @@ function nextAsk(right: TreeNodeData, pending: TreeNodeData[]) {
 type Order = "pre" | "in" | "post";
 
 const codes: Record<Order, string> = {
-  pre: `def preorder(node, out):
-    if node is None:
-        return
-    out.append(node.val)  # before both
-    preorder(node.left, out)
-    preorder(node.right, out)
+  pre: `function preorder(node, out)
+  if node = none
+    return
+  out.push(node.val)  // before both
+  preorder(node.left, out)
+  preorder(node.right, out)
 `,
-  in: `def inorder(node, out):
-    if node is None:
-        return
-    inorder(node.left, out)
-    out.append(node.val)  # between
-    inorder(node.right, out)
+  in: `function inorder(node, out)
+  if node = none
+    return
+  inorder(node.left, out)
+  out.push(node.val)  // between
+  inorder(node.right, out)
 `,
-  post: `def postorder(node, out):
-    if node is None:
-        return
-    postorder(node.left, out)
-    postorder(node.right, out)
-    out.append(node.val)  # after both
+  post: `function postorder(node, out)
+  if node = none
+    return
+  postorder(node.left, out)
+  postorder(node.right, out)
+  out.push(node.val)  // after both
 `,
 };
 
@@ -123,16 +123,16 @@ function dfs(order: Order, id: string, name: string): Approach<Input> {
 const bfs: Approach<Input> = {
   id: "bfs",
   name: "Breadth-first (level order)",
-  code: `from collections import deque
-def level_order(root):
-    out, queue = [], deque([root])
-    while queue:
-        node = queue.popleft()  # oldest first
-        out.append(node.val)
-        for child in (node.left, node.right):
-            if child:
-                queue.append(child)
-    return out
+  code: `// queue: join at back, leave from front
+function levelOrder(root)
+  out, queue ← [], queue of [root]
+  while queue not empty
+    node ← queue.popFront()  // oldest first
+    out.push(node.val)
+    for each child in [node.left, node.right]
+      if child ≠ none
+        queue.push(child)
+  return out
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

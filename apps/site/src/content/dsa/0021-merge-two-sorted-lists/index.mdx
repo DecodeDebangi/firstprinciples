@@ -75,7 +75,7 @@ The chart uses perfectly interleaved lists, the worst case for splicing, since e
 ## Common mistakes
 
 - **Losing the head.** Without a dummy node you need a special case for the first node. Return `dummy.next`, not `dummy`.
-- **Forgetting the leftovers.** When one list runs out, the other may still have nodes: `tail.next = list1 or list2`.
+- **Forgetting the leftovers.** When one list runs out, the other may still have nodes: `tail.next ← whichever of list1, list2 is left`.
 - **Creating new nodes.** The problem asks you to splice the existing nodes together, not copy their values.
 
 ## Related problems

@@ -15,12 +15,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const convert: Approach<Input> = {
   id: "convert",
   name: "Convert to a number",
-  code: `def plus_one(digits):
-    num = 0
-    for d in digits:
-        num = num * 10 + d
-    num += 1
-    return [int(c) for c in str(num)]
+  code: `function plusOne(digits)
+  num ← 0
+  for each d in digits
+    num ← num * 10 + d
+  num += 1
+  return the digits of num
 `,
   run({ digits }, t) {
     let num = 0n; // BigInt: Python's ints never overflow, so neither do ours
@@ -46,13 +46,13 @@ const convert: Approach<Input> = {
 const carry: Approach<Input> = {
   id: "carry",
   name: "Carry from the right",
-  code: `def plus_one(digits):
-    for i in range(len(digits) - 1, -1, -1):
-        if digits[i] < 9:
-            digits[i] += 1
-            return digits
-        digits[i] = 0
-    return [1] + digits
+  code: `function plusOne(digits)
+  for i ← length(digits) - 1 down to 0
+    if digits[i] < 9
+      digits[i] += 1
+      return digits
+    digits[i] ← 0
+  return [1] followed by digits
 `,
   run({ digits: input }, t) {
     const digits = [...input];

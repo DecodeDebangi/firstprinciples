@@ -17,16 +17,16 @@ const PENDING = "·";
 const formula: Approach<Input> = {
   id: "formula",
   name: "Formula with factorials",
-  code: `from math import factorial as f
+  code: `// f(n) = n!, the factorial
 
-def generate(num_rows):
-    rows = []
-    for r in range(num_rows):
-        row = []
-        for c in range(r + 1):
-            row.append(f(r) // (f(c) * f(r - c)))
-        rows.append(row)
-    return rows
+function generate(numRows)
+  rows ← empty list
+  for r ← 0 to numRows - 1
+    row ← empty list
+    for c ← 0 to r
+      row.push(f(r) / (f(c) * f(r - c)))
+    rows.push(row)
+  return rows
 `,
   run({ numRows }, t) {
     const fact = (k: number) => { let x = 1n; for (let m = 2n; m <= BigInt(k); m++) x *= m; return x; };
@@ -56,15 +56,15 @@ def generate(num_rows):
 const buildRows: Approach<Input> = {
   id: "build",
   name: "Build each row from the one above",
-  code: `def generate(num_rows):
-    rows = [[1]]
-    for r in range(1, num_rows):
-        prev = rows[-1]
-        row = [1] * (r + 1)
-        for c in range(1, r):
-            row[c] = prev[c - 1] + prev[c]
-        rows.append(row)
-    return rows
+  code: `function generate(numRows)
+  rows ← [[1]]
+  for r ← 1 to numRows - 1
+    prev ← rows.last()
+    row ← array of r + 1, all 1
+    for c ← 1 to r - 1
+      row[c] ← prev[c - 1] + prev[c]
+    rows.push(row)
+  return rows
 `,
   run({ numRows }, t) {
     const rows: number[][] = [[1]];

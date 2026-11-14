@@ -17,12 +17,12 @@ const PAIRS = ["()", "[]", "{}"] as const;
 const removePairs: Approach<Input> = {
   id: "remove",
   name: "Remove pairs until stuck",
-  code: `def is_valid(s):
-    while True:
-        t = s.replace("()", "").replace("[]", "").replace("{}", "")
-        if t == s:
-            return s == ""
-        s = t
+  code: `function isValid(s)
+  while true
+    t ← s without any "()", "[]" or "{}"
+    if t = s
+      return s = ""
+    s ← t
 `,
   run({ s }, t) {
     // Each remaining character keeps its original position, shown under the cell.
@@ -72,17 +72,17 @@ const removePairs: Approach<Input> = {
 const stackApproach: Approach<Input> = {
   id: "stack",
   name: "Stack",
-  code: `def is_valid(s):
-    match = {")": "(", "]": "[", "}": "{"}
-    stack = []
-    for ch in s:
-        if ch in match:
-            if not stack or stack[-1] != match[ch]:
-                return False
-            stack.pop()
-        else:
-            stack.append(ch)
-    return not stack
+  code: `function isValid(s)
+  match ← map {")": "(", "]": "[", "}": "{"}
+  stack ← empty stack
+  for each ch in s
+    if ch in match
+      if stack empty or stack.top() ≠ match[ch]
+        return false
+      stack.pop()
+    else
+      stack.push(ch)
+  return stack is empty
 `,
   run({ s }, t) {
     const match: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
@@ -101,7 +101,7 @@ const stackApproach: Approach<Input> = {
       const ch = chars[i];
       t.op();
       const top0 = stack.length ? chars[stack[stack.length - 1]] : null;
-      const ask = (answer: number) => ({ q: `Next character: "${ch}". Top of the stack: ${top0 ? `"${top0}"` : "empty"}. What happens?`, options: ["Push it onto the stack", "Pop: it closes the opener on top", "Invalid: return False"], answer });
+      const ask = (answer: number) => ({ q: `Next character: "${ch}". Top of the stack: ${top0 ? `"${top0}"` : "empty"}. What happens?`, options: ["Push it onto the stack", "Pop: it closes the opener on top", "Invalid: return false"], answer });
       if (ch in match) {
         const top = stack.length ? chars[stack[stack.length - 1]] : null;
         if (top !== match[ch]) {

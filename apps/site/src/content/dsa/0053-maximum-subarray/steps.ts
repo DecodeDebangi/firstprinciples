@@ -16,14 +16,14 @@ const span = (a: number, b: number, tone: Tone): Record<number, Tone> =>
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: every subarray",
-  code: `def max_sub_array(nums):
-    best = nums[0]
-    for i in range(len(nums)):
-        total = 0
-        for j in range(i, len(nums)):
-            total += nums[j]
-            best = max(best, total)
-    return best
+  code: `function maxSubArray(nums)
+  best ← nums[0]
+  for i ← 0 to length(nums) - 1
+    total ← 0
+    for j ← i to length(nums) - 1
+      total += nums[j]
+      best ← max(best, total)
+  return best
 `,
   run({ nums: a }, t) {
     let best = a[0], bi = 0, bj = 0;
@@ -47,12 +47,12 @@ const bruteForce: Approach<Input> = {
 const kadane: Approach<Input> = {
   id: "kadane",
   name: "Kadane: extend or start fresh",
-  code: `def max_sub_array(nums):
-    best = cur = nums[0]
-    for x in nums[1:]:
-        cur = max(x, cur + x)
-        best = max(best, cur)
-    return best
+  code: `function maxSubArray(nums)
+  best ← nums[0], cur ← nums[0]
+  for each x in nums[1..end]
+    cur ← max(x, cur + x)
+    best ← max(best, cur)
+  return best
 `,
   run({ nums: a }, t) {
     let cur = a[0], best = a[0], start = 0, bi = 0, bj = 0;

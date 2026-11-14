@@ -17,13 +17,13 @@ const show = (c: string) => (c === " " ? "␣" : c);
 const cleanReverse: Approach<Input> = {
   id: "reverse",
   name: "Clean, reverse, compare",
-  code: `def is_palindrome(s):
-    clean = [c.lower() for c in s if c.isalnum()]
-    rev = clean[::-1]
-    for a, b in zip(clean, rev):
-        if a != b:
-            return False
-    return True
+  code: `function isPalindrome(s)
+  clean ← lowercase letters and digits of s
+  rev ← reverse(clean)
+  for i ← 0 to length(clean) - 1
+    if clean[i] ≠ rev[i]
+      return false
+  return true
 `,
   run({ s }, t) {
     const raw = [...s];
@@ -61,26 +61,26 @@ const cleanReverse: Approach<Input> = {
 const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers, in place",
-  code: `def is_palindrome(s):
-    i, j = 0, len(s) - 1
-    while i < j:
-        if not s[i].isalnum():
-            i += 1
-        elif not s[j].isalnum():
-            j -= 1
-        elif s[i].lower() != s[j].lower():
-            return False
-        else:
-            i += 1
-            j -= 1
-    return True
+  code: `function isPalindrome(s)
+  i, j ← 0, length(s) - 1
+  while i < j
+    if s[i] is not a letter or digit
+      i += 1
+    else if s[j] is not a letter or digit
+      j -= 1
+    else if lowercase(s[i]) ≠ lowercase(s[j])
+      return false
+    else
+      i += 1
+      j -= 1
+  return true
 `,
   run({ s }, t) {
     const arr = [...s].map(show);
     const raw = [...s];
     let i = 0, j = raw.length - 1;
     const tones: Record<number, Tone> = {};
-    const opts = ["Skip i: it isn't a letter or digit", "Skip j: it isn't a letter or digit", "They match: move both inward", "Mismatch: return False"];
+    const opts = ["Skip i: it isn't a letter or digit", "Skip j: it isn't a letter or digit", "They match: move both inward", "Mismatch: return false"];
     t.step({ line: 2, array: arr, pointers: { i, j }, range: [i, j], vars: { i, j },
       message: "Read from both ends at once, skipping anything that isn't a letter or digit. No copies needed." });
     while (i < j) {

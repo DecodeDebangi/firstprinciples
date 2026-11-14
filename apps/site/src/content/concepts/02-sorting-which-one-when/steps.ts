@@ -18,16 +18,16 @@ const span = (a: number, b: number, tone: Tone): Record<number, Tone> =>
 const bubble: Approach<Input> = {
   id: "bubble",
   name: "Bubble sort",
-  code: `def bubble_sort(a):
-    n = len(a)
-    for i in range(n):
-        swapped = False
-        for j in range(n - 1 - i):
-            if a[j] > a[j + 1]:
-                a[j], a[j + 1] = a[j + 1], a[j]
-                swapped = True
-        if not swapped:
-            break
+  code: `function bubbleSort(a)
+  n ← length(a)
+  for i ← 0 to n - 1
+    swapped ← false
+    for j ← 0 to n - 2 - i
+      if a[j] > a[j + 1]
+        swap a[j] and a[j + 1]
+        swapped ← true
+    if not swapped
+      break
 `,
   run({ nums }, t) {
     const a = [...nums], n = a.length;
@@ -57,14 +57,14 @@ const bubble: Approach<Input> = {
 const selection: Approach<Input> = {
   id: "selection",
   name: "Selection sort",
-  code: `def selection_sort(a):
-    n = len(a)
-    for i in range(n):
-        m = i
-        for j in range(i + 1, n):
-            if a[j] < a[m]:
-                m = j
-        a[i], a[m] = a[m], a[i]
+  code: `function selectionSort(a)
+  n ← length(a)
+  for i ← 0 to n - 1
+    m ← i
+    for j ← i + 1 to n - 1
+      if a[j] < a[m]
+        m ← j
+    swap a[i] and a[m]
 `,
   run({ nums }, t) {
     const a = [...nums], n = a.length;
@@ -92,14 +92,14 @@ const selection: Approach<Input> = {
 const insertion: Approach<Input> = {
   id: "insertion",
   name: "Insertion sort",
-  code: `def insertion_sort(a):
-    for i in range(1, len(a)):
-        x = a[i]
-        j = i - 1
-        while j >= 0 and a[j] > x:
-            a[j + 1] = a[j]
-            j -= 1
-        a[j + 1] = x
+  code: `function insertionSort(a)
+  for i ← 1 to length(a) - 1
+    x ← a[i]
+    j ← i - 1
+    while j ≥ 0 and a[j] > x
+      a[j + 1] ← a[j]
+      j -= 1
+    a[j + 1] ← x
 `,
   run({ nums }, t) {
     const a: (number | string)[] = [...nums], n = a.length;
@@ -134,14 +134,14 @@ const insertion: Approach<Input> = {
 const merge: Approach<Input> = {
   id: "merge",
   name: "Merge sort",
-  code: `def merge_sort(a, lo=0, hi=None):
-    if hi is None: hi = len(a)
-    if hi - lo <= 1:
-        return
-    mid = (lo + hi) // 2
-    merge_sort(a, lo, mid)
-    merge_sort(a, mid, hi)
-    a[lo:hi] = merge(a[lo:mid], a[mid:hi])
+  code: `function mergeSort(a, lo, hi)  // hi excluded
+  // first call: mergeSort(a, 0, length(a))
+  if hi - lo ≤ 1
+    return
+  mid ← floor((lo + hi) / 2)
+  mergeSort(a, lo, mid)
+  mergeSort(a, mid, hi)
+  merge the two sorted halves back into a
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -172,18 +172,18 @@ const merge: Approach<Input> = {
 const quick: Approach<Input> = {
   id: "quick",
   name: "Quicksort",
-  code: `def quick_sort(a, lo=0, hi=None):
-    if hi is None: hi = len(a) - 1
-    if lo >= hi:
-        return
-    pivot, i = a[hi], lo
-    for j in range(lo, hi):
-        if a[j] < pivot:
-            a[i], a[j] = a[j], a[i]
-            i += 1
-    a[i], a[hi] = a[hi], a[i]
-    quick_sort(a, lo, i - 1)
-    quick_sort(a, i + 1, hi)
+  code: `function quickSort(a, lo, hi)  // hi included
+  // first call: quickSort(a, 0, n - 1)
+  if lo ≥ hi
+    return
+  pivot, i ← a[hi], lo
+  for j ← lo to hi - 1
+    if a[j] < pivot
+      swap a[i] and a[j]
+      i += 1
+  swap a[i] and a[hi]
+  quickSort(a, lo, i - 1)
+  quickSort(a, i + 1, hi)
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -220,16 +220,16 @@ const quick: Approach<Input> = {
 const counting: Approach<Input> = {
   id: "counting",
   name: "Counting sort",
-  code: `def counting_sort(a):
-    lo, hi = min(a), max(a)
-    count = [0] * (hi - lo + 1)
-    for x in a:
-        count[x - lo] += 1
-    i = 0
-    for v, c in enumerate(count):
-        for _ in range(c):
-            a[i] = v + lo
-            i += 1
+  code: `function countingSort(a)
+  lo, hi ← min(a), max(a)
+  count ← array of hi - lo + 1, all 0
+  for each x in a
+    count[x - lo] += 1
+  i ← 0
+  for each index v, value c in count
+    repeat c times
+      a[i] ← v + lo
+      i += 1
 `,
   run({ nums }, t) {
     const a = [...nums];

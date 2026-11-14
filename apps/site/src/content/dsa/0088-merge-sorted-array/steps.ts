@@ -21,10 +21,10 @@ const EMPTY = "_";
 const copySort: Approach<Input> = {
   id: "sort",
   name: "Copy in, then sort",
-  code: `def merge(nums1, m, nums2, n):
-    for j in range(n):
-        nums1[m + j] = nums2[j]
-    nums1.sort()
+  code: `function merge(nums1, m, nums2, n)
+  for j ← 0 to n - 1
+    nums1[m + j] ← nums2[j]
+  nums1.sort()
 `,
   run({ nums1: A, nums2: B }, t) {
     const m = A.length, n = B.length;
@@ -48,16 +48,16 @@ const copySort: Approach<Input> = {
 const fromBack: Approach<Input> = {
   id: "back",
   name: "Three pointers from the back",
-  code: `def merge(nums1, m, nums2, n):
-    i, j, k = m - 1, n - 1, m + n - 1
-    while j >= 0:
-        if i >= 0 and nums1[i] > nums2[j]:
-            nums1[k] = nums1[i]
-            i -= 1
-        else:
-            nums1[k] = nums2[j]
-            j -= 1
-        k -= 1
+  code: `function merge(nums1, m, nums2, n)
+  i, j, k ← m - 1, n - 1, m + n - 1
+  while j ≥ 0
+    if i ≥ 0 and nums1[i] > nums2[j]
+      nums1[k] ← nums1[i]
+      i -= 1
+    else
+      nums1[k] ← nums2[j]
+      j -= 1
+    k -= 1
 `,
   run({ nums1: A, nums2: B }, t) {
     const m = A.length, n = B.length;

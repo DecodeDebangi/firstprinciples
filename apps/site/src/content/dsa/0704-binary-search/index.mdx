@@ -50,8 +50,8 @@ sorted order already says the target must be further right. Each check rules out
 Keep a window `[lo, hi]` where the target could still be. Look at the **middle** element:
 
 - Equal to the target: done.
-- Smaller than the target: the target can only be to its right, so discard the left half including `mid` (`lo = mid + 1`).
-- Bigger than the target: discard the right half including `mid` (`hi = mid - 1`).
+- Smaller than the target: the target can only be to its right, so discard the left half including `mid` (`lo ← mid + 1`).
+- Bigger than the target: discard the right half including `mid` (`hi ← mid - 1`).
 
 Each comparison throws away half of what's left. Faded cells are numbers that have been ruled out.
 
@@ -110,8 +110,8 @@ other binary search line.
 
 ## Common mistakes
 
-- **`while lo < hi` instead of `lo <= hi`.** When `lo == hi` there's still one candidate left. With `<`, a target sitting there is never checked.
-- **`lo = mid` or `hi = mid`** instead of `mid ± 1`. `mid` has already been checked. Keeping it can make the window stop shrinking, which means an infinite loop.
+- **`while lo < hi` instead of `lo ≤ hi`.** When `lo = hi` there's still one candidate left. With `<`, a target sitting there is never checked.
+- **`lo ← mid` or `hi ← mid`** instead of `mid ± 1`. `mid` has already been checked. Keeping it can make the window stop shrinking, which means an infinite loop.
 - **Integer overflow in `(lo + hi) / 2`** in Java or C++. With very large indices `lo + hi` can overflow. Write `lo + (hi - lo) / 2`. Python's integers don't overflow, but interviewers like to ask about it.
 - **Using it on unsorted data.** Binary search's correctness depends entirely on the sorted order.
 

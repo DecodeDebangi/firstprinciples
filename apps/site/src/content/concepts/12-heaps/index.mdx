@@ -3,7 +3,7 @@ title: "Heaps: how push and pop stay O(log n)"
 topic: Heaps
 kind: Explainer
 order: 1
-summary: A heap is a tree stored in a plain array, ordered just enough to always know the smallest item. Watch push swap a leaf up, pop sink a value down, and heapify build a heap in O(n). Plus how to use Python's heapq, including the max-heap trick.
+summary: A heap is a tree stored in a plain array, ordered just enough to always know the smallest item. Watch push swap a leaf up, pop sink a value down, and heapify build a heap in O(n). Plus how to use the heap in your language, including getting a max-heap.
 added: 2026-11-13
 ---
 import Viz from "./Viz.tsx";
@@ -34,7 +34,7 @@ The shape rule means the tree packs into an array with no gaps and no pointers. 
 |---|---|
 | Left child | `2i + 1` |
 | Right child | `2i + 2` |
-| Parent | `(i − 1) // 2` |
+| Parent | `floor((i − 1) / 2)` |
 
 A complete tree with n items has about log₂ n levels, so anything that moves one level per step takes O(log n).
 
@@ -68,21 +68,21 @@ so on. The total, n/4 · 1 + n/8 · 2 + n/16 · 3 + …, adds up to less than n.
 
 <GrowthChart client:visible series={growth} caption="Comparisons to build a heap from n numbers in decreasing order: n pushes vs one heapify." />
 
-## Using heaps in Python
+## Using heaps in your language
 
-Python's `heapq` works on a plain list, and it's always a **min-heap**:
+Adding and removing the top cost O(log n); looking at the top is O(1).
 
-| Operation | Code | Time |
-|---|---|---|
-| Build from a list | `heapq.heapify(a)` | O(n) |
-| Add | `heapq.heappush(a, x)` | O(log n) |
-| Remove the smallest | `heapq.heappop(a)` | O(log n) |
-| Look at the smallest | `a[0]` | O(1) |
-| Push, then pop (faster) | `heapq.heappushpop(a, x)` | O(log n) |
-| k smallest / largest | `heapq.nsmallest(k, a)`, `heapq.nlargest(k, a)` | O(n log k) |
+| Language | Heap | Top by default | Add, remove top, peek |
+|---|---|---|---|
+| Python | `heapq` on a plain list | smallest | `heappush(a, x)`, `heappop(a)`, `a[0]`; `heapify(a)` builds one in O(n) |
+| Java | `PriorityQueue` | smallest | `offer(x)`, `poll()`, `peek()` |
+| C++ | `std::priority_queue` | **largest** | `push(x)`, `pop()`, `top()` |
+| JavaScript | none built in | | write one (about 30 lines) or use a library |
 
-**Need a max-heap?** Push `-x` and negate what you pop. **Need to order by something else?** Push tuples, like
-`(count, value)`: tuples compare by their first item, then the second to break ties.
+**Need the other direction?** Java takes a comparator (`new PriorityQueue<>(Collections.reverseOrder())`), C++ takes
+`std::greater<int>` for a min-heap, and in Python you push `-x` and negate what you pop. **Need to order by something
+else?** Push pairs like `(count, value)`, which compare by the first item and break ties with the second, or give the
+heap a comparator.
 
 ## Which problems want a heap?
 
@@ -113,7 +113,7 @@ at most one. The median is one top, or the average of both tops. Each new number
 </QA>
 
 <QA q="Can you change an item's priority inside a heap?">
-Not with `heapq` directly: you'd have to find it (O(n)). The usual trick is lazy deletion: push the new version,
+Not with the standard library heaps (Python's `heapq`, Java's `PriorityQueue`, C++'s `priority_queue`): you'd have to find it first, which is O(n). The usual trick is lazy deletion: push the new version,
 and when an outdated version reaches the top later, skip it.
 </QA>
 

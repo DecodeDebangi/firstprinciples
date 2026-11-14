@@ -132,7 +132,7 @@ export class Tracer {
 export interface Approach<I> {
   id: string;
   name: string;
-  /** Python shown next to the animation; step `line`s refer to it. */
+  /** Pseudocode shown next to the animation; step `line`s refer to it (1-based). */
   code: string;
   run: (input: I, t: Tracer) => void;
 }

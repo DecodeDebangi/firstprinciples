@@ -72,7 +72,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 ## Common mistakes
 
 - **Moving `mid` after swapping a 2.** The value swapped in from `hi` is unchecked; `mid` must look at it next.
-- **`while mid < hi`.** The cell at `hi` still needs checking: loop while `mid <= hi`.
+- **`while mid < hi`.** The cell at `hi` still needs checking: loop while `mid ≤ hi`.
 - **Calling `sort()`.** Allowed in practice, but the problem asks you to do it yourself, and it's O(n log n).
 
 ## Related problems

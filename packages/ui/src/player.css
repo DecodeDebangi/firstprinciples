@@ -160,9 +160,10 @@
   overflow-x: auto;
   align-self: start;
 }
-.fp-line { display: flex; padding: 0 12px 0 0; border-left: 3px solid transparent; }
+.fp-line { display: flex; padding: 0 8px 0 0; border-left: 3px solid transparent; }
 .fp-line.is-current { background: var(--accent-soft); border-left-color: var(--accent); }
-.fp-ln { width: 2.6em; flex: 0 0 auto; text-align: right; padding-right: 12px; color: var(--muted); user-select: none; }
+/* Line numbers never pass 2 digits, so a narrow gutter leaves room for ~48 characters of code. */
+.fp-ln { width: 2em; flex: 0 0 auto; text-align: right; padding-right: 10px; color: var(--muted); user-select: none; }
 .fp-line code { font: inherit; white-space: pre; }
 
 .fp-controls, .fp-input {

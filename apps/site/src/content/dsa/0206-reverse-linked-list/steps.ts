@@ -20,7 +20,7 @@ const nid = (i: number) => `n${i}`;
  */
 function row(vals: number[], next: Record<string, string | null>, pointers: Record<string, string | null>, tones: Record<string, Tone> = {}): ListRow {
   const ids = [NONE_L, ...vals.map((_, i) => nid(i)), NONE_R];
-  const nodes = ids.map((id) => (id === NONE_L || id === NONE_R ? { id, val: "None", kind: "null" as const } : { id, val: vals[Number(id.slice(1))] }));
+  const nodes = ids.map((id) => (id === NONE_L || id === NONE_R ? { id, val: "none", kind: "null" as const } : { id, val: vals[Number(id.slice(1))] }));
   const arrows = ids.slice(0, -1).map((a, k) => {
     const b = ids[k + 1];
     const fwd = next[a] === b, back = next[b] === a;
@@ -36,16 +36,16 @@ const original = (vals: number[]) => Object.fromEntries(vals.map((_, i) => [nid(
 const copyRebuild: Approach<Input> = {
   id: "copy",
   name: "Copy the values, rebuild backwards",
-  code: `def reverse_list(head):
-    vals = []
-    while head:
-        vals.append(head.val)
-        head = head.next
-    dummy = tail = ListNode()
-    for v in reversed(vals):
-        tail.next = ListNode(v)
-        tail = tail.next
-    return dummy.next
+  code: `function reverseList(head)
+  vals ← empty list
+  while head ≠ none
+    vals.push(head.val)
+    head ← head.next
+  dummy ← new ListNode(), tail ← dummy
+  for each v in vals, last to first
+    tail.next ← new ListNode(v)
+    tail ← tail.next
+  return dummy.next
 `,
   run({ head: vals }, t) {
     const next = original(vals);
@@ -81,57 +81,57 @@ const copyRebuild: Approach<Input> = {
 const iterative: Approach<Input> = {
   id: "iterative",
   name: "Three pointers, in place",
-  code: `def reverse_list(head):
-    prev, curr = None, head
-    while curr:
-        nxt = curr.next
-        curr.next = prev
-        prev = curr
-        curr = nxt
-    return prev
+  code: `function reverseList(head)
+  prev, curr ← none, head
+  while curr ≠ none
+    nxt ← curr.next
+    curr.next ← prev
+    prev ← curr
+    curr ← nxt
+  return prev
 `,
   run({ head: vals }, t) {
     const next = original(vals);
     let prev = NONE_L, curr: string = vals.length ? nid(0) : NONE_R;
     const done = new Set<string>();
     const tones = (extra: Record<string, Tone> = {}) => ({ ...Object.fromEntries([...done].map((d) => [d, "settled" as const])), ...extra });
-    t.step({ line: 2, array: [], lists: [row(vals, next, { prev, curr })], vars: { prev: "None", curr: vals[0] ?? "None" },
+    t.step({ line: 2, array: [], lists: [row(vals, next, { prev, curr })], vars: { prev: "none", curr: vals[0] ?? "none" },
       message: "Walk the list once and turn each arrow around as you pass it. prev trails one node behind curr." });
     while (curr !== NONE_R) {
       const c = curr;
       const nxt = next[c]!;
       const val = vals[Number(c.slice(1))];
       t.step({ line: 4, array: [], lists: [row(vals, next, { prev, curr: c, nxt }, tones({ [c]: "active" }))],
-        vars: { prev: prev === NONE_L ? "None" : vals[Number(prev.slice(1))], curr: val, nxt: nxt === NONE_R ? "None" : vals[Number(nxt.slice(1))] },
+        vars: { prev: prev === NONE_L ? "none" : vals[Number(prev.slice(1))], curr: val, nxt: nxt === NONE_R ? "none" : vals[Number(nxt.slice(1))] },
         message: `Save nxt first: once ${val}'s arrow turns around, the rest of the list is unreachable without it.` });
       t.op();
       next[c] = prev;
       done.add(c);
       t.step({ ask: { q: `curr.next = prev is next. Which way will ${val}'s arrow point?`, options: ["Back, to prev", "Forward, to nxt"], answer: 0 },
         line: 5, array: [], lists: [row(vals, next, { prev, curr: c, nxt }, tones({ [c]: "compare" }))],
-        vars: { prev: prev === NONE_L ? "None" : vals[Number(prev.slice(1))], curr: val, nxt: nxt === NONE_R ? "None" : vals[Number(nxt.slice(1))] },
-        message: `Point ${val} back at ${prev === NONE_L ? "None" : vals[Number(prev.slice(1))]}. One arrow flipped.` });
+        vars: { prev: prev === NONE_L ? "none" : vals[Number(prev.slice(1))], curr: val, nxt: nxt === NONE_R ? "none" : vals[Number(nxt.slice(1))] },
+        message: `Point ${val} back at ${prev === NONE_L ? "none" : vals[Number(prev.slice(1))]}. One arrow flipped.` });
       prev = c;
       curr = nxt;
       t.step({ line: 7, array: [], lists: [row(vals, next, { prev, curr }, tones())],
-        vars: { prev: val, curr: curr === NONE_R ? "None" : vals[Number(curr.slice(1))] },
+        vars: { prev: val, curr: curr === NONE_R ? "none" : vals[Number(curr.slice(1))] },
         message: curr === NONE_R ? "curr ran off the end: every arrow has been turned." : "Step forward: prev and curr each move one node right." });
     }
-    t.step({ line: 8, array: [], lists: [row(vals, next, { "new head": prev }, tones({ [prev]: "found" }))], vars: { prev: prev === NONE_L ? "None" : vals[Number(prev.slice(1))] },
-      done: "found", message: `Return prev: ${prev === NONE_L ? "None" : vals[Number(prev.slice(1))]} is the new head. One pass, three pointers, no extra memory.` });
+    t.step({ line: 8, array: [], lists: [row(vals, next, { "new head": prev }, tones({ [prev]: "found" }))], vars: { prev: prev === NONE_L ? "none" : vals[Number(prev.slice(1))] },
+      done: "found", message: `Return prev: ${prev === NONE_L ? "none" : vals[Number(prev.slice(1))]} is the new head. One pass, three pointers, no extra memory.` });
   },
 };
 
 const recursive: Approach<Input> = {
   id: "recursive",
   name: "Recursive",
-  code: `def reverse_list(head):
-    if head is None or head.next is None:
-        return head
-    new_head = reverse_list(head.next)
-    head.next.next = head
-    head.next = None
-    return new_head
+  code: `function reverseList(head)
+  if head = none or head.next = none
+    return head
+  newHead ← reverseList(head.next)
+  head.next.next ← head
+  head.next ← none
+  return newHead
 `,
   run({ head: vals }, t) {
     const next = original(vals);
@@ -156,12 +156,12 @@ const recursive: Approach<Input> = {
       const newHead = go(i + 1);
       const nx = nid(i + 1);
       next[nx] = id;
-      t.step({ ask: { q: `Back in reverse(${v(id)}). head.next.next = head is next. What does it make?`, options: [`${v(nx)} point back at ${v(id)}`, `${v(id)} point at None`], answer: 0 },
+      t.step({ ask: { q: `Back in reverse(${v(id)}). head.next.next ← head is next. What does it make?`, options: [`${v(nx)} point back at ${v(id)}`, `${v(id)} point at none`], answer: 0 },
         line: 5, array: [], lists: [row(vals, next, { head: id, "new head": newHead }, { [id]: "compare", [nx]: "compare" })], stack: [...stack], vars: { head: v(id) },
         message: `Make ${v(nx)} point back at ${v(id)}. For a moment the two point at each other.` });
       next[id] = i === 0 ? NONE_L : null;
       t.step({ line: 6, array: [], lists: [row(vals, next, { head: id, "new head": newHead }, { [id]: "settled" })], stack: [...stack], vars: { head: v(id) },
-        message: `Cut ${v(id)}'s old forward arrow. ${i === 0 ? "It's the new tail, pointing at None." : "The caller will point it back at the node before it."}` });
+        message: `Cut ${v(id)}'s old forward arrow. ${i === 0 ? "It's the new tail, pointing at none." : "The caller will point it back at the node before it."}` });
       stack.pop();
       return newHead;
     };

@@ -15,12 +15,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
-  code: `def max_profit(prices):
-    best = 0
-    for i in range(len(prices)):
-        for j in range(i + 1, len(prices)):
-            best = max(best, prices[j] - prices[i])
-    return best
+  code: `function maxProfit(prices)
+  best ← 0
+  for i ← 0 to length(prices) - 1
+    for j ← i + 1 to length(prices) - 1
+      best ← max(best, prices[j] - prices[i])
+  return best
 `,
   run({ prices: p }, t) {
     let best = 0, bi = -1, bj = -1;
@@ -46,15 +46,15 @@ const bruteForce: Approach<Input> = {
 const onePass: Approach<Input> = {
   id: "window",
   name: "One pass: cheapest day so far",
-  code: `def max_profit(prices):
-    cheapest = prices[0]
-    best = 0
-    for p in prices[1:]:
-        if p < cheapest:
-            cheapest = p
-        else:
-            best = max(best, p - cheapest)
-    return best
+  code: `function maxProfit(prices)
+  cheapest ← prices[0]
+  best ← 0
+  for each p in prices[1..end]
+    if p < cheapest
+      cheapest ← p
+    else
+      best ← max(best, p - cheapest)
+  return best
 `,
   run({ prices: p }, t) {
     let buy = 0, best = 0, bi = -1, bj = -1;

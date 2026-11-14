@@ -41,22 +41,22 @@ function setup({ n, prereqs }: Input) {
 const kahn: Approach<Input> = {
   id: "kahn",
   name: "Take what's ready (Kahn's algorithm)",
-  code: `from collections import deque
-def can_finish(n, prereqs):
-    after = [[] for _ in range(n)]
-    indeg = [0] * n  # prerequisites left
-    for a, b in prereqs:
-        after[b].append(a); indeg[a] += 1
-    ready = deque(i for i in range(n) if indeg[i] == 0)
-    taken = 0
-    while ready:
-        b = ready.popleft()
-        taken += 1
-        for a in after[b]:
-            indeg[a] -= 1  # one prerequisite done
-            if indeg[a] == 0:
-                ready.append(a)
-    return taken == n
+  code: `// queue: join at back, leave from front
+function canFinish(n, prereqs)
+  after ← n empty lists
+  indeg ← array of n, all 0  // prereqs left
+  for each (a, b) in prereqs
+    after[b].push(a); indeg[a] += 1
+  ready ← queue of every i with indeg[i] = 0
+  taken ← 0
+  while ready not empty
+    b ← ready.popFront()
+    taken += 1
+    for each a in after[b]
+      indeg[a] -= 1  // one prerequisite done
+      if indeg[a] = 0
+        ready.push(a)
+  return taken = n
 `,
   run(input, t) {
     const { n } = input;
@@ -97,31 +97,31 @@ def can_finish(n, prereqs):
     const ok = taken.length === n;
     const stuck = Array.from({ length: n }, (_, i) => i).filter((i) => !taken.includes(i));
     t.step({ line: 16, array: [], graphs: G.draw(tones(Object.fromEntries(stuck.map((s) => [s, "miss" as Tone]))), notes(), usedEdges), ...panel(), vars: { taken: taken.length, of: n }, done: ok ? "found" : "notfound",
-      message: ok ? `All ${n} courses taken, in the order shown: a valid plan exists. Return True. Each course and each prerequisite is handled once: O(V + E).`
-        : `Stuck after ${taken.length}: courses ${stuck.join(", ")} still wait on each other. They form a cycle, so they can never be taken. Return False.` });
+      message: ok ? `All ${n} courses taken, in the order shown: a valid plan exists. Return true. Each course and each prerequisite is handled once: O(V + E).`
+        : `Stuck after ${taken.length}: courses ${stuck.join(", ")} still wait on each other. They form a cycle, so they can never be taken. Return false.` });
   },
 };
 
 const dfs: Approach<Input> = {
   id: "dfs",
   name: "Depth-first cycle check (three states)",
-  code: `def can_finish(n, prereqs):
-    after = [[] for _ in range(n)]
-    for a, b in prereqs:
-        after[b].append(a)  # b comes before a
-    state = [0] * n  # 0 new, 1 on path, 2 done
-    def has_cycle(b):
-        if state[b] == 1:
-            return True  # back on our own path
-        if state[b] == 2:
-            return False  # checked already
-        state[b] = 1
-        for a in after[b]:
-            if has_cycle(a):
-                return True
-        state[b] = 2
-        return False
-    return not any(has_cycle(i) for i in range(n))
+  code: `function canFinish(n, prereqs)
+  after ← n empty lists
+  for each (a, b) in prereqs
+    after[b].push(a)  // b comes before a
+  state ← n zeros  // 0 new, 1 open, 2 done
+  function hasCycle(b)
+    if state[b] = 1
+      return true  // back on our own path
+    if state[b] = 2
+      return false  // checked already
+    state[b] ← 1
+    for each a in after[b]
+      if hasCycle(a)
+        return true
+    state[b] ← 2
+    return false
+  return no i in 0 to n - 1 has hasCycle(i)
 `,
   run(input, t) {
     const { n } = input;
@@ -143,7 +143,7 @@ const dfs: Approach<Input> = {
       t.op();
       if (state[b] === 1) {
         if (from !== undefined) edgeT[`${from}>${b}`] = "miss";
-        t.step({ ask: { q: `From ${from}, the arrow leads to ${b}, which is still on the current path. What does that mean?`, options: ["A cycle: return True", "Already checked: skip it"], answer: 0 },
+        t.step({ ask: { q: `From ${from}, the arrow leads to ${b}, which is still on the current path. What does that mean?`, options: ["A cycle: return true", "Already checked: skip it"], answer: 0 },
           line: 8, array: [], graphs: G.draw(tones({ [b]: "miss" }), notes(), edgeT, b), ...panel(), vars: { course: b },
           message: `${b} is already on the current path (${[...path, b].join(" → ")}): the arrows loop back. A cycle, so these courses can never all be taken.` });
         return true;
@@ -151,7 +151,7 @@ const dfs: Approach<Input> = {
       if (state[b] === 2) {
         if (from !== undefined) {
           edgeT[`${from}>${b}`] = "visited";
-          t.step({ ask: { q: `From ${from}, the arrow leads to ${b}, which is already done. What does that mean?`, options: ["Already checked: skip it", "A cycle: return True"], answer: 0 },
+          t.step({ ask: { q: `From ${from}, the arrow leads to ${b}, which is already done. What does that mean?`, options: ["Already checked: skip it", "A cycle: return true"], answer: 0 },
             line: 10, array: [], graphs: G.draw(tones({ [b]: "compare" }), notes(), edgeT, b), ...panel(), vars: { course: b },
             message: `${b} is done: everything after it was already checked and has no cycle. Skip it.` });
         }
@@ -172,7 +172,7 @@ const dfs: Approach<Input> = {
     };
     for (let i = 0; i < n && !cycle; i++) { if (state[i] === 2) { t.op(); continue; } cycle = go(i); }
     t.step({ line: 17, array: [], graphs: G.draw(tones(), notes(), edgeT), ...panel(), vars: {}, done: cycle ? "notfound" : "found",
-      message: cycle ? "A cycle was found: return False." : `Every course is done and no cycle was found: return True. Each course is visited once and each arrow followed once: O(V + E).` });
+      message: cycle ? "A cycle was found: return false." : `Every course is done and no cycle was found: return true. Each course is visited once and each arrow followed once: O(V + E).` });
   },
 };
 

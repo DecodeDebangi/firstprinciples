@@ -46,7 +46,7 @@ position can be carried forward.
 ## Approach 2: Kadane's algorithm (optimal)
 
 Keep `cur`, the best sum of a run ending at the current number, and `best`, the best seen anywhere. At each number
-`x`: `cur = max(x, cur + x)`, then `best = max(best, cur)`. The shelf shows the current run; watch it restart
+`x`: `cur ← max(x, cur + x)`, then `best ← max(best, cur)`. The shelf shows the current run; watch it restart
 whenever carrying the old run would hurt.
 
 <Viz client:visible approach="kadane" />
@@ -76,7 +76,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 ## Common mistakes
 
 - **Starting `best` at 0.** If every number is negative, the answer is the largest single number, e.g. `−1` for `[−3, −1, −2]`. Start from `nums[0]`.
-- **Resetting to 0 instead of to `x`.** `cur = max(x, cur + x)` keeps the run non-empty.
+- **Resetting to 0 instead of to `x`.** `cur ← max(x, cur + x)` keeps the run non-empty.
 - **Updating `best` before `cur`.** Compute the run ending here first, then compare.
 
 ## Related problems

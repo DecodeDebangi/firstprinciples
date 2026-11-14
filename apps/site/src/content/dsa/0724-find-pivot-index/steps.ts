@@ -21,14 +21,14 @@ const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
-  code: `def pivot_index(nums):
-    n = len(nums)
-    for i in range(n):
-        left = sum(nums[:i])
-        right = sum(nums[i + 1:])
-        if left == right:
-            return i
-    return -1
+  code: `function pivotIndex(nums)
+  n ← length(nums)
+  for i ← 0 to n - 1
+    left ← sum(nums[0..i - 1])
+    right ← sum(nums[i + 1..end])
+    if left = right
+      return i
+  return -1
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -55,17 +55,17 @@ const bruteForce: Approach<Input> = {
 const prefixSums: Approach<Input> = {
   id: "prefix",
   name: "Prefix sums",
-  code: `def pivot_index(nums):
-    prefix = [0]
-    for x in nums:
-        prefix.append(prefix[-1] + x)
-    total = prefix[-1]
-    for i in range(len(nums)):
-        left = prefix[i]
-        right = total - prefix[i + 1]
-        if left == right:
-            return i
-    return -1
+  code: `function pivotIndex(nums)
+  prefix ← [0]
+  for each x in nums
+    prefix.push(prefix.last() + x)
+  total ← prefix.last()
+  for i ← 0 to length(nums) - 1
+    left ← prefix[i]
+    right ← total - prefix[i + 1]
+    if left = right
+      return i
+  return -1
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -106,14 +106,14 @@ const prefixSums: Approach<Input> = {
 const runningTotal: Approach<Input> = {
   id: "running",
   name: "Running total",
-  code: `def pivot_index(nums):
-    total = sum(nums)
-    left = 0
-    for i, x in enumerate(nums):
-        if left == total - left - x:
-            return i
-        left += x
-    return -1
+  code: `function pivotIndex(nums)
+  total ← sum(nums)
+  left ← 0
+  for each index i, value x in nums
+    if left = total - left - x
+      return i
+    left += x
+  return -1
 `,
   run({ nums }, t) {
     const n = nums.length;

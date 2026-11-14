@@ -26,13 +26,13 @@ const answersGrid = (out: number[], hl = false) => ({ title: "add() returned", r
 const sorted: Approach<Input> = {
   id: "sorted",
   name: "Keep everything sorted",
-  code: `import bisect
-class KthLargest:
-    def __init__(self, k, nums):
-        self.k, self.vals = k, sorted(nums)
-    def add(self, val):
-        bisect.insort(self.vals, val)  # shifts the rest
-        return self.vals[-self.k]
+  code: `// vals stays sorted, smallest first
+class KthLargest
+  constructor(k, nums)
+    this.k, this.vals ← k, sorted(nums)
+  function add(val)
+    insert val in sorted order  // shifts rest
+    return this.vals[length(this.vals) - k]
 `,
   run({ k, nums, adds }, t) {
     const a = [...nums].sort((p, q) => { t.op(); return p - q; });
@@ -61,17 +61,17 @@ class KthLargest:
 const heapApproach: Approach<Input> = {
   id: "heap",
   name: "Min-heap of the k largest",
-  code: `import heapq
-class KthLargest:
-    def __init__(self, k, nums):
-        self.k, self.heap = k, []
-        for x in nums:
-            self.add(x)
-    def add(self, val):
-        heapq.heappush(self.heap, val)
-        if len(self.heap) > self.k:
-            heapq.heappop(self.heap)  # drop the smallest
-        return self.heap[0]  # the kth largest
+  code: `// heap: a min-heap, smallest item on top
+class KthLargest
+  constructor(k, nums)
+    this.k, this.heap ← k, empty min-heap
+    for each x in nums
+      this.add(x)
+  function add(val)
+    this.heap.push(val)
+    if length(this.heap) > this.k
+      this.heap.popMin()  // drop the smallest
+    return this.heap.min()  // the kth largest
 `,
   run({ k, nums, adds }, t) {
     type I = { id: string; val: number };

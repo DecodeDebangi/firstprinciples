@@ -26,21 +26,21 @@ function resultGrid(perms: number[][], fresh = 0, title = "arrangements so far")
 const backtrack: Approach<Input> = {
   id: "backtrack",
   name: "Backtracking with a used list",
-  code: `def permute(nums):
-    result, path = [], []
-    used = [False] * len(nums)
-    def backtrack():
-        if len(path) == len(nums):
-            result.append(path[:])  # a full arrangement
-            return
-        for i, x in enumerate(nums):
-            if used[i]:
-                continue  # already placed
-            used[i] = True; path.append(x)  # choose
-            backtrack()  # explore
-            used[i] = False; path.pop()  # undo
-    backtrack()
-    return result
+  code: `function permute(nums)
+  result, path ← [], []
+  used ← array of length(nums), all false
+  function backtrack()
+    if length(path) = length(nums)
+      result.push(copy(path))  // all placed
+      return
+    for each index i, value x in nums
+      if used[i]
+        continue  // already placed
+      used[i] ← true; path.push(x)  // choose
+      backtrack()  // explore
+      used[i] ← false; path.pop()  // undo
+  backtrack()
+  return result
 `,
   run({ nums }, t) {
     const tree = new CallTree();
@@ -80,12 +80,12 @@ const backtrack: Approach<Input> = {
 const insert: Approach<Input> = {
   id: "insert",
   name: "Iterative: insert into every gap",
-  code: `def permute(nums):
-    perms = [[]]
-    for x in nums:
-        perms = [p[:i] + [x] + p[i:]
-                 for p in perms for i in range(len(p) + 1)]
-    return perms
+  code: `function permute(nums)
+  perms ← [[]]
+  for each x in nums
+    perms ← every p in perms with x inserted
+            at each position 0 to length(p)
+  return perms
 `,
   run({ nums }, t) {
     let perms: number[][] = [[]];

@@ -56,7 +56,7 @@ computed, and adding them would give the answer in one step.
 ## Approach 2: Build each row from the one above (optimal)
 
 Start with `[1]`. For each new row, set both ends to `1` and fill each inside slot with the two numbers above
-it: `row[c] = prev[c − 1] + prev[c]`. In the animation, the triangle panel highlights the two parent numbers for
+it: `row[c] ← prev[c − 1] + prev[c]`. In the animation, the triangle panel highlights the two parent numbers for
 each addition.
 
 <Viz client:visible approach="build" />
@@ -92,7 +92,7 @@ row by row.
 - **Overflowing factorials.** Outside Python, `21!` already exceeds a 64-bit integer, even though the triangle's numbers are much smaller. Building by addition avoids huge intermediates entirely.
 - **Writing into the ends.** The inner loop runs from `1` to `r − 1`. Positions `0` and `r` stay `1`.
 - **Off-by-one on row count.** Row `0` is `[1]`, so `numRows = 1` returns `[[1]]`.
-- **Aliasing rows in Python.** `[[1] * k] * n` makes `n` references to the *same* list. Create each row fresh, as `row = [1] * (r + 1)` does inside the loop.
+- **Reusing one row object.** If every row is the same list in memory (in Python, `[[1] * k] * n` does this), changing one changes them all. Create each row fresh, as the code does inside the loop.
 
 ## Related problems
 

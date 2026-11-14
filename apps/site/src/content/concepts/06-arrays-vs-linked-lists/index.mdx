@@ -54,7 +54,7 @@ Race the two front insertions, then switch either lane to the reads.
 
 <GrowthChart client:visible series={growthRead} caption="Operations to read the last of n items." />
 
-| Operation | Array (Python `list`) | Singly linked list |
+| Operation | Dynamic array | Singly linked list |
 |---|---|---|
 | Read or write item `k` | O(1) | O(k) |
 | Insert or delete at the front | O(n) | O(1) |
@@ -85,7 +85,7 @@ insert" only pays off if you **already hold the node**: finding the spot first i
   [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/) test whether you can rewire pointers without losing the
   chain.
 
-Otherwise, reach for an array (a Python `list`) by default.
+Otherwise, reach for a dynamic array by default: Python's `list`, Java's `ArrayList`, C++'s `vector` or a JavaScript array.
 
 ## Interview theory
 
@@ -106,9 +106,9 @@ the real head means every real node has a predecessor, so one piece of code hand
 `dummy.next` at the end.
 </QA>
 
-<QA q="Is a Python list an array or a linked list?">
-An array: a contiguous block of pointers to the objects. That's why `a[k]` is O(1) and `a.insert(0, x)` and
-`a.pop(0)` are O(n).
+<QA q="Is a Python list or a Java ArrayList an array or a linked list?">
+An array: a contiguous block of references to the objects. That's why reading `a[k]` is O(1), while inserting or
+removing at the front is O(n). (Java's `LinkedList` is the real linked list, and is rarely the faster choice.)
 </QA>
 
 ## Check yourself

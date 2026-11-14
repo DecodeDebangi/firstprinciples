@@ -13,12 +13,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const bubble: Approach<Input> = {
   id: "bubble",
   name: "Bubble each zero to the end",
-  code: `def move_zeroes(nums):
-    n = len(nums)
-    for i in range(n):
-        for j in range(n - 1 - i):
-            if nums[j] == 0 and nums[j + 1] != 0:
-                nums[j], nums[j + 1] = nums[j + 1], nums[j]
+  code: `function moveZeroes(nums)
+  n ← length(nums)
+  for i ← 0 to n - 1
+    for j ← 0 to n - 2 - i
+      if nums[j] = 0 and nums[j + 1] ≠ 0
+        swap nums[j] and nums[j + 1]
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -46,12 +46,12 @@ const bubble: Approach<Input> = {
 const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers: read and write",
-  code: `def move_zeroes(nums):
-    write = 0
-    for read in range(len(nums)):
-        if nums[read] != 0:
-            nums[write], nums[read] = nums[read], nums[write]
-            write += 1
+  code: `function moveZeroes(nums)
+  write ← 0
+  for read ← 0 to length(nums) - 1
+    if nums[read] ≠ 0
+      swap nums[write] and nums[read]
+      write += 1
 `,
   run({ nums }, t) {
     const a = [...nums];

@@ -14,7 +14,7 @@ import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
 
-You get the roots of two binary trees, `p` and `q`. Return `True` if they are identical: the same shape, with the
+You get the roots of two binary trees, `p` and `q`. Return `true` if they are identical: the same shape, with the
 same value at every position.
 
 `[6, 2, 9, 1, 4]` and `[6, 2, 9, 1, 5]` are not the same: they match everywhere except the last node.
@@ -71,7 +71,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 - **Serializing without null markers.** `[1, 2]` and `[1, null, 2]` both list as `1 2` without them.
 - **Comparing only values in order.** Two trees can have the same in-order values and different shapes.
-- **Checking `p.val == q.val` before checking for `None`.** That crashes when one side is missing.
+- **Checking `p.val = q.val` before checking for `none`.** That crashes when one side is missing.
 
 ## Related problems
 

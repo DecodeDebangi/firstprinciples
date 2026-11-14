@@ -41,8 +41,8 @@ animation, the left side and the right side are shaded in different colours arou
 **Time.** For each of the `n` candidates, the two sums together touch the other `n − 1` numbers. That's
 `n × (n − 1)` additions, about `n²`: **O(n²)**.
 
-**Space.** In Python, `nums[:i]` and `nums[i + 1:]` *copy* their part of the list, so up to `n` numbers sit in
-temporary lists: **O(n)**. Summing with index loops instead would make it O(1), but the time stays O(n²).
+**Space.** Taking `nums[0..i − 1]` and `nums[i + 1..end]` as slices *copies* them in most languages (Python's
+slicing, JavaScript's `slice`, Java's `copyOfRange`), so up to `n` numbers sit in temporary lists: **O(n)**. Summing with index loops instead would make it O(1), but the time stays O(n²).
 
 **What it wastes:** moving from index `i` to `i + 1` changes the left sum by exactly one number, yet it gets
 re-added from zero every time.

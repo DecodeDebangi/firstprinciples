@@ -14,12 +14,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const stack: Approach<Input> = {
   id: "stack",
   name: "Stack: last in, first out",
-  code: `stack = []
-for x in items:
-    stack.append(x)  # push onto the top
-out = []
-while stack:
-    out.append(stack.pop())  # take from the top
+  code: `stack ← empty stack
+for each x in items
+  stack.push(x)  // push onto the top
+out ← empty list
+while stack not empty
+  out.push(stack.pop())  // take from the top
 `,
   run({ nums }, t) {
     const s: number[] = [];
@@ -51,13 +51,13 @@ while stack:
 const queue: Approach<Input> = {
   id: "queue",
   name: "Queue: first in, first out",
-  code: `from collections import deque
-queue = deque()
-for x in items:
-    queue.append(x)  # join at the back
-out = []
-while queue:
-    out.append(queue.popleft())  # leave from the front
+  code: `// queue: join at back, leave from front
+queue ← empty queue
+for each x in items
+  queue.push(x)  // join at the back
+out ← empty list
+while queue not empty
+  out.push(queue.popFront())  // oldest first
 `,
   run({ nums }, t) {
     const q: number[] = [];
@@ -88,14 +88,14 @@ while queue:
 const monotonic: Approach<Input> = {
   id: "monotonic",
   name: "Monotonic stack: next greater element",
-  code: `def next_greater(nums):
-    answer = [-1] * len(nums)
-    stack = []  # indices; values decrease upward
-    for i, x in enumerate(nums):
-        while stack and nums[stack[-1]] < x:
-            answer[stack.pop()] = x
-        stack.append(i)
-    return answer
+  code: `function nextGreater(a)
+  answer ← array of length(a), all -1
+  stack ← empty stack  // values shrink upward
+  for each index i, value x in a
+    while stack not empty and a[stack.top()] < x
+      answer[stack.pop()] ← x
+    stack.push(i)
+  return answer
 `,
   run({ nums: a }, t) {
     const ans: number[] = Array(a.length).fill(-1);

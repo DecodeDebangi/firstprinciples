@@ -23,14 +23,14 @@ const smashAsk = (y: number, x: number) => ({
 const resort: Approach<Input> = {
   id: "sort",
   name: "Re-sort every round",
-  code: `def last_stone_weight(stones):
-    while len(stones) > 1:
-        stones.sort()  # heaviest at the end
-        y = stones.pop()  # heaviest
-        x = stones.pop()  # next heaviest
-        if y != x:
-            stones.append(y - x)
-    return stones[0] if stones else 0
+  code: `function lastStoneWeight(stones)
+  while length(stones) > 1
+    stones.sort()  // heaviest at the end
+    y ← stones.pop()  // heaviest
+    x ← stones.pop()  // next heaviest
+    if y ≠ x
+      stones.push(y - x)
+  return stones is empty ? 0 : stones[0]
 `,
   run({ stones }, t) {
     const a = [...stones];
@@ -59,16 +59,16 @@ const resort: Approach<Input> = {
 const heap: Approach<Input> = {
   id: "heap",
   name: "Max-heap",
-  code: `import heapq
-def last_stone_weight(stones):
-    heap = [-s for s in stones]  # negate: max-heap
-    heapq.heapify(heap)
-    while len(heap) > 1:
-        y = -heapq.heappop(heap)  # heaviest
-        x = -heapq.heappop(heap)  # next heaviest
-        if y != x:
-            heapq.heappush(heap, -(y - x))
-    return -heap[0] if heap else 0
+  code: `// heap: a max-heap, heaviest stone on top
+function lastStoneWeight(stones)
+  heap ← stones
+  arrange heap as a max-heap
+  while length(heap) > 1
+    y ← heap.popMax()  // heaviest
+    x ← heap.popMax()  // next heaviest
+    if y ≠ x
+      heap.push(y - x)
+  return heap is empty ? 0 : heap.max()
 `,
   run({ stones }, t) {
     type S = { id: string; val: number };
@@ -78,7 +78,7 @@ def last_stone_weight(stones):
     const view = (tones: Record<string, Tone> = {}): TreeData[] => [{ ...heapTree(H.items), tones }];
     const grid = (hl?: number) => ({ title: "the heap as an array", rows: [H.items.length ? H.items.map((s) => s.val) : ["—"]], colLabels: H.items.map((_, i) => i), tones: hl === undefined ? {} : { [`0,${hl}`]: "found" as Tone } });
     t.step({ line: 4, array: [], trees: view({ [H.items[0].id]: "found" }), grid: grid(0), vars: { stones: stones.length },
-      message: `Heapify: arrange the stones so every parent is at least as heavy as its children. The heaviest, ${H.peek()!.val}, is now at the top (index 0). Python's heapq is a min-heap, so the code stores negated weights; the tree shows the real ones.` });
+      message: `Heapify: arrange the stones so every parent is at least as heavy as its children. The heaviest, ${H.peek()!.val}, is now at the top (index 0).` });
     let round = 0;
     while (H.size > 1) {
       round++;

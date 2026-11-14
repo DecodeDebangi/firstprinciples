@@ -48,14 +48,14 @@ You rarely need maths. Four rules cover most code:
 3. **Constants and smaller terms drop out.** `3n + 7` is O(n); `n²/2 + n` is O(n²). Big-O is about the shape, not the exact count.
 4. **Halving each step gives a log.** If each step cuts the remaining work in half, there are about log₂ n steps.
 
-```python
-for x in nums:            # n times
-    for y in nums:        #   n times each
-        compare(x, y)     # → O(n²)
+```text
+for each x in nums                // n times
+    for each y in nums            //   n times each
+        compare(x, y)             // → O(n²)
 
-lo, hi = 0, n - 1
-while lo <= hi:           # range halves every loop
-    mid = (lo + hi) // 2  # → O(log n)
+lo, hi ← 0, n - 1
+while lo ≤ hi                     // range halves every loop
+    mid ← floor((lo + hi) / 2)    // → O(log n)
     ...
 ```
 
@@ -72,8 +72,8 @@ One algorithm can behave differently on different inputs of the same size. Quick
 O(n²) in its worst case; insertion sort is O(n) on nearly sorted input. Unless someone says otherwise, a plain
 "O(…)" usually means the **worst case**, the guarantee you can rely on.
 
-**Amortised** cost is a related idea. Appending to a Python list is occasionally slow (the list must grow and copy
-itself), but those copies are rare enough that each append averages out to O(1).
+**Amortised** cost is a related idea. Appending to a dynamic array (a Python list, a Java `ArrayList`) is occasionally slow (it must grow
+and copy itself), but those copies are rare enough that each append averages out to O(1).
 
 ## Interview theory
 

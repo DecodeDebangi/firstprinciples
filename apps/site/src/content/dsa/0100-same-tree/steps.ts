@@ -17,12 +17,12 @@ export function prepare(raw: Input): Prepared<Input> {
 const recursive: Approach<Input> = {
   id: "dfs",
   name: "Compare node by node",
-  code: `def is_same_tree(p, q):
-    if p is None and q is None:
-        return True
-    if p is None or q is None or p.val != q.val:
-        return False
-    return is_same_tree(p.left, q.left) and is_same_tree(p.right, q.right)
+  code: `function same(p, q)
+  if p = none and q = none
+    return true
+  if p = none or q = none or p.val ≠ q.val
+    return false
+  return same(p.left, q.left) and same(p.right, q.right)
 `,
   run({ p: pv, q: qv }, t) {
     const P = treeFromLevelOrder(pv), Q = treeFromLevelOrder(qv);
@@ -42,11 +42,11 @@ const recursive: Approach<Input> = {
       const na = a ? pb.get(a)! : null, nb = b ? qb.get(b)! : null;
       const same = !!na && !!nb && na.val === nb.val;
       const ask = { q: `p has ${na ? na.val : "nothing"}, q has ${nb ? nb.val : "nothing"} here. What happens?`,
-        options: ["They match: compare their children", "They differ: return False"], answer: same ? 0 : 1 };
+        options: ["They match: compare their children", "They differ: return false"], answer: same ? 0 : 1 };
       if (!same) {
         failed = true;
-        t.step({ ask, line: 5, array: [], trees: view(a ? { [a]: "miss" } : {}, b ? { [b]: "miss" } : {}), vars: { p: na?.val ?? "None", q: nb?.val ?? "None" }, done: "notfound",
-          message: !na || !nb ? `One tree has a node here and the other doesn't. Different shapes: return False.` : `${na.val} ≠ ${nb.val}. Return False.` });
+        t.step({ ask, line: 5, array: [], trees: view(a ? { [a]: "miss" } : {}, b ? { [b]: "miss" } : {}), vars: { p: na?.val ?? "none", q: nb?.val ?? "none" }, done: "notfound",
+          message: !na || !nb ? `One tree has a node here and the other doesn't. Different shapes: return false.` : `${na.val} ≠ ${nb.val}. Return false.` });
         return false;
       }
       tp[a!] = "settled"; tq[b!] = "settled";
@@ -63,17 +63,17 @@ const recursive: Approach<Input> = {
 const serialize: Approach<Input> = {
   id: "serialize",
   name: "Serialize both, compare",
-  code: `def is_same_tree(p, q):
-    def walk(node, out):
-        if node is None:
-            out.append("#")
-            return
-        out.append(str(node.val))
-        walk(node.left, out)
-        walk(node.right, out)
-    a, b = [], []
-    walk(p, a); walk(q, b)
-    return a == b
+  code: `function same(p, q)
+  function walk(node, out)
+    if node = none
+      out.push("#")
+      return
+    out.push(node.val)
+    walk(node.left, out)
+    walk(node.right, out)
+  a, b ← [], []
+  walk(p, a); walk(q, b)
+  return a = b
 `,
   run({ p: pv, q: qv }, t) {
     const P = treeFromLevelOrder(pv), Q = treeFromLevelOrder(qv);
@@ -93,16 +93,16 @@ const serialize: Approach<Input> = {
       message: "Write each tree out in full, with # for every missing child, then compare the two lists. Simple, but it always walks both trees to the end." });
     const a: string[] = [], b: string[] = [];
     walk(pb, P.root, a);
-    t.step({ line: 10, array: [], trees: trees(all(P.nodes)), grid: { title: "a = walk(p)", rows: [a] }, vars: { "len(a)": a.length }, message: `p written out: ${a.join(" ")}.` });
+    t.step({ line: 10, array: [], trees: trees(all(P.nodes)), grid: { title: "a = walk(p)", rows: [a] }, vars: { "length(a)": a.length }, message: `p written out: ${a.join(" ")}.` });
     walk(qb, Q.root, b);
-    t.step({ line: 10, array: [], trees: trees(all(P.nodes), all(Q.nodes)), grid: { title: "a = walk(p) · b = walk(q)", rows: [a, b] }, vars: { "len(a)": a.length, "len(b)": b.length },
+    t.step({ line: 10, array: [], trees: trees(all(P.nodes), all(Q.nodes)), grid: { title: "a = walk(p) · b = walk(q)", rows: [a, b] }, vars: { "length(a)": a.length, "length(b)": b.length },
       message: `q written out: ${b.join(" ")}.` });
     let k = 0;
     while (k < a.length && k < b.length && a[k] === b[k]) { t.op(); k++; }
     t.op();
     const same = a.length === b.length && k === a.length;
     const tones: Record<string, Tone> = same ? {} : { [`0,${k}`]: "miss", [`1,${k}`]: "miss" };
-    t.step({ line: 11, array: [], trees: trees(all(P.nodes), all(Q.nodes)), grid: { title: "a = walk(p) · b = walk(q)", rows: [a, b], tones }, vars: { "len(a)": a.length, "len(b)": b.length },
+    t.step({ line: 11, array: [], trees: trees(all(P.nodes), all(Q.nodes)), grid: { title: "a = walk(p) · b = walk(q)", rows: [a, b], tones }, vars: { "length(a)": a.length, "length(b)": b.length },
       done: same ? "found" : "notfound",
       message: same ? "The two lists are identical, so the trees are the same." : `The lists first differ at position ${k} ("${a[k] ?? "end"}" vs "${b[k] ?? "end"}"). Not the same, but we only learned that after writing out both trees.` });
   },

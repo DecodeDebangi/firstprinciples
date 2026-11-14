@@ -15,7 +15,7 @@ import Complexity from "../../../components/Complexity.astro";
 ## The problem
 
 You get a string `s`. Keep only its letters and digits, lower-case the letters, and check whether what's left
-reads the same forwards and backwards. Return `True` or `False`.
+reads the same forwards and backwards. Return `true` or `false`.
 
 `"Top spot!"` cleans to `"topspot"`, which is a palindrome. `"race a car"` cleans to `"raceacar"`, which isn't.
 
@@ -46,7 +46,7 @@ time: about `3n` steps, **O(n)**.
 ## Approach 2: Two pointers, in place (optimal)
 
 Put `i` at the start and `j` at the end. If either sits on a space or a punctuation mark, step past it. Otherwise
-compare the two characters, ignoring case: a mismatch means `False`, a match moves both inward. When the
+compare the two characters, ignoring case: a mismatch means `false`, a match moves both inward. When the
 pointers meet, every pair has matched.
 
 <Viz client:visible approach="pointers" />

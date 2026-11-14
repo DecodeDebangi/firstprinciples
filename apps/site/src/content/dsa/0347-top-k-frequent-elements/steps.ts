@@ -28,11 +28,11 @@ const outGrid = (out: number[]) => ({ title: "answer", rows: [out.length ? [...o
 const sortApproach: Approach<Input> = {
   id: "sort",
   name: "Count, then sort",
-  code: `from collections import Counter
-def top_k_frequent(nums, k):
-    count = Counter(nums)
-    by_freq = sorted(count, key=count.get, reverse=True)
-    return by_freq[:k]
+  code: `// count: value → how often it appears
+function topKFrequent(nums, k)
+  count ← how often each value appears in nums
+  byFreq ← values by count, highest first
+  return the first k of byFreq
 `,
   run({ nums, k }, t) {
     const count = new Map<number, number>();
@@ -56,16 +56,16 @@ def top_k_frequent(nums, k):
 const heapApproach: Approach<Input> = {
   id: "heap",
   name: "Count, then a heap of size k",
-  code: `import heapq
-from collections import Counter
-def top_k_frequent(nums, k):
-    count = Counter(nums)
-    heap = []  # (count, value): least frequent on top
-    for x, c in count.items():
-        heapq.heappush(heap, (c, x))
-        if len(heap) > k:
-            heapq.heappop(heap)
-    return [x for c, x in heap]
+  code: `// heap: a min-heap, smallest item on top
+// count: value → how often it appears
+function topKFrequent(nums, k)
+  count ← how often each value appears in nums
+  heap ← empty min-heap  // (count, value)
+  for each (x, c) in count
+    heap.push((c, x))
+    if length(heap) > k
+      heap.popMin()
+  return the value of every pair left in heap
 `,
   run({ nums, k }, t) {
     const count = countAll(nums, t);
@@ -100,18 +100,18 @@ def top_k_frequent(nums, k):
 const bucket: Approach<Input> = {
   id: "bucket",
   name: "Count, then buckets by frequency",
-  code: `from collections import Counter
-def top_k_frequent(nums, k):
-    count = Counter(nums)
-    buckets = [[] for _ in range(len(nums) + 1)]
-    for x, c in count.items():
-        buckets[c].append(x)  # index = how often
-    out = []
-    for c in range(len(nums), 0, -1):
-        for x in buckets[c]:
-            out.append(x)
-            if len(out) == k:
-                return out
+  code: `// count: value → how often it appears
+function topKFrequent(nums, k)
+  count ← how often each value appears in nums
+  buckets ← length(nums) + 1 empty lists
+  for each (x, c) in count
+    buckets[c].push(x)  // index = how often
+  out ← empty list
+  for c ← length(nums) down to 1
+    for each x in buckets[c]
+      out.push(x)
+      if length(out) = k
+        return out
 `,
   run({ nums, k }, t) {
     const count = countAll(nums, t);

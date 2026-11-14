@@ -3,7 +3,7 @@ title: Stacks vs queues, and the monotonic stack
 topic: Stack
 kind: Explainer
 order: 1
-summary: Last in first out vs first in first out, which problems need which, how to use them correctly in Python, and the monotonic stack trick that turns "look ahead from every position" from O(n²) into O(n).
+summary: Last in first out vs first in first out, which problems need which, how to use them in your language, and the monotonic stack trick that turns "look ahead from every position" from O(n²) into O(n).
 added: 2026-11-13
 ---
 import Viz from "./Viz.tsx";
@@ -36,16 +36,20 @@ Push the same items through both and watch the order they come out in.
 Recursion is a stack in disguise: every waiting function call sits on the **call stack**, and the most recent call
 finishes first. That's why any recursive depth-first search can be rewritten with an explicit stack.
 
-## Using them in Python
+## Using them in your language
 
-| Operation | Stack (`list`) | Queue (`collections.deque`) |
+Every operation below is O(1).
+
+| Language | Stack: add, remove, peek | Queue: add, remove, peek |
 |---|---|---|
-| Add | `s.append(x)`: O(1) | `q.append(x)`: O(1) |
-| Remove | `s.pop()`: O(1) | `q.popleft()`: O(1) |
-| Peek | `s[-1]` | `q[0]` |
+| Python | `list`: `append`, `pop()`, `s[-1]` | `collections.deque`: `append`, `popleft()`, `q[0]` |
+| Java | `ArrayDeque`: `push`, `pop()`, `peek()` | `ArrayDeque`: `offer`, `poll()`, `peek()` |
+| C++ | `std::stack`: `push`, `pop()`, `top()` | `std::queue`: `push`, `pop()`, `front()` |
+| JavaScript | array: `push`, `pop()`, `at(-1)` | no built-in queue: an array plus a "front" index |
 
-**Don't use a list as a queue.** `list.pop(0)` shifts every remaining element left: O(n) per removal, so a loop that
-empties a queue of n items becomes O(n²). `deque` removes from either end in O(1).
+**Don't dequeue from the front of a plain array.** Python's `list.pop(0)` and JavaScript's `shift()` move every
+remaining element left: O(n) per removal, so a loop that empties a queue of n items becomes O(n²). A real queue (or
+an array with a moving front index) removes from the front in O(1).
 
 ## The monotonic stack
 

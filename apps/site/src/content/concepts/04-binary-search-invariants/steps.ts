@@ -21,17 +21,17 @@ const outside = (n: number, lo: number, hi: number): Record<number, Tone> =>
 const closed: Approach<Input> = {
   id: "closed",
   name: "Closed interval [lo, hi]",
-  code: `def search(a, target):
-    lo, hi = 0, len(a) - 1  # candidates: a[lo..hi]
-    while lo <= hi:  # non-empty while lo <= hi
-        mid = (lo + hi) // 2
-        if a[mid] == target:
-            return mid
-        elif a[mid] < target:
-            lo = mid + 1  # mid is ruled out
-        else:
-            hi = mid - 1  # mid is ruled out
-    return -1
+  code: `function search(a, target)
+  lo, hi ← 0, length(a) - 1  // a[lo..hi]
+  while lo ≤ hi  // non-empty while lo ≤ hi
+    mid ← floor((lo + hi) / 2)
+    if a[mid] = target
+      return mid
+    else if a[mid] < target
+      lo ← mid + 1  // mid is ruled out
+    else
+      hi ← mid - 1  // mid is ruled out
+  return -1
 `,
   run({ nums: a, target }, t) {
     let lo = 0, hi = a.length - 1;
@@ -61,15 +61,15 @@ const closed: Approach<Input> = {
 const lowerBound: Approach<Input> = {
   id: "lower",
   name: "Half-open lower bound [lo, hi)",
-  code: `def lower_bound(a, target):
-    lo, hi = 0, len(a)  # answer is in [lo, hi)
-    while lo < hi:  # non-empty while lo < hi
-        mid = (lo + hi) // 2
-        if a[mid] < target:
-            lo = mid + 1  # answer is right of mid
-        else:
-            hi = mid  # mid might be the answer
-    return lo  # first index with a[i] >= target
+  code: `function lowerBound(a, target)
+  lo, hi ← 0, length(a)  // answer in [lo, hi)
+  while lo < hi  // non-empty while lo < hi
+    mid ← floor((lo + hi) / 2)
+    if a[mid] < target
+      lo ← mid + 1  // answer is right of mid
+    else
+      hi ← mid  // mid might be the answer
+  return lo  // first index with a[i] ≥ target
 `,
   run({ nums: a, target }, t) {
     let lo = 0, hi = a.length;
@@ -97,15 +97,15 @@ const lowerBound: Approach<Input> = {
 const buggy: Approach<Input> = {
   id: "buggy",
   name: "Spot the bug: lo = mid",
-  code: `def search(a, target):
-    lo, hi = 0, len(a) - 1
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if a[mid] < target:
-            lo = mid  # bug: mid was already checked
-        else:
-            hi = mid
-    return lo if a[lo] == target else -1
+  code: `function search(a, target)
+  lo, hi ← 0, length(a) - 1
+  while lo < hi
+    mid ← floor((lo + hi) / 2)
+    if a[mid] < target
+      lo ← mid  // bug: mid was checked
+    else
+      hi ← mid
+  return (a[lo] = target) ? lo : -1
 `,
   run({ nums: a, target }, t) {
     let lo = 0, hi = a.length - 1;

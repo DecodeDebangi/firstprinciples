@@ -17,13 +17,13 @@ const snap = (nodes: TreeNodeData[]) => nodes.map((n) => ({ ...n }));
 const recursive: Approach<Input> = {
   id: "dfs",
   name: "Recursive: swap, then recurse",
-  code: `def invert_tree(root):
-    if root is None:
-        return None
-    root.left, root.right = root.right, root.left
-    invert_tree(root.left)
-    invert_tree(root.right)
-    return root
+  code: `function invertTree(root)
+  if root = none
+    return none
+  swap root.left and root.right
+  invertTree(root.left)
+  invertTree(root.right)
+  return root
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -55,14 +55,14 @@ const recursive: Approach<Input> = {
 const bfs: Approach<Input> = {
   id: "bfs",
   name: "Iterative with a queue",
-  code: `def invert_tree(root):
-    queue = deque([root] if root else [])
-    while queue:
-        node = queue.popleft()
-        node.left, node.right = node.right, node.left
-        if node.left: queue.append(node.left)
-        if node.right: queue.append(node.right)
-    return root
+  code: `function invertTree(root)
+  queue ← root = none ? [] : queue of [root]
+  while queue not empty
+    node ← queue.popFront()
+    swap node.left and node.right
+    queue.push(node.left) if it exists
+    queue.push(node.right) if it exists
+  return root
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

@@ -71,7 +71,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 ## Common mistakes
 
 - **Storing temperatures instead of indices.** The answer is a distance, so the stack must hold days (indices).
-- **`<=` instead of `<`.** Only a strictly warmer day counts; an equal temperature keeps waiting.
+- **`≤` instead of `<`.** Only a strictly warmer day counts; an equal temperature keeps waiting.
 - **Thinking the nested loop makes it O(n²).** Count pushes and pops instead: each happens at most once per day.
 
 ## Related problems

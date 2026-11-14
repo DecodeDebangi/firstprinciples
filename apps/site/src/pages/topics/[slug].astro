@@ -36,7 +36,7 @@ const also = problems.filter((p) => homeTopic(p.data.topics) !== topic && practi
 const all = [...main, ...also].sort(order);
 const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
 ---
-<Base title={`${topic.name}: pattern and problems`} description={`${topic.name}: ${topic.blurb} When to use it, a Python template, and ${count(all.length)} explained step by step from brute force to optimal.`}>
+<Base title={`${topic.name}: pattern and problems`} description={`${topic.name}: ${topic.blurb} When to use it, a pseudocode template, and ${count(all.length)} explained step by step from brute force to optimal.`}>
   <article class="tp">
     <a class="back" href="/topics/">← All topics</a>
     <p class="eyebrow">Step {stepIndex + 1} · {step.title}</p>
@@ -70,7 +70,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
         </section>
         <section class="card">
           <h2>Template</h2>
-          <pre class="tpl"><code>{guide.template.replace(/ {2,}#/g, "  #")}</code></pre>
+          <pre class="tpl"><code>{guide.template.replace(/ {2,}\/\//g, "  //")}</code></pre>
         </section>
       </div>
     )}

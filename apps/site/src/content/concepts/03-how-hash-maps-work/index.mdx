@@ -17,7 +17,7 @@ A hash map is an **array**, plus a function that turns any key into an **index**
 means jumping to one position instead of searching.
 
 That function is the **hash function**. In Python, `hash(42)` is `42` and `hash("cat")` is some large number; the
-map takes it modulo the array's length to get a position: `index = hash(key) % len(array)`.
+map takes it modulo the array's length to get a position: `index = hash(key) % length(array)`.
 
 ## Why lookups are O(1)
 
@@ -78,9 +78,10 @@ extremely unlikely by accident. Java limits the damage by turning long chains in
 O(log n).
 </QA>
 
-<QA q="Why can't you use a Python list as a dictionary key?">
+<QA q="Why shouldn't a hash map key be something you can change, like a list?">
 A key's position depends on its hash. If the key could change after insertion, its hash would change and the map
-would look in the wrong place. Lists are mutable, so they're unhashable; use a tuple instead.
+would look in the wrong place. Python refuses outright (lists are unhashable; use a tuple). Java lets you do it, and
+the entry quietly becomes unfindable.
 </QA>
 
 <QA q="What is hash flooding?">

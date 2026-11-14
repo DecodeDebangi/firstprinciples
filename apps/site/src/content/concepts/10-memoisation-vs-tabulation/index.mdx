@@ -112,10 +112,10 @@ Number of states × work per state. Climbing stairs has n states and O(1) work e
 states and O(1) work is O(m·n). If each state loops over k options, multiply by k.
 </QA>
 
-<QA q="Why does Python's functools.cache work here?">
-`@functools.cache` (or `lru_cache`) memoises a function automatically: it stores the result for each set of
-arguments. Putting it on the plain recursive `ways` turns it into the top-down version. The arguments must be
-hashable.
+<QA q="Can a language memoise for you?">
+Some can. Python's `@functools.cache` stores the result for each set of arguments, so putting it on the plain
+recursive `ways` turns it into the top-down version (the arguments must be hashable). Java, C++ and JavaScript have
+nothing built in: you keep the map yourself, exactly as the memo version above does.
 </QA>
 
 ## Check yourself

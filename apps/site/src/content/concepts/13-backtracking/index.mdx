@@ -26,17 +26,17 @@ from the root is one partial answer. Backtracking is a depth-first walk of that 
 
 ## The template
 
-```python
-def backtrack(state):
-    if is_answer(state):
-        record(state)          # copy it!
+```text
+function backtrack(state)
+    if isAnswer(state)
+        record(copy(state))      // copy it!
         return
-    for choice in choices(state):
-        if not allowed(state, choice):
-            continue           # prune
-        make(state, choice)    # choose
-        backtrack(state)       # explore
-        unmake(state, choice)  # undo
+    for each choice in choices(state)
+        if not allowed(state, choice)
+            continue             // prune
+        make(state, choice)      // choose
+        backtrack(state)         // explore
+        unmake(state, choice)    // undo
 ```
 
 Every backtracking problem fills in the same four blanks: **what's a choice, when is it allowed, when is the answer
@@ -103,7 +103,7 @@ only at full length.
 
 <QA q="How do you avoid duplicate answers when the input has duplicates?">
 Sort the input. Then, in the loop, skip a value if it equals the previous one at the **same depth**
-(`if i > start and nums[i] == nums[i - 1]: continue`). Equal values can still be used at different depths.
+(`if i > start and nums[i] = nums[i - 1]: continue`). Equal values can still be used at different depths.
 </QA>
 
 <QA q="Is backtracking the same as DFS?">

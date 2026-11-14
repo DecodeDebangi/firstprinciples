@@ -63,7 +63,7 @@ Both perform exactly one swap per node, so there's no growth chart: the two line
 
 ## Common mistakes
 
-- **Swapping one side at a time.** `root.left = invert(root.right)` followed by `root.right = invert(root.left)` uses the *new* left. Swap both at once, or save one first.
+- **Swapping one side at a time.** `root.left ← invert(root.right)` followed by `root.right ← invert(root.left)` uses the *new* left. Swap both at once, or save one first.
 - **Swapping values instead of children.** Only the shape changes; each node keeps its own value.
 - **Forgetting to return the root.** The problem expects the (same) root back.
 

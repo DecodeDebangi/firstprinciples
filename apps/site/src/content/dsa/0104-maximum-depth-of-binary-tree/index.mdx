@@ -70,7 +70,7 @@ difference is memory, and it depends on the tree's shape.
 
 - **Returning 1 for an empty tree.** No nodes means depth 0.
 - **Counting edges instead of nodes.** This problem counts nodes on the path: a single node has depth 1.
-- **Forgetting the tree can be a chain.** On a 10,000-node chain, recursion can hit Python's recursion limit; BFS can't.
+- **Forgetting the tree can be a chain.** On a 10,000-node chain, recursion can run out of call stack (Python stops at 1,000 calls by default); BFS can't.
 
 ## Related problems
 

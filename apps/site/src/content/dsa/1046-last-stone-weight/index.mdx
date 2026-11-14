@@ -40,10 +40,10 @@ Sort the pile, take the last two, push the remainder back, repeat.
 
 <Complexity time="O(n² log n)" space="O(1) extra">
 **Time.** Each round removes at least one stone, so there are at most `n − 1` rounds, and each one sorts up to `n`
-stones: O(n log n). Together: **O(n² log n)**. (Python's sort is fast on an almost-sorted list, but you can't rely
-on that in an interview.)
+stones: O(n log n). Together: **O(n² log n)**. (Some library sorts, like Timsort in Python and Java, are fast on an almost-sorted
+list, but you can't rely on that in an interview.)
 
-**Space.** Sorting in place: **O(1) extra** beyond Python's sort buffer.
+**Space.** Sorting in place: **O(1) extra**, beyond whatever buffer the sort itself uses.
 
 **What it wastes:** after one round, the pile is still almost sorted, yet the whole thing is sorted again from scratch.
 </Complexity>
@@ -54,8 +54,9 @@ A **max-heap** keeps the heaviest stone at the top and only partly orders the re
 as its children. That's just enough order to pop the heaviest and repair the heap in O(log n). The tree and the array
 below are the same heap: item `i`'s children sit at `2i + 1` and `2i + 2`.
 
-Python's `heapq` only offers a **min-heap**, so the standard trick is to store negated weights: the most negative
-number is the heaviest stone.
+In your language: C++'s `priority_queue` is a max-heap already, Java's `PriorityQueue` becomes one with
+`Collections.reverseOrder()`, and Python's `heapq` is min-only, so there you store negated weights (the most negative
+number is the heaviest stone).
 
 <Viz client:visible approach="heap" />
 

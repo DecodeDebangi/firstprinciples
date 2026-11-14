@@ -44,17 +44,17 @@ function setup({ n, edges }: Input) {
 const bfs: Approach<Input> = {
   id: "bfs",
   name: "BFS: distances, level by level",
-  code: `from collections import deque
-def distances(graph, start):
-    dist = {start: 0}
-    queue = deque([start])
-    while queue:
-        node = queue.popleft()
-        for nxt in graph[node]:
-            if nxt not in dist:  # first time seen
-                dist[nxt] = dist[node] + 1
-                queue.append(nxt)
-    return dist
+  code: `// queue: join at back, leave from front
+function distances(graph, start)
+  dist ← map {start: 0}
+  queue ← queue of [start]
+  while queue not empty
+    node ← queue.popFront()
+    for each nxt in graph[node]
+      if nxt not in dist  // first time seen
+        dist[nxt] ← dist[node] + 1
+        queue.push(nxt)
+  return dist
 `,
   run(input, t) {
     const s = input.source;
@@ -96,16 +96,16 @@ def distances(graph, start):
 const dfs: Approach<Input> = {
   id: "dfs",
   name: "DFS: go deep, then back up",
-  code: `def explore(graph, start):
-    seen, order = set(), []
-    def dfs(node):
-        seen.add(node)
-        order.append(node)
-        for nxt in graph[node]:
-            if nxt not in seen:
-                dfs(nxt)  # go deeper first
-    dfs(start)
-    return order
+  code: `function explore(graph, start)
+  seen, order ← empty set, []
+  function dfs(node)
+    seen.add(node)
+    order.push(node)
+    for each nxt in graph[node]
+      if nxt not in seen
+        dfs(nxt)  // go deeper first
+  dfs(start)
+  return order
 `,
   run(input, t) {
     const s = input.source;
@@ -146,10 +146,10 @@ const dfs: Approach<Input> = {
 const noSeen: Approach<Input> = {
   id: "no-seen",
   name: "The bug: DFS with no visited set",
-  code: `def dfs(node):  # BUG: nothing remembers visits
-    print(node)
-    for nxt in graph[node]:
-        dfs(nxt)
+  code: `function dfs(node)  // BUG: forgets visits
+  visit(node)
+  for each nxt in graph[node]
+    dfs(nxt)
 `,
   run(input, t) {
     const s = input.source;
@@ -180,7 +180,7 @@ const noSeen: Approach<Input> = {
     };
     const stopped = go(s);
     t.step({ line: 4, array: [], graphs: G.draw(tones(), notes(), {}), ...panel(), vars: { calls }, done: stopped ? "notfound" : "found",
-      message: stopped ? `Cut off after ${LIMIT} calls, and it would never stop: Python would give up with a RecursionError. A set of seen nodes is what makes graph search finish.` : "This graph has no edges to bounce along, so it happened to finish. Any edge at all would make it loop." });
+      message: stopped ? `Cut off after ${LIMIT} calls, and it would never stop: a real program would crash when the call stack overflows. A set of seen nodes is what makes graph search finish.` : "This graph has no edges to bounce along, so it happened to finish. Any edge at all would make it loop." });
   },
 };
 

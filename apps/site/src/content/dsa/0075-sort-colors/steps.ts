@@ -14,15 +14,15 @@ export function prepare(raw: Input): Prepared<Input> {
 const counting: Approach<Input> = {
   id: "count",
   name: "Count, then overwrite",
-  code: `def sort_colors(nums):
-    count = [0, 0, 0]
-    for x in nums:
-        count[x] += 1
-    i = 0
-    for color in range(3):
-        for _ in range(count[color]):
-            nums[i] = color
-            i += 1
+  code: `function sortColors(nums)
+  count ← [0, 0, 0]
+  for each x in nums
+    count[x] += 1
+  i ← 0
+  for color ← 0 to 2
+    repeat count[color] times
+      nums[i] ← color
+      i += 1
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -52,18 +52,18 @@ const counting: Approach<Input> = {
 const dutchFlag: Approach<Input> = {
   id: "flag",
   name: "Dutch national flag (one pass)",
-  code: `def sort_colors(nums):
-    lo, mid, hi = 0, 0, len(nums) - 1
-    while mid <= hi:
-        if nums[mid] == 0:
-            nums[lo], nums[mid] = nums[mid], nums[lo]
-            lo += 1
-            mid += 1
-        elif nums[mid] == 1:
-            mid += 1
-        else:
-            nums[mid], nums[hi] = nums[hi], nums[mid]
-            hi -= 1
+  code: `function sortColors(nums)
+  lo, mid, hi ← 0, 0, length(nums) - 1
+  while mid ≤ hi
+    if nums[mid] = 0
+      swap nums[lo] and nums[mid]
+      lo += 1
+      mid += 1
+    else if nums[mid] = 1
+      mid += 1
+    else
+      swap nums[mid] and nums[hi]
+      hi -= 1
 `,
   run({ nums }, t) {
     const a = [...nums];

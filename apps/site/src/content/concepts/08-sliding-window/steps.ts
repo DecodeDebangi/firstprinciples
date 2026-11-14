@@ -24,15 +24,15 @@ const inWindow = (lo: number): Record<number, Tone> => Object.fromEntries(Array.
 const recompute: Approach<Input> = {
   id: "recompute",
   name: "Recompute every window",
-  code: `def max_window_sum(a, k):
-    best = None
-    for i in range(len(a) - k + 1):
-        s = 0
-        for j in range(i, i + k):
-            s += a[j]  # add it again
-        if best is None or s > best:
-            best = s
-    return best
+  code: `function maxWindowSum(a, k)
+  best ← none
+  for i ← 0 to length(a) - k
+    s ← 0
+    for j ← i to i + k - 1
+      s += a[j]  // add it again
+    if best = none or s > best
+      best ← s
+  return best
 `,
   run({ nums: a, k }, t) {
     let best: number | null = null;
@@ -58,13 +58,13 @@ const recompute: Approach<Input> = {
 const slide: Approach<Input> = {
   id: "slide",
   name: "Fixed window: add one, drop one",
-  code: `def max_window_sum(a, k):
-    s = sum(a[:k])  # the first window
-    best = s
-    for r in range(k, len(a)):
-        s += a[r] - a[r - k]  # in, out
-        best = max(best, s)
-    return best
+  code: `function maxWindowSum(a, k)
+  s ← sum(a[0..k - 1])  // the first window
+  best ← s
+  for r ← k to length(a) - 1
+    s += a[r] - a[r - k]  // in, out
+    best ← max(best, s)
+  return best
 `,
   run({ nums: a, k }, t) {
     let s = 0;
@@ -92,16 +92,16 @@ const slide: Approach<Input> = {
 const grow: Approach<Input> = {
   id: "grow-shrink",
   name: "Variable window: grow, then shrink",
-  code: `def shortest_window(a, target):  # a[i] > 0
-    best = float("inf")
-    lo = s = 0
-    for hi, x in enumerate(a):
-        s += x  # grow right
-        while s >= target:
-            best = min(best, hi - lo + 1)
-            s -= a[lo]  # shrink left
-            lo += 1
-    return 0 if best == float("inf") else best
+  code: `function shortestWindow(a, target)  // a > 0
+  best ← ∞
+  lo ← 0, s ← 0
+  for each index hi, value x in a
+    s += x  // grow right
+    while s ≥ target
+      best ← min(best, hi - lo + 1)
+      s -= a[lo]  // shrink left
+      lo += 1
+  if best = ∞ then return 0 else return best
 `,
   run({ nums: a, target }, t) {
     let lo = 0, s = 0, best = Infinity;

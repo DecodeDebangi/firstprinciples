@@ -17,20 +17,20 @@ export function prepare(raw: Input): Prepared<Input> {
 const sortCompare: Approach<Input> = {
   id: "sort",
   name: "Sort both, compare",
-  code: `def is_anagram(s, t):
-    if len(s) != len(t):
-        return False
-    a, b = sorted(s), sorted(t)
-    for x, y in zip(a, b):
-        if x != y:
-            return False
-    return True
+  code: `function isAnagram(s, t)
+  if length(s) ≠ length(t)
+    return false
+  a, b ← sorted(s), sorted(t)
+  for i ← 0 to length(a) - 1
+    if a[i] ≠ b[i]
+      return false
+  return true
 `,
   run({ s, t: w }, t) {
     t.op();
     if (s.length !== w.length) {
-      t.step({ line: 3, array: [...s], vars: { "len(s)": s.length, "len(t)": w.length }, done: "notfound",
-        message: `Different lengths (${s.length} and ${w.length}) can't be anagrams. Return False.` });
+      t.step({ line: 3, array: [...s], vars: { "length(s)": s.length, "length(t)": w.length }, done: "notfound",
+        message: `Different lengths (${s.length} and ${w.length}) can't be anagrams. Return false.` });
       return;
     }
     const n = s.length;
@@ -43,37 +43,37 @@ const sortCompare: Approach<Input> = {
       t.op();
       if (a[i] !== b[i]) {
         t.step({ line: 7, array: a, labels, pointers: { i }, tones: { [i]: "miss" }, badge: { at: i, text: `${a[i]} ≠ ${b[i]}` },
-          vars: { a: a.join(""), b: b.join("") }, done: "notfound", message: `Position ${i}: "${a[i]}" vs "${b[i]}". The letters differ. Return False.` });
+          vars: { a: a.join(""), b: b.join("") }, done: "notfound", message: `Position ${i}: "${a[i]}" vs "${b[i]}". The letters differ. Return false.` });
         return;
       }
       t.step({ line: 6, array: a, labels, pointers: { i }, tones: { [i]: "compare" }, badge: { at: i, text: `${a[i]} = ${b[i]}` },
         vars: { a: a.join(""), b: b.join("") }, message: `"${a[i]}" matches. Next.` });
     }
     t.step({ line: 8, array: a, labels, tones: Object.fromEntries(a.map((_, k) => [k, "settled" as const])), vars: { a: a.join(""), b: b.join("") },
-      done: "found", message: "Every position matches. Return True." });
+      done: "found", message: "Every position matches. Return true." });
   },
 };
 
 const counting: Approach<Input> = {
   id: "count",
   name: "Count letters",
-  code: `def is_anagram(s, t):
-    if len(s) != len(t):
-        return False
-    count = {}
-    for ch in s:
-        count[ch] = count.get(ch, 0) + 1
-    for ch in t:
-        count[ch] = count.get(ch, 0) - 1
-        if count[ch] < 0:
-            return False
-    return True
+  code: `function isAnagram(s, t)
+  if length(s) ≠ length(t)
+    return false
+  count ← empty map
+  for each ch in s
+    count[ch] ← (count[ch] or 0) + 1
+  for each ch in t
+    count[ch] ← (count[ch] or 0) - 1
+    if count[ch] < 0
+      return false
+  return true
 `,
   run({ s, t: w }, t) {
     t.op();
     if (s.length !== w.length) {
-      t.step({ line: 3, array: [...s], vars: { "len(s)": s.length, "len(t)": w.length }, done: "notfound",
-        message: `Different lengths (${s.length} and ${w.length}) can't be anagrams. Return False.` });
+      t.step({ line: 3, array: [...s], vars: { "length(s)": s.length, "length(t)": w.length }, done: "notfound",
+        message: `Different lengths (${s.length} and ${w.length}) can't be anagrams. Return false.` });
       return;
     }
     const count = new Map<string, number>();
@@ -92,18 +92,18 @@ const counting: Approach<Input> = {
       const next = (count.get(ch) ?? 0) - 1;
       count.set(ch, next);
       const ask = { q: `t[${i}] = "${ch}". After subtracting 1, its count is ${next}. What happens?`,
-        options: ["Below zero: t has an extra one, return False", "Still zero or more: keep going"], answer: next < 0 ? 0 : 1 };
+        options: ["Below zero: t has an extra one, return false", "Still zero or more: keep going"], answer: next < 0 ? 0 : 1 };
       const base = { array: [...w], labels: [...w].map((_, k) => `t[${k}]`), pointers: { i }, vars: { phase: "cancel with t" } };
       if (next < 0) {
         t.step({ ...base, ask, line: 10, tones: { [i]: "miss" }, badge: { at: i, text: `${ch}: ${next}` }, map: map(ch), done: "notfound",
-          message: `t has more "${ch}"s than s. Return False.` });
+          message: `t has more "${ch}"s than s. Return false.` });
         return;
       }
       t.step({ ...base, ask, line: 8, tones: { [i]: "compare" }, badge: { at: i, text: `${ch}: ${next}` }, map: map(ch),
         message: `Cancel one "${ch}": ${next} left.` });
     }
     t.step({ line: 11, array: [...w], labels: [...w].map((_, k) => `t[${k}]`), tones: Object.fromEntries([...w].map((_, k) => [k, "settled" as const])), map: map(),
-      vars: { phase: "done" }, done: "found", message: "Every count cancelled to zero without going negative. Return True." });
+      vars: { phase: "done" }, done: "found", message: "Every count cancelled to zero without going negative. Return true." });
   },
 };
 

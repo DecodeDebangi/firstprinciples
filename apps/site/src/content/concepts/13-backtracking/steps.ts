@@ -36,20 +36,20 @@ const resultGrid = (r: number[][], fresh = false) => ({ title: `answers (${r.len
 const explore: Approach<Input> = {
   id: "explore",
   name: "Choose, explore, undo (no pruning)",
-  code: `def combination_sum(c, target):
-    result, path = [], []
-    def backtrack(start, rem):
-        if rem == 0:
-            result.append(path[:])  # exact: an answer
-            return
-        if rem < 0:
-            return  # overshot: dead end
-        for i in range(start, len(c)):
-            path.append(c[i])  # choose
-            backtrack(i, rem - c[i])  # i again: reuse ok
-            path.pop()  # undo
-    backtrack(0, target)
-    return result
+  code: `function combinationSum(c, target)
+  result, path ← [], []
+  function backtrack(start, rem)
+    if rem = 0
+      result.push(copy(path))  // an answer
+      return
+    if rem < 0
+      return  // overshot: dead end
+    for i ← start to length(c) - 1
+      path.push(c[i])  // choose
+      backtrack(i, rem - c[i])  // reuse is ok
+      path.pop()  // undo
+  backtrack(0, target)
+  return result
 `,
   run({ candidates: c, target }, t) {
     const tree = new CallTree();
@@ -91,21 +91,21 @@ const explore: Approach<Input> = {
 const prune: Approach<Input> = {
   id: "prune",
   name: "Sort, then prune early",
-  code: `def combination_sum(c, target):
-    c.sort()  # small to large
-    result, path = [], []
-    def backtrack(start, rem):
-        if rem == 0:
-            result.append(path[:])
-            return
-        for i in range(start, len(c)):
-            if c[i] > rem:
-                break  # this and all later are too big
-            path.append(c[i])
-            backtrack(i, rem - c[i])
-            path.pop()
-    backtrack(0, target)
-    return result
+  code: `function combinationSum(c, target)
+  c.sort()  // small to large
+  result, path ← [], []
+  function backtrack(start, rem)
+    if rem = 0
+      result.push(copy(path))
+      return
+    for i ← start to length(c) - 1
+      if c[i] > rem
+        break  // the rest are bigger still
+      path.push(c[i])
+      backtrack(i, rem - c[i])
+      path.pop()
+  backtrack(0, target)
+  return result
 `,
   run({ candidates, target }, t) {
     const c = [...candidates].sort((a, b) => a - b);
