@@ -1,0 +1,75 @@
+---
+title: "The dummy head: one trick that removes the special cases"
+topic: Linked lists
+kind: Explainer
+order: 4
+summary: Most linked-list bugs hide in the head, because it's the one node with nothing before it. Put a fake node in front, and inserting or deleting at the head becomes the same as anywhere else.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Why the head is awkward
+
+To delete a node, you rewire the node *before* it. To insert, you rewire the node before the gap. Every node has a
+node before it, except one: the **head**. So code that changes a list usually needs an extra `if` just for the
+head, and that extra branch is where bugs live.
+
+Here's a task that hits the problem hard: remove every copy of a value, when the first few nodes might all be that
+value. Without help, it takes two loops: one that keeps moving `head` forward, then one for the rest.
+
+<Viz client:visible approach="noDummy" />
+
+## The trick: a fake first node
+
+Make a new node, the **dummy** (also called a *sentinel*), and point it at the real head. Its value never matters
+and it's never part of the answer. But now the real head has a node before it, just like everyone else, so one
+loop handles every node the same way. At the end, the real list starts at `dummy.next`.
+
+<Viz client:visible approach="withDummy" />
+
+Compare the two code panels: the first loop of the first version is simply gone.
+
+## The pattern
+
+Whenever you build or change a list and the head might change, start like this:
+
+```text
+dummy ← new ListNode(0)
+dummy.next ← head
+... work with nodes, starting from dummy ...
+return dummy.next
+```
+
+It costs one extra node, O(1) space, and saves a whole class of bugs. You'll see it in:
+
+- **Removing nodes**, as above, when the head itself might go.
+- **Building a new list** node by node, as in [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/): keep a
+  `tail` pointer starting at the dummy, attach each node to `tail`, and there's no "is this the first node?" check.
+- **Inserting into a sorted list**, when the new value might belong before the head.
+
+## Common mistakes
+
+- **Returning `dummy` instead of `dummy.next`.** The dummy is scaffolding; the answer starts after it.
+- **Forgetting that `curr` starts on the dummy.** The loop checks `curr.next`, the node *ahead*. That's what lets it
+  rewire the node before a match.
+- **Moving `curr` after a removal.** After `curr.next ← curr.next.next`, the new `curr.next` hasn't been checked
+  yet (it could be another match), so stay put. Only move forward when you keep a node.
+
+## Interview theory
+
+<QA q="Is the dummy node ever part of the output?">
+No. It exists only so the real head has a node before it. Always return `dummy.next`. Its value can be anything,
+because nothing ever reads it.
+</QA>
+
+<QA q="Does a dummy head change the complexity?">
+No. It adds one node, which is O(1) extra space, and the time is unchanged. It only changes how simple and
+bug-free the code is.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

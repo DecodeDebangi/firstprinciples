@@ -1,0 +1,92 @@
+---
+title: "Inserting and deleting: rewiring pointers in the right order"
+topic: Linked lists
+kind: Explainer
+order: 3
+summary: Adding or removing a node is just a couple of pointer changes, with nothing to shift. Insert at the head and after any node, delete a value, and see exactly how doing the steps in the wrong order loses the rest of the list.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Nothing moves, only arrows change
+
+To insert into the middle of an array, every value after the gap has to shift along. A linked list never shifts
+anything. Its nodes stay exactly where they are in memory; you only change which node points to which. That's
+why inserting and deleting are **O(1)** once you're holding the right node.
+
+The catch is that "once you're holding the right node". Getting to it still means walking from the head, which is
+O(n). And the pointer changes have to happen **in the right order**, or part of the list falls off.
+
+In the animations below, an arrow that arcs over the top is a `next` pointer that skips past its neighbour.
+It shows the in-between moment when two nodes point at the same place.
+
+## Inserting at the head
+
+The easiest case. Make a new node, point it at the current head, and it *is* the new head:
+
+<Viz client:visible approach="insertHead" />
+
+Two lines, however long the list is. This is the one thing a linked list does far better than an array.
+
+## Inserting after a node
+
+Say you're holding node `8` and want `7` right after it. Two pointers have to change: `7` must point at what came
+after `8`, and `8` must point at `7`. **Attach the new node to the rest of the list first**, then link it in:
+
+<Viz client:visible approach="insertAfter" />
+
+## The same insert, in the wrong order
+
+Swap the two lines and watch what happens. As soon as `8` points at `7`, nothing points at the old rest of the
+list any more, and there's no way to get it back:
+
+<Viz client:visible approach="insertWrong" />
+
+The rule that prevents it: **before you change a node's `next`, make sure something else still points at what it
+pointed to.** Either save it in a variable first (`rest ← node.next`), or attach the new node to it first, as above.
+
+## Deleting a value
+
+To remove a node, make the node *before* it point past it. That's why the walk uses `prev` and always looks one
+node ahead at `prev.next`: by the time you find the value, you're standing on the node you need to rewire.
+
+<Viz client:visible approach="remove" />
+
+Deleting the head is the awkward case: there's no node before it, so it needs its own `if`. The next read, on the
+**dummy head**, makes that special case disappear.
+
+## Inserting at the tail
+
+To add at the end, you need the last node. With only a head pointer, that means walking the whole list first:
+O(n). Many implementations also keep a **tail** pointer to the last node, which makes adding at the end O(1):
+
+```text
+tail.next ← added
+tail ← added
+```
+
+The price is one more pointer to keep correct: every operation that changes the last node must update `tail` too.
+
+## Interview theory
+
+<QA q="Why is deleting a node O(1) but deleting a value O(n)?">
+Unlinking is one pointer change, as long as you hold the node *before* it. Finding that node means walking from the
+head, which is O(n). So "delete this value" costs O(n) overall; only the rewiring itself is O(1).
+</QA>
+
+<QA q="Can you delete a node when you're only given that node, not the one before it?">
+Not directly, because you can't reach the previous node. The trick: copy the next node's value into this one, then
+delete the next node instead. It doesn't work for the tail, since there's no next node to copy.
+</QA>
+
+<QA q="What happens to the removed node?">
+Nothing points at it any more, so in languages with a garbage collector (Python, Java, JavaScript) its memory is
+freed automatically. In C or C++ you free it yourself, after rewiring, or the memory leaks.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

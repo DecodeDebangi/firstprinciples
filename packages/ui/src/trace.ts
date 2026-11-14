@@ -18,6 +18,12 @@ export interface ListRow {
   arrows: ("right" | "left" | "both" | null)[];
   pointers?: Record<string, string | null>;
   tones?: Record<string, Tone>;
+  /**
+   * `next` links that jump past neighbours, drawn as an arc over the row: `{ from, to }` are node ids. Use them for
+   * the moments a plain row can't show, like 8 → 5 while a new node 7 already sits between them, or a node about
+   * to be unlinked. Leave the matching entry in `arrows` null.
+   */
+  skips?: { from: string; to: string; tone?: "miss" }[];
   /** Small rows with no lift and no empty pointer rail, for many short lists (e.g. hash-table buckets). */
   compact?: boolean;
 }

@@ -1,0 +1,99 @@
+---
+title: "Nodes and pointers: what a linked list is"
+topic: Linked lists
+kind: Explainer
+order: 1
+summary: A linked list is a chain of nodes, each holding a value and a pointer to the next. Meet the head, the tail and none, see how LeetCode hands you a list, and walk one node at a time to count and search.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A chain of nodes
+
+An array keeps its values side by side in one block. A **linked list** keeps each value in its own little box,
+called a **node**, and the nodes can sit anywhere in memory. What holds them together is that every node also
+stores a **pointer**: the address of the node that comes after it.
+
+Each node has two parts:
+
+- **val**: the value it holds, like `8`.
+- **next**: a pointer to the following node. The last node's `next` is `none`, which means "the chain ends here".
+
+The first node is called the **head**, and the last one (the one pointing to `none`) is the **tail**. The head is
+the only way in: if you lose your pointer to it, the whole list is lost with it.
+
+```text
+head
+ ↓
+[3] → [8] → [5] → [1] → none
+```
+
+## How LeetCode hands you a list
+
+Linked-list problems give you the head node. The node type looks like this in pseudocode:
+
+```text
+class ListNode
+    val    // the value
+    next   // the next node, or none
+```
+
+When a problem shows the input as `head = [3, 8, 5, 1]`, that's only how the list is *written down*. Your function
+receives the first node, `3`, and finds the others by following `next` pointers. You never get an array.
+
+## Walking a list
+
+Almost every linked-list algorithm starts with the same move: put a pointer `curr` on the head, do something with
+it, then step forward with `curr ← curr.next`, until `curr` becomes `none`. This is called **traversing** the list.
+Here it counts the nodes:
+
+<Viz client:visible approach="walk" />
+
+Notice there's no way to know the length without walking the whole chain. The list doesn't store its size
+anywhere; it's just nodes pointing at nodes.
+
+## Finding a value
+
+Searching works the same way: walk and compare. Stop as soon as you find it, or report `none` if you reach the end.
+
+<Viz client:visible approach="find" />
+
+## No jumping to the middle
+
+In an array, `a[3]` jumps straight to position 3 because the positions are evenly spaced in memory. A linked
+list can't do that: node 3 could be anywhere, and the only clue to where it is sits inside node 2. So reaching
+the k-th node means following k pointers, one after another: **O(k)**, and **O(n)** for the last one.
+
+That's the trade a linked list makes. Reading by position is slow, but adding or removing a node is just a couple
+of pointer changes, with nothing to shift. The next reads show both sides.
+
+| | Array | Linked list |
+|---|---|---|
+| Read item k | O(1): jump straight there | O(k): follow k pointers |
+| Find a value | O(n) | O(n) |
+| Add or remove at the front | O(n): everything shifts | O(1): change one pointer |
+| Know the length | O(1): stored | O(n): count the nodes (unless you store it yourself) |
+
+## Interview theory
+
+<QA q="Why do linked-list problems give you the head and not the whole list?">
+Because the head *is* the whole list: from it, every other node is reachable by following `next`. A linked list has
+no separate object holding all the nodes, the way an array is one block.
+</QA>
+
+<QA q="How do you know you've reached the end?">
+The tail's `next` is `none`. A loop like `while curr ≠ none` stops right after the tail. Forgetting this check and
+reading `curr.next` when `curr` is already `none` is the most common linked-list crash.
+</QA>
+
+<QA q="Does a linked list use more memory than an array?">
+Yes. Every node stores a pointer as well as its value, and each node is a separate allocation with its own overhead.
+For small values like integers, the pointer can take as much space as the value itself.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
