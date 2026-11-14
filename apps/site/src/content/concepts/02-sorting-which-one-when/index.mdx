@@ -18,11 +18,11 @@ There's no single best sort. The right one depends on the data and on what you n
 
 | Situation | Reach for | Why |
 |---|---|---|
-| General purpose, in real code | Your language's built-in sort | Tuned hybrids (Timsort, introsort) beat anything hand-written |
+| General purpose, in real code | Your language's built-in sort | It mixes several sorts and is tuned to beat anything hand-written |
 | Must keep equal items in their original order | **Merge sort** (or Timsort) | It's stable |
 | Data is nearly sorted already | **Insertion sort** | Close to O(n) when items are only slightly out of place |
 | Memory is tight, worst case must stay O(n log n) | **Heapsort** | In place, never degrades |
-| Fastest on average for random data in memory | **Quicksort** | Small constants, cache-friendly, in place |
+| Fastest on average for random data in memory | **Quicksort** | Very little work per step, and in place |
 | Integers in a small range (ages, grades, 0–2) | **Counting sort** | O(n + k), no comparisons at all |
 | A tiny list (a dozen items or fewer) | **Insertion sort** | Simple, with almost no overhead |
 
@@ -31,9 +31,12 @@ The rest of this page shows *why* each row is true.
 ## Four properties that separate them
 
 - **Time**, especially how it changes with the input's shape: random, nearly sorted, reversed, many duplicates.
-- **Extra memory.** *In place* means O(1) extra (or O(log n) for recursion). Merge sort needs O(n).
+- **Extra memory.** A sort that works *in place* rearranges the list itself and needs almost no extra memory.
+  Merge sort needs a second list as long as the first: O(n).
 - **Stability.** A *stable* sort keeps equal items in their original order. Sort people by age with a stable sort and those of the same age stay in the order they arrived, which matters when you sort by one key and then another.
-- **Comparison or not.** Any sort that only compares items needs at least about `n log₂ n` comparisons in the worst case. Counting sort escapes that limit by never comparing, but only for small integer ranges.
+- **Comparison or not.** A sort that only ever compares two items at a time can't do better than about
+  `n log₂ n` comparisons in the worst case; that's been proven. Counting sort gets around the limit by never
+  comparing at all, but it only works for whole numbers in a small range.
 
 ## Meet the sorts
 
@@ -48,8 +51,8 @@ it does about `n²/2` comparisons on most inputs. It stops early on sorted input
 
 ### Selection sort
 
-Find the smallest remaining value and swap it into place. Always about `n²/2` comparisons, even on sorted input, but
-at most `n − 1` swaps, which helps only when writes are very expensive.
+Find the smallest value that's left and swap it into place. It always makes about `n²/2` comparisons, even on a list
+that's already sorted. Its one strength: at most `n − 1` swaps, which only matters when writing to memory is slow.
 
 <Viz client:visible approach="selection" />
 
@@ -70,9 +73,10 @@ memory for merging.
 
 ### Quicksort
 
-Pick a pivot, move smaller values to its left, recurse on both sides. O(n log n) on average with very small constants,
-and in place. But a bad pivot choice makes it O(n²): here the pivot is the last value, so already-sorted input
-splits off just one element each time. Real implementations pick pivots more carefully.
+Pick one value as the **pivot**. Move every smaller value to its left and every bigger one to its right, then do the
+same to each side. On average that's O(n log n), it's fast in practice, and it works in place. But a badly chosen
+pivot makes it O(n²). Here the pivot is always the last value, so on a list that's already sorted, each split peels
+off just one item. Real versions choose the pivot more carefully.
 
 <Viz client:visible approach="quick" />
 
@@ -103,8 +107,8 @@ On shuffled input, the O(n²) sorts fall far behind merge sort:
 
 <GrowthChart client:visible series={growthRandom} caption="Comparisons plus writes on shuffled input of size n." />
 
-On nearly sorted input (one pair swapped), the picture flips: insertion sort becomes the fastest, and quicksort
-with a naive pivot becomes the slowest:
+On nearly sorted input, with just one pair of neighbours swapped, the picture flips. Insertion sort becomes the
+fastest, and quicksort (with its last-value pivot) becomes the slowest:
 
 <GrowthChart client:visible series={growthNearly} caption="Comparisons plus writes on sorted input with one adjacent pair swapped." />
 

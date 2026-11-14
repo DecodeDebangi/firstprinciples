@@ -51,12 +51,12 @@ fixed k, so the window changes size as it goes:
 
 ## Why it's O(n), with a loop inside a loop
 
-Count pointer moves, not loop iterations. `hi` moves right n times in total. `lo` only ever moves right too, and it
-can't pass the end, so it moves at most n times **across the whole run**, not per value of `hi`. That's at most 2n
-moves, each O(1): **O(n)**.
+Don't count rounds of the loops; count how far each pointer travels. `hi` moves right n times in total. `lo` also
+only moves right, and never past the end, so it moves at most n times **over the whole walk**, not n times for
+every position of `hi`. That's at most 2n moves of O(1) work each: **O(n)**.
 
-The same argument works for every sliding window: if neither pointer ever moves backwards, the total work is
-linear.
+The same reasoning works for every sliding window: if neither pointer ever moves backwards, the total work grows in
+step with n.
 
 ## The template
 
@@ -78,17 +78,19 @@ Two versions, depending on what you're looking for:
 | The **shortest** valid window | the window is **still valid** | inside the shrink loop, before each removal |
 
 [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/) is the
-longest-window version: the window breaks when a letter repeats, and a set tracks what's inside.
+longest-window version. The window counts as broken when a letter appears twice, and a set keeps track of which
+letters are inside.
 
 ## When the window doesn't work
 
-Shrinking is only safe if the rule is **monotonic**: widening a window can only push it one way. With positive
-numbers, a wider window always has a bigger sum, so once the sum is big enough, shrinking is the only way to find
-a shorter answer, and once it's too small, only growing can help.
+Shrinking only works when the rule behaves predictably: making the window wider can only push it one way. With
+positive numbers, a wider window always has a bigger sum. So once the sum is big enough, shrinking is the only way
+to find something shorter, and while it's too small, only growing can help. A rule that only ever moves one way
+like this is called **monotonic**.
 
-With **negative numbers**, that breaks: adding an item can lower the sum, so a window that's too small might become
-big enough later. Problems like "count subarrays that sum to k" with negatives use **prefix sums and a hash map**
-instead.
+With **negative numbers**, that breaks. Adding an item can make the sum smaller, so a window that's too small now
+might become big enough later, and you can't tell when to shrink. Problems like "count the runs that add up to
+exactly k" with negative numbers need a different tool: **prefix sums and a hash map**.
 
 ## Interview theory
 

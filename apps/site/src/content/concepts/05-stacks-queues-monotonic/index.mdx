@@ -33,8 +33,9 @@ Push the same items through both and watch the order they come out in.
 | Undo, backtracking, depth-first search | Scheduling, buffering, breadth-first search |
 | Evaluating nested expressions | Processing a stream fairly |
 
-Recursion is a stack in disguise: every waiting function call sits on the **call stack**, and the most recent call
-finishes first. That's why any recursive depth-first search can be rewritten with an explicit stack.
+Recursion works like a stack too. When one function calls another, the first one waits. The computer keeps the
+waiting calls on the **call stack**, and the most recent one finishes first. So any recursive search can also be
+written as a loop with your own stack.
 
 ## Using them in your language
 
@@ -47,21 +48,26 @@ Every operation below is O(1).
 | C++ | `std::stack`: `push`, `pop()`, `top()` | `std::queue`: `push`, `pop()`, `front()` |
 | JavaScript | array: `push`, `pop()`, `at(-1)` | no built-in queue: an array plus a "front" index |
 
-**Don't dequeue from the front of a plain array.** Python's `list.pop(0)` and JavaScript's `shift()` move every
-remaining element left: O(n) per removal, so a loop that empties a queue of n items becomes O(n²). A real queue (or
-an array with a moving front index) removes from the front in O(1).
+**Don't take items from the front of a plain array.** Removing the first item (`list.pop(0)` in Python, `shift()`
+in JavaScript) makes every other item shift one place left. That's O(n) for each removal, so emptying a queue of n
+items costs O(n²). A real queue, or an array with a moving "front" index, removes from the front in O(1).
 
 ## The monotonic stack
 
-A powerful trick for "for each item, find the next bigger (or smaller) item". Walk left to right and keep a stack of
-items still **waiting** for their answer. When a new item arrives, it answers every waiting item smaller than it,
-starting from the top, and then waits itself. Because smaller items are always popped before a new one is pushed,
-the values on the stack only ever **decrease toward the top**. That ordering gives the stack its name.
+This trick answers questions like "for each item, which is the next bigger item?" Walk from left to right with a
+stack of items still **waiting** for their answer. When a new item arrives, look at the top of the stack:
+
+- If the waiting item on top is smaller, the new item is its answer. Pop it, and check the next one down.
+- When the top isn't smaller, or the stack is empty, push the new item so it can wait too.
+
+Because smaller items always leave first, the values on the stack get smaller toward the top. Values that only ever
+go one way like this are called **monotonic**, which is where the trick gets its name.
 
 <Viz client:visible approach="monotonic" />
 
-**Why it's O(n), even with a loop inside a loop:** count pushes and pops instead of iterations. Each index is
-pushed exactly once and popped at most once, so all the inner `while` loops together run at most n times. The
+**Why is this O(n), when there's a loop inside a loop?** Don't count rounds of the loops; count what happens to
+each item. Every item is pushed once and popped at most once. So over the whole walk, the inner loop runs at most
+n times in total, not n times for every item. The
 same idea solves [Daily Temperatures](/dsa/daily-temperatures/), stock spans and the largest rectangle in a histogram.
 
 ## Interview theory

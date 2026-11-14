@@ -30,19 +30,24 @@ Once you've written that sentence down, every other choice follows from it:
 2. **Loop while the range is non-empty**: for an inclusive range, that's `lo ≤ hi`.
 3. **Update so it stays true**: you've checked `mid` and it isn't the target, so exclude it: `lo ← mid + 1` or `hi ← mid − 1`.
 
-The animations below show the current range in the Variables panel at every step, so you can check the invariant holds.
+In the animations below, the Variables panel shows the current range at every step, so you can check that the
+sentence stays true.
 
 ## Template 1: Closed interval, find a match
 
-Both ends are candidates. Use it when you just need to know whether the target is there.
+`lo` and `hi` are both still possible answers, so the range includes both ends. Writing it as `[lo, hi]`, with
+square brackets, means exactly that. Use this template when you only need to know whether the target is there.
 
 <Viz client:visible approach="closed" />
 
 ## Template 2: Half-open interval, find the first position
 
-Here the invariant is *"the first index with `a[i] ≥ target` is in `[lo, hi)`"*, and `hi` itself is never a
-candidate. This version finds the **first** of several equal values, returns the **insertion point** when the
-target is missing, and has no special cases.
+This template changes one thing: `hi` points one place *past* the last possible answer. The round bracket in
+`[lo, hi)` means "`lo` included, `hi` not", which is why it's called **half-open**. The invariant becomes *"the
+first index with `a[i] ≥ target` is somewhere in `[lo, hi)`"*.
+
+It finds the **first** of several equal values, tells you where the target **would go** if it's missing, and needs
+no special cases.
 
 <Viz client:visible approach="lower" />
 
@@ -67,9 +72,10 @@ unchanged, it's a bug.
 
 ## The same idea, everywhere
 
-Many problems that don't look like binary search are "find the first position where a condition becomes true":
-the first bad version, the smallest speed that finishes in time, the first day a plant blooms. The half-open
-template handles all of them: replace `a[mid] < target` with `not condition(mid)`.
+Many problems don't look like binary search, but are. They ask for the first position where something becomes
+true: the first bad version of some software, the smallest speed that finishes on time, the first day a plant
+blooms. As long as the answer is "no" up to some point and "yes" from then on, the half-open template finds that
+point. Just replace `a[mid] < target` with `not condition(mid)`.
 
 ## Interview theory
 

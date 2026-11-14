@@ -13,24 +13,24 @@ import { questions } from "./quiz";
 
 ## The idea in one sentence
 
-A hash map is an **array**, plus a function that turns any key into an **index** in that array, so finding a key
-means jumping to one position instead of searching.
+A hash map is an **array** with one clever addition: a function that turns any key into a position (an **index**)
+in that array. So to find a key, you jump straight to one position instead of searching.
 
-That function is the **hash function**. In Python, `hash(42)` is `42` and `hash("cat")` is some large number; the
-map takes it modulo the array's length to get a position: `index = hash(key) % length(array)`.
+That function is called the **hash function**. It turns a key into a number: in Python, `hash(42)` is `42`, and
+`hash("cat")` is some large number. The map keeps only the remainder after dividing by the array's length, so the
+number always lands on a real position: `index ← hash(key) % length(array)`.
 
 ## Why lookups are O(1)
 
-Searching a plain list for a key means checking items one by one: O(n). A hash map computes the key's position
-directly: one hash, one modulo, one array access. That cost doesn't depend on how many keys are stored, so it's
-**O(1)**. It's the reason [Two Sum](/dsa/two-sum/), [Contains Duplicate](/dsa/contains-duplicate/) and
+To find a key in a plain list, you check items one by one: O(n). A hash map works out the key's position directly:
+one hash, one remainder, one jump. That takes the same time however many keys are stored, so it's **O(1)**. It's the reason [Two Sum](/dsa/two-sum/), [Contains Duplicate](/dsa/contains-duplicate/) and
 [Longest Consecutive Sequence](/dsa/longest-consecutive-sequence/) drop from O(n²) or O(n log n) to O(n).
 
 ## Collisions are unavoidable
 
-There are infinitely many possible keys and only a few slots, so sooner or later two keys map to the same index:
-a **collision**. With 4 buckets, `12 % 4` and `20 % 4` are both 0. Even with a good hash function, collisions start
-earlier than you'd guess, just as two people in a room of 23 share a birthday more often than not.
+There are endless possible keys and only a few slots, so sooner or later two keys land on the same position.
+That's a **collision**. With 4 buckets, `12 % 4` and `20 % 4` are both 0. Collisions happen sooner than you'd
+guess: in a room of just 23 people, two probably share a birthday.
 
 There are two standard ways to handle them.
 
@@ -50,16 +50,19 @@ last digit: 22 wants 12's slot, and 17 wants 7's.
 
 <Viz client:visible approach="probing" />
 
-Probing keeps everything in one array, which is fast for the CPU cache, but filled slots bunch into **clusters**
-that make later probes longer. That's why open-addressing tables resize earlier.
+Keeping everything in one array is fast, because computers read memory that sits close together quickly. The
+downside: filled slots bunch up into **clusters**, and every key that lands in one has to walk past it. That's why
+these tables grow sooner.
 
 ## Load factor and resizing
 
-The **load factor** is keys ÷ slots. As it rises, chains get longer (or probes get longer) and lookups slow down.
-So hash maps watch it and, past a threshold, allocate an array twice the size and re-insert every key.
+How full a table is, keys ÷ slots, is called its **load factor**. As it rises, chains (or probe walks) get longer
+and lookups slow down. So once it passes a limit, the map makes a new array twice the size and puts every key into
+it again.
 
-A single resize costs O(n), but it happens so rarely that, spread across all the insertions that led up to it, each
-insertion still costs **O(1) amortised**: doubling means you insert n keys before paying O(n) again.
+One resize costs O(n), because every key moves. But after doubling, you can add n more keys before the next
+resize. Spread over all those insertions, each one still costs **O(1)** on average. A cost averaged out like this
+is called **amortised**.
 
 ## What real languages do
 
