@@ -5,10 +5,10 @@
  * term is a plain link to /glossary/.
  */
 ---
-<div class="tp" id="term-pop" role="dialog" aria-modal="false" aria-labelledby="tp-term" hidden>
-  <p class="tp__term" id="tp-term"></p>
-  <p class="tp__def" id="tp-def"></p>
-  <p class="tp__links"><a id="tp-read" href="#">Learn more</a><a id="tp-all" href="/glossary/">All terms</a></p>
+<div class="term-card" id="term-pop" role="dialog" aria-modal="false" aria-labelledby="tp-term" hidden>
+  <p class="term-card__term" id="tp-term"></p>
+  <p class="term-card__def" id="tp-def"></p>
+  <p class="term-card__links"><a id="tp-read" href="#">Learn more</a><a id="tp-all" href="/glossary/">All terms</a></p>
 </div>
 
 <script>
@@ -59,14 +59,14 @@
     text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help;
   }
   a.term:hover, a.term[aria-expanded="true"] { color: var(--accent); text-decoration-style: solid; }
-  .tp {
+  .term-card {
     position: absolute; z-index: 50; padding: 12px 14px; border-radius: 12px; background: var(--surface);
     border: 1px solid var(--border); box-shadow: 0 10px 30px -10px rgb(var(--shadow-rgb) / .35); font: 15px/1.5 var(--font-sans);
   }
-  .tp[hidden] { display: none; }
-  .tp__term { margin: 0 0 4px; font-weight: 700; color: var(--text); }
-  .tp__def { margin: 0; color: var(--text-2); }
-  .tp__links { margin: 10px 0 0; display: flex; gap: 16px; font-size: 14px; font-weight: 600; }
-  .tp__links a[hidden] { display: none; }
-  @media print { a.term { text-decoration: none; } .tp { display: none !important; } }
+  .term-card[hidden] { display: none; }
+  .term-card__term { margin: 0 0 4px; font-weight: 700; color: var(--text); }
+  .term-card__def { margin: 0; color: var(--text-2); }
+  .term-card__links { margin: 10px 0 0; display: flex; gap: 16px; font-size: 14px; font-weight: 600; }
+  .term-card__links a[hidden] { display: none; }
+  @media print { a.term { text-decoration: none; } .term-card { display: none !important; } }
 </style>

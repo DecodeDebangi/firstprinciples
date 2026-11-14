@@ -3,13 +3,14 @@
  * FIRST use of each glossary term becomes a link to /glossary/#<id> carrying its definition. A small script
  * (components/TermPopover.astro) turns it into a tap-to-define card; without JavaScript it's a plain link.
  *
- * Skips code, headings, existing links and interactive components, and a term on its own read.
+ * Skips code, headings, existing links, interactive components and folded content, and a term on its own read.
  */
 import { fileURLToPath } from "node:url";
 import { glossary } from "../data/glossary.mjs";
 
 const SKIP_TAGS = new Set(["code", "pre", "a", "h1", "h2", "h3", "h4", "h5", "h6", "button", "script", "style", "svg", "th", "summary"]);
-const SKIP_JSX = new Set(["Viz", "Compare", "GrowthChart", "Quiz"]);
+// Complexity boxes and QA answers are folded by default, so a term marked there could go unseen; mark it elsewhere.
+const SKIP_JSX = new Set(["Viz", "Compare", "GrowthChart", "Quiz", "Complexity", "QA"]);
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Longer phrases first, so "binary search tree" wins over "binary search". */

@@ -77,7 +77,13 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
 
     <section>
       <h2>Problems <span class="pcount" data-pcount={all.map((p) => p.id).join(" ")} hidden></span></h2>
-      {all.length === 0 ? <p class="sub">Problems for this topic are on the way.</p> : <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>}
+      {all.length === 0 ? (
+        <p class="sub">{topic.name === "Big-O & complexity"
+          ? <>Every problem practises this one: each works out its own time and space, step by step. A good first one is <a href="/dsa/two-sum/">Two Sum</a>.</>
+          : topic.name === "Coding basics"
+          ? <>No problems of its own: these reads prepare you for all of them. When you're done, start with <a href="/dsa/two-sum/">Two Sum</a>.</>
+          : <>Problems for this topic are on the way. Meanwhile, <a href="/problems/">browse all problems</a>.</>}</p>
+      ) : <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>}
       <ol class="plist">
         {all.map((p) => (
           <li>
