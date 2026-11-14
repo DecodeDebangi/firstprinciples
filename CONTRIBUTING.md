@@ -113,7 +113,9 @@ problem, e.g. the six sorts), and ends with `<QA q="…">answer</QA>` interview 
 `<Quiz client:visible questions={questions} />`, with the questions in a `quiz.ts` next to the page
 (`export const questions: QuizQuestion[] = [{ q, options, answer, why }]`). Each `why` must make sense on its own:
 the same questions feed the question bank on `/practice/`. Options are shown in a fixed shuffled order, so `answer`
-can point anywhere. It appears automatically under "Read first" on its
+can point anywhere. **A quiz may only use words the page explains** (or that are in the glossary): quizzes aren't
+glossary-marked, so a term like "LRU cache" must be explained on the page or in the question itself, and wrong
+options shouldn't introduce unexplained terms either. It appears automatically under "Read first" on its
 topic page, on the roadmap card ("1 read"), at `/concepts/`, and as background reading on every problem that
 practises its topic. Test any algorithm it animates against a reference, and check every quiz answer.
 

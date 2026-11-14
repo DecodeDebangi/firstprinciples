@@ -61,7 +61,7 @@ Race the two front insertions, then switch either lane to the reads.
 | Insert or delete at the end | O(1) amortised | O(1) with a tail pointer, else O(n) |
 | Insert or delete after a node you already hold | O(n) | O(1) |
 | Search for a value | O(n) | O(n) |
-| Extra memory per item | none | one pointer (two if doubly linked) |
+| Extra memory per item | none | one pointer (two if each node also points back) |
 
 ## Why arrays still win most races
 
@@ -76,8 +76,11 @@ insert" only pays off if you **already hold the node**: finding the spot first i
 
 ## When a linked list is the right tool
 
-- **You hold a reference to the node already.** An LRU cache keeps a hash map from key to node, so it can unlink
-  and move any node in O(1). A plain array would have to shift.
+- **You hold a reference to the node already.** Take an **LRU cache** ("least recently used"). It keeps only the
+  most recent items, like the last 100 pages you viewed, and when it's full it throws out the one used longest
+  ago. Each time an item is used, it moves to the front of a **doubly linked list**: one where every node points
+  both to the next node and back to the previous one, so a node can unlink itself. A hash map from key to node
+  finds the node instantly, and moving it is then O(1). A plain array would have to shift everything.
 - **Both ends change constantly.** Queues and deques add and remove at the ends; Python's `collections.deque` is
   built from linked blocks of items for exactly this reason.
 - **Items must never move.** Other code holds pointers to them, so they can't be copied into a bigger array.
