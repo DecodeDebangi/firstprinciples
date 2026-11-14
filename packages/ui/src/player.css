@@ -372,3 +372,21 @@
 .fp-gcell.fp-cell--side-a { background: var(--tone-active-bg); border-color: color-mix(in srgb, var(--tone-active-border) 35%, transparent); }
 .fp-gcell.fp-cell--side-b { background: var(--tone-compare-bg); border-color: color-mix(in srgb, var(--tone-compare-border) 35%, transparent); }
 .fp-gcell.fp-cell--visited { color: var(--text-2); }
+
+/* A copied value: an arrow arcs from source to target and draws itself, while a ghost of the value slides across. */
+.fp-move { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2; }
+.fp-move path:not(marker path) { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: fp-draw .45s ease-out forwards; }
+.fp-move marker path { fill: var(--accent); }
+@keyframes fp-draw { to { stroke-dashoffset: 0; } }
+.fp-ghost {
+  position: absolute; z-index: 3; display: grid; place-items: center; pointer-events: none; border-radius: 10px;
+  font: 600 clamp(13px, 1.6vw, 16px) var(--font-mono); color: var(--text); background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  border: 2px solid var(--accent); animation: fp-slide .7s cubic-bezier(.3, .7, .4, 1) forwards;
+}
+@keyframes fp-slide {
+  0% { transform: translate(0, 0); opacity: 1; }
+  45% { transform: translate(calc(var(--dx) * .5), -22px); opacity: 1; }
+  85% { transform: translate(var(--dx), 0); opacity: 1; }
+  100% { transform: translate(var(--dx), 0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .fp-ghost { display: none; } .fp-move path:not(marker path) { animation: none; stroke-dashoffset: 0; } }

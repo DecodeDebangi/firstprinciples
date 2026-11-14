@@ -41,8 +41,8 @@ const arrayInsert: Approach<Input> = {
       t.op();
       a[i] = a[i - 1];
       t.step({ ...(i === a.length - 1 ? { ask: { q: `To insert at the front of ${nums.length} items, how many existing items have to move?`, options: uniq([`All ${nums.length}`, "Just one", "None"]), answer: 0 } } : {}),
-        line: 4, array: [...a], pointers: { i }, tones: { [i]: "compare" }, badge: { at: i, text: "shift" }, vars: { x, moved: a.length - i },
-        message: `Copy ${a[i]} one place right, into slot ${i}.` });
+        line: 4, array: [...a], pointers: { i }, tones: { [i - 1]: "active", [i]: "compare" }, move: { from: i - 1, to: i }, vars: { x, moved: a.length - i },
+        message: `Copy ${a[i]} from slot ${i - 1} into slot ${i}: it moves one place right.${i - 1 > 0 ? ` Slot ${i - 1} still shows ${a[i]} until the next copy overwrites it.` : ` Slot 0 is now free for ${x}.`}` });
     }
     t.op();
     a[0] = x;

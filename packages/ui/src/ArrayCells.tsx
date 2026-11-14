@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { ArrayStep } from "./trace";
 import "./player.css";
 
@@ -52,6 +52,10 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
   const shelf = a && b ? { left: a.x - 3, width: b.x + b.w - a.x + 6, top: a.top - 6, height: a.h + 12 } : null;
 
   const badgeCol = step.badge ? cols[step.badge.at] : undefined;
+  const arrowId = useId();
+  const mv = step.move, from = mv ? cols[mv.from] : undefined, to = mv ? cols[mv.to] : undefined;
+  // Highlighted cells lift by up to 14px, so the arc starts and ends above that.
+  const lift = from && to ? Math.min(34, 20 + Math.abs(to.x - from.x) / 12) : 0;
 
   return (
     <div className="fp-track" ref={trackRef}>
@@ -72,6 +76,24 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
           );
         })}
       </div>
+      {mv && from && to && (
+        <>
+          {/* Keyed by the move and the array, so the arrow redraws and the value slides again on every step. */}
+          <svg className="fp-move" key={`arc-${mv.from}-${mv.to}-${step.array.join()}`} aria-hidden="true">
+            <defs>
+              <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" />
+              </marker>
+            </defs>
+            <path pathLength={1} markerEnd={`url(#${arrowId})`}
+              d={`M ${from.x + from.w / 2} ${from.top - 14} C ${from.x + from.w / 2} ${from.top - 14 - lift}, ${to.x + to.w / 2} ${to.top - 18 - lift}, ${to.x + to.w / 2} ${to.top - 20}`} />
+          </svg>
+          <span className="fp-ghost" key={`ghost-${mv.from}-${mv.to}-${step.array.join()}`} aria-hidden="true"
+            style={{ left: from.x + (from.w - to.w) / 2, top: from.top, width: to.w, height: to.h, ["--dx" as string]: `${to.x - from.x}px` }}>
+            {step.array[mv.to]}
+          </span>
+        </>
+      )}
       {step.badge && badgeCol && (
         <div key={`${step.badge.at}-${step.badge.text}`}
           className={`fp-badge${step.badge.at <= 1 ? " is-start" : step.badge.at >= n - 2 ? " is-end" : ""}`}
@@ -94,8 +116,9 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
           );
         })}
       </div>
-      {(ptrs.length > 0 || step.badge) && (
+      {(ptrs.length > 0 || step.badge || mv) && (
         <span className="fp-sr">
+          {mv ? `${step.array[mv.to]} copied from position ${mv.from} to position ${mv.to}. ` : ""}
           {step.badge ? `${step.badge.text}. ` : ""}
           {ptrs.length > 0 ? `Pointers: ${ptrs.map((p) => `${p.name} at ${p.i}`).join(", ")}` : ""}
         </span>

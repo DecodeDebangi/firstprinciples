@@ -94,6 +94,8 @@ export interface ArrayStep {
   tones?: Record<number, Tone>;
   /** The comparison being made, floated above one cell, e.g. { at: 4, text: "27 < 63 →" }. */
   badge?: { at: number; text: string };
+  /** A value copied from one cell to another this step: an arrow arcs from `from` to `to` and the value slides across. */
+  move?: { from: number; to: number };
   /** Inclusive window still being considered; cells outside are dimmed. */
   range?: [number, number] | null;
   vars?: Record<string, string | number | boolean | null>;

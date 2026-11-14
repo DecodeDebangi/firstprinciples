@@ -118,7 +118,7 @@ const insertion: Approach<Input> = {
         }
         a[j + 1] = a[j];
         t.op();
-        t.step({ ask, line: 6, array: [...a], pointers: { j }, range: [0, i], tones: { [j + 1]: "compare" }, vars: { x }, message: `${a[j]} > ${x}: shift it one place right.` });
+        t.step({ ask, line: 6, array: [...a], pointers: { j }, range: [0, i], tones: { [j]: "active", [j + 1]: "compare" }, move: { from: j, to: j + 1 }, vars: { x }, message: `${a[j]} > ${x}: shift it one place right, from position ${j} to ${j + 1}.` });
         j--;
       }
       a[j + 1] = x;
