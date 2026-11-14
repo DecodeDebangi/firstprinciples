@@ -1,0 +1,207 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { roadmap, homeTopic, topicSlug } from "../data/roadmap";
+import { topicGuides } from "../data/topicGuides";
+
+const problems = await getCollection("dsa");
+const concepts = await getCollection("concepts");
+const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
+
+/** Topics in roadmap order that have a guide, with their problems (by home topic) and reads. */
+const cards = roadmap.flatMap((step) => step.topics)
+  .filter((t) => topicGuides[t.name])
+  .map((t) => ({
+    topic: t,
+    guide: topicGuides[t.name],
+    problems: problems.filter((p) => homeTopic(p.data.topics) === t)
+      .sort((a, b) => rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number),
+    reads: concepts.filter((c) => c.data.topic === t.name).sort((a, b) => a.data.order - b.data.order),
+  }));
+
+/** Rough sizes that run in about a second at ~10⁸ simple steps per second. */
+const bigO = [
+  { o: "O(1)", name: "constant", example: "read a[i], a dict lookup", n: "any" },
+  { o: "O(log n)", name: "logarithmic", example: "binary search, a heap push", n: "any" },
+  { o: "O(n)", name: "linear", example: "one pass, a hash map of everything", n: "≈ 10⁸" },
+  { o: "O(n log n)", name: "linearithmic", example: "sorting, n heap operations", n: "≈ 10⁶ to 10⁷" },
+  { o: "O(n²)", name: "quadratic", example: "every pair", n: "≈ 10⁴" },
+  { o: "O(n³)", name: "cubic", example: "every triple", n: "≈ 500" },
+  { o: "O(2ⁿ)", name: "exponential", example: "every subset", n: "≈ 25" },
+  { o: "O(n!)", name: "factorial", example: "every ordering", n: "≈ 11" },
+];
+
+const toolbox = [
+  { what: "list (dynamic array)", code: "a.append(x) · a.pop() · a[i]", cost: "O(1) each; insert/pop at the front O(n)" },
+  { what: "dict / set (hash table)", code: "x in s · d[k] = v · d.get(k, 0)", cost: "O(1) average" },
+  { what: "collections.deque", code: "q.append(x) · q.popleft() · q.appendleft(x)", cost: "O(1) at both ends" },
+  { what: "heapq (min-heap)", code: "heappush(h, x) · heappop(h) · h[0] · heapify(a)", cost: "O(log n) push/pop, O(1) peek, O(n) heapify" },
+  { what: "collections.Counter", code: "Counter(nums) · c.most_common(k)", cost: "O(n) to count" },
+  { what: "collections.defaultdict", code: "g = defaultdict(list); g[a].append(b)", cost: "O(1) average" },
+  { what: "bisect", code: "bisect_left(a, x) · bisect_right(a, x) · insort(a, x)", cost: "O(log n) search, insort O(n)" },
+  { what: "sorted / list.sort", code: "sorted(a, key=lambda x: x[1], reverse=True)", cost: "O(n log n)" },
+  { what: "functools.cache", code: "@cache above a recursive function", cost: "memoises by arguments" },
+];
+---
+<Base title="Cheat sheet" description="Every DSA pattern on one page: when to reach for it, a Python template, Big-O at a glance and the standard library tools, with links to every problem. Printable.">
+  <article class="cs">
+    <a class="back" href="/">← Home</a>
+    <div class="cs-top">
+      <h1>Cheat sheet</h1>
+      <button type="button" class="cs-print" id="print">Print or save as PDF</button>
+    </div>
+    <p class="lead">Every pattern on one page: the idea, the clues that point to it, a Python template, and the problems that
+      practise it with their best complexity. It updates as the site grows, and prints cleanly.</p>
+
+    <nav class="cs-jump" aria-label="Jump to a topic">
+      <a href="#big-o">Big-O</a>
+      {cards.map((c) => <a href={`#${topicSlug(c.topic.name)}`}>{c.topic.name}</a>)}
+      <a href="#python">Python toolbox</a>
+    </nav>
+
+    <section class="cs-card" id="big-o">
+      <h2>Big-O at a glance</h2>
+      <p class="cs-idea">How the work grows with the input size n, and roughly the biggest n that runs in about a second
+        (assuming ~10⁸ simple steps per second; real limits vary).</p>
+      <table class="cs-table">
+        <thead><tr><th>Complexity</th><th class="cs-name">Name</th><th>Typical example</th><th>n in ~1 s</th></tr></thead>
+        <tbody>{bigO.map((r) => <tr><td><code>{r.o}</code></td><td class="cs-name">{r.name}</td><td>{r.example}</td><td class="cs-n">{r.n}</td></tr>)}</tbody>
+      </table>
+      <p class="cs-more"><a href="/concepts/big-o-in-plain-words/">Read: Big-O in plain words</a></p>
+    </section>
+
+    {cards.map(({ topic, guide, problems, reads }) => (
+      <section class="cs-card" id={topicSlug(topic.name)}>
+        <h2><a href={`/topics/${topicSlug(topic.name)}/`}>{topic.name}</a></h2>
+        <p class="cs-idea">{guide.idea}</p>
+        <div class="cs-cols">
+          <div>
+            <h3>Reach for it when</h3>
+            <ul class="cs-signals">{guide.signals.map((s) => <li>{s}</li>)}</ul>
+            <p class="cs-payoff"><strong>Why it wins:</strong> {guide.payoff}</p>
+          </div>
+          <div>
+            <h3>Template</h3>
+            <pre class="cs-code"><code>{guide.template}</code></pre>
+          </div>
+        </div>
+        {problems.length > 0 && (
+          <>
+            <h3>Problems</h3>
+            <table class="cs-table cs-table--problems">
+              <tbody>
+                {problems.map((p) => (
+                  <tr>
+                    <td class="cs-num">#{p.data.leetcode.number}</td>
+                    <td><a href={`/dsa/${p.id}/`} data-pslug={p.id}>{p.data.title}</a></td>
+                    <td class="cs-diff">{p.data.difficulty}</td>
+                    <td class="cs-cx"><code>{p.data.best.time}</code> time · <code>{p.data.best.space}</code> space</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+        {reads.length > 0 && <p class="cs-more">{reads.map((r, k) => <>{k > 0 && " · "}<a href={`/concepts/${r.id}/`}>Read: {r.data.title}</a></>)}</p>}
+      </section>
+    ))}
+
+    <section class="cs-card" id="python">
+      <h2>Python toolbox</h2>
+      <p class="cs-idea">The standard-library pieces these solutions lean on, and what they cost.</p>
+      <table class="cs-table cs-table--tools">
+        <thead><tr><th>Tool</th><th>Usage</th><th>Cost</th></tr></thead>
+        <tbody>{toolbox.map((r) => <tr><td>{r.what}</td><td><code>{r.code}</code></td><td>{r.cost}</td></tr>)}</tbody>
+      </table>
+    </section>
+    <p class="cs-foot">From firstprinciples.debangi.com: every problem here has step-by-step animations of each approach.</p>
+  </article>
+</Base>
+
+<script>
+  document.getElementById("print")?.addEventListener("click", () => window.print());
+</script>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .cs-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .cs-top h1 { margin: 0; }
+  .cs-print { font: 600 14px var(--font-sans); padding: 8px 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); cursor: pointer; }
+  .cs-print:hover { background: var(--accent-soft); }
+  .lead { color: var(--text-2); max-width: 68ch; margin: 12px 0 18px; }
+  .cs-jump { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 0 0 24px; }
+  .cs-jump a { font-size: 13.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); text-decoration: none; color: var(--text-2); }
+  .cs-jump a:hover { border-color: var(--accent); color: var(--accent); }
+  .cs-card { margin: 0 0 18px; padding: 20px 22px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); scroll-margin-top: 90px; }
+  .cs-card h2 { margin: 0 0 6px; font-size: 24px; }
+  .cs-card h2 a { color: var(--text); text-decoration: none; }
+  .cs-card h2 a:hover { color: var(--accent); }
+  .cs-card h3 { margin: 14px 0 6px; font: 600 13px var(--font-sans); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cs-idea { margin: 0; color: var(--text-2); }
+  .cs-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 4px 24px; }
+  .cs-signals { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 15px; }
+  .cs-payoff { margin: 10px 0 0; font-size: 14.5px; color: var(--text-2); }
+  .cs-code { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; line-height: 1.55; overflow-x: auto; white-space: pre; }
+  .cs-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .cs-table th { text-align: left; font: 600 12px var(--font-sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .cs-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .cs-table tr:last-child td { border-bottom: 0; }
+  .cs-table code { font-size: 13px; white-space: nowrap; }
+  .cs-table--problems { table-layout: fixed; }
+  .cs-num { font: 500 13px var(--font-mono); color: var(--muted); width: 4.5em; }
+  .cs-table--problems .cs-diff { width: 5.5em; }
+  .cs-table--problems .cs-cx { width: 17em; color: var(--muted); font-size: 13px; }
+  .cs-diff { color: var(--muted); font-size: 13px; }
+  .cs-more { margin: 12px 0 0; font-size: 14.5px; }
+  .cs-foot { color: var(--muted); font-size: 14px; }
+  @media (max-width: 720px) {
+    .cs-cols { grid-template-columns: minmax(0, 1fr); }
+    .cs-name { display: none; }
+    .cs-n { white-space: nowrap; }
+    .cs-table--tools thead { display: none; }
+    .cs-table--tools, .cs-table--tools tbody, .cs-table--tools tr, .cs-table--tools td { display: block; }
+    .cs-table--tools tr { padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .cs-table--tools tr:last-child { border-bottom: 0; }
+    .cs-table--tools td { border: 0; padding: 1px 0; }
+    .cs-table--tools td:first-child { font-weight: 600; }
+    .cs-table--tools code { white-space: normal; }
+    .cs-table--problems, .cs-table--problems tbody { display: block; }
+    .cs-table--problems tr { display: grid; grid-template-columns: 3.6em minmax(0, 1fr); padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .cs-table--problems tr:last-child { border-bottom: 0; }
+    .cs-table--problems td { border: 0; padding: 0 4px; width: auto !important; }
+    .cs-table--problems .cs-num { grid-row: span 2; }
+    .cs-table--problems .cs-diff { display: none; }
+    .cs-table--problems .cs-cx { grid-column: 2; padding-top: 2px; }
+  }
+  @media print {
+    @page { size: A4; margin: 12mm 12mm 14mm; }
+    :global(.site-header), :global(.site-footer), .back, .cs-print, .cs-jump, :global(.pmark) { display: none !important; }
+    :global(body) { background: #fff; font-size: 9.5pt; }
+    .lead { font-size: 9.5pt; margin: 4px 0 10px; }
+    h1 { font-size: 20pt; }
+    /* Cards may split across pages; their parts (code, tables, signals) stay whole. */
+    .cs-card { box-shadow: none; border: 0; border-top: 1.5px solid #bbb; border-radius: 0; background: #fff; padding: 8px 0 4px; margin: 0 0 6px; }
+    .cs-card h2 { font-size: 13pt; margin: 0 0 2px; break-after: avoid; }
+    .cs-card h3 { font-size: 7.5pt; margin: 6px 0 3px; break-after: avoid; }
+    .cs-idea, .cs-signals, .cs-payoff, .cs-more, .cs-table { font-size: 9pt !important; }
+    .cs-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) !important; gap: 2px 16px; break-inside: avoid; }
+    .cs-code { background: #f5f5f5; border-color: #ddd; font-size: 7.5pt; line-height: 1.45; padding: 6px 8px; white-space: pre-wrap; }
+    .cs-table tr { break-inside: avoid; }
+    .cs-table td, .cs-table th { padding: 2px 6px; }
+    .cs-table code { font-size: 8pt; }
+    .cs-name { display: table-cell !important; }
+    .cs-table--problems, .cs-table--problems tbody { display: table !important; width: 100%; }
+    .cs-table--problems tbody { display: table-row-group !important; }
+    .cs-table--problems tr { display: table-row !important; }
+    .cs-table--problems td { display: table-cell !important; padding: 2px 6px !important; border-bottom: 1px solid #e5e5e5 !important; }
+    .cs-table--problems .cs-diff { display: table-cell !important; width: 5em !important; }
+    .cs-table--problems .cs-cx { width: 19em !important; }
+    .cs-table--tools thead { display: table-header-group !important; }
+    .cs-table--tools { display: table !important; }
+    .cs-table--tools tbody { display: table-row-group !important; }
+    .cs-table--tools tr { display: table-row !important; }
+    .cs-table--tools td { display: table-cell !important; padding: 2px 6px !important; border-bottom: 1px solid #e5e5e5 !important; }
+    a { color: inherit; text-decoration: none; }
+    .cs-foot { font-size: 8pt; }
+  }
+</style>
