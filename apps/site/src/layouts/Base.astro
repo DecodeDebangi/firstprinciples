@@ -43,6 +43,7 @@ const ogImage = new URL(image, Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#faf5ec" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="firstprinciples: new problems and reads" href="/rss.xml" />
     <!-- Vercel Web Analytics: cookieless; starts reporting once enabled in the Vercel dashboard. -->
     <script defer src="/_vercel/insights/script.js"></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -66,6 +67,7 @@ const ogImage = new URL(image, Astro.site);
         <span>© {new Date().getFullYear()} stacknaut</span>
         <span class="footer-right">
           <a href="/cheatsheet/">Cheat sheet</a>
+          <a href="/feed/">RSS</a>
           <span>Made with algorithms and <span role="img" aria-label="love">❤️</span></span>
           <a class="social" href="https://www.instagram.com/stacknaut" target="_blank" rel="noopener" aria-label="stacknaut on Instagram">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">

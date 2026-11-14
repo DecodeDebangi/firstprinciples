@@ -108,6 +108,10 @@ paragraph of `## The problem` and the blockquote under `## The key question`. Ke
 Question ids are stable (`p:<slug>`, `t:<slug>`, `c:<concept>:<question text>`), so renaming a slug or rewording a
 quiz question resets readers' history for it.
 
+## RSS feed
+`/rss.xml` lists every problem and read, newest first, dated by `added` (`apps/site/src/lib/feed.ts`, shared with the
+`/feed/` page that explains how to subscribe). Nothing to do per page: new content appears on the next build.
+
 ## Studio (reel recording)
 `/studio/<slug>/` shows one problem's animation in a 9:16 frame (432 × 768 CSS px) with large text, for screen
 recording. It reads the same `steps.ts`, so nothing extra is needed per problem. It isn't linked anywhere and is

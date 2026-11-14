@@ -1,0 +1,82 @@
+---
+import Base from "../layouts/Base.astro";
+import { feedItems } from "../lib/feed";
+
+/** The human side of /rss.xml: what the feed is, its address, and what's gone into it lately. */
+const feedUrl = new URL("/rss.xml", Astro.site).toString();
+const latest = (await feedItems()).slice(0, 8);
+const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+---
+<Base title="RSS feed" description="Get every new problem and read from firstprinciples in your feed reader, with no account and no email.">
+  <a class="back" href="/">← Home</a>
+  <h1>RSS feed</h1>
+  <p class="lead">Get every new problem and read in a feed reader as soon as it's added. No account or email needed:
+    the reader checks the feed for you.</p>
+
+  <section class="fd-box" aria-labelledby="fd-how">
+    <h2 id="fd-how">How to subscribe</h2>
+    <ol>
+      <li>Copy the feed address below.</li>
+      <li>In your feed reader (Feedly, Inoreader, NetNewsWire, Thunderbird and so on), choose "Add feed" or
+        "Subscribe" and paste it.</li>
+    </ol>
+    <div class="fd-copy">
+      <code id="feed-url">{feedUrl}</code>
+      <button type="button" id="copy" class="fd-btn">Copy address</button>
+    </div>
+    <p class="fd-status" id="copy-status" role="status" aria-live="polite"></p>
+    <p class="fd-note">Each entry is one problem or read, with a one-line summary, its difficulty and best complexity.
+      Opening the <a href="/rss.xml">feed address</a> in a browser shows raw XML; that's normal, it's meant for readers.</p>
+  </section>
+
+  <h2 class="fd-h">Latest in the feed</h2>
+  <ul class="fd-list">
+    {latest.map((it) => (
+      <li><span class="fd-date">{fmt(it.date)}</span><a href={it.path}>{it.title}</a></li>
+    ))}
+  </ul>
+</Base>
+
+<script>
+  const btn = document.getElementById("copy");
+  const status = document.getElementById("copy-status");
+  btn?.addEventListener("click", async () => {
+    const url = document.getElementById("feed-url")?.textContent ?? "";
+    try {
+      await navigator.clipboard.writeText(url);
+      if (status) status.textContent = "Copied. Paste it into your feed reader.";
+    } catch {
+      // Clipboard can be blocked (e.g. no permission); select the text so it can be copied by hand.
+      const el = document.getElementById("feed-url");
+      if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s?.removeAllRanges(); s?.addRange(r); }
+      if (status) status.textContent = "Couldn't copy automatically. The address is selected: press Ctrl+C or ⌘C.";
+    }
+  });
+</script>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  h1 { margin: 0; }
+  .lead { color: var(--text-2); max-width: 62ch; margin: 12px 0 22px; }
+  .fd-box { padding: 20px 22px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); max-width: 720px; }
+  .fd-box h2, .fd-h { margin: 0 0 8px; font: 600 13px var(--font-sans); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .fd-box ol { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 4px; }
+  .fd-copy { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .fd-copy code { font: 14px var(--font-mono); padding: 7px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); overflow-wrap: anywhere; min-width: 0; }
+  .fd-btn { font: 600 14px var(--font-sans); padding: 8px 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  .fd-btn:hover { filter: brightness(1.06); }
+  .fd-status { min-height: 1.4em; margin: 6px 0 0; font-size: 14px; color: var(--text-2); }
+  .fd-note { margin: 4px 0 0; font-size: 14.5px; color: var(--text-2); }
+  .fd-h { margin-top: 30px; }
+  .fd-list { list-style: none; margin: 0; padding: 0; max-width: 720px; }
+  .fd-list li { display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .fd-list li:last-child { border-bottom: 0; }
+  .fd-date { flex: 0 0 6.8em; color: var(--muted); font-size: 14px; padding-top: 1px; }
+  .fd-list a { text-decoration: none; font-weight: 500; }
+  .fd-list a:hover { text-decoration: underline; }
+  @media (max-width: 520px) {
+    .fd-box { padding: 16px; }
+    .fd-list li { flex-direction: column; gap: 0; }
+    .fd-date { flex-basis: auto; font-size: 13px; }
+  }
+</style>
