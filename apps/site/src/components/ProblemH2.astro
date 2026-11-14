@@ -1,0 +1,15 @@
+---
+/**
+ * The `h2` used inside problem MDX. Before the first section after "The problem" and "The key question"
+ * (usually "Approach 1", sometimes a setup section), it places the "try it first" box, so every solution
+ * section comes after it.
+ */
+import TryFirst from "./TryFirst.astro";
+
+const { id, ...rest } = Astro.props;
+const tf = Astro.locals.tryFirst;
+const place = !!tf && !tf.placed && id !== "the-problem" && id !== "the-key-question";
+if (place) tf!.placed = true;
+---
+{place && <TryFirst {...tf!} />}
+<h2 id={id} {...rest}><slot /></h2>

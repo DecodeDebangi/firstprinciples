@@ -108,6 +108,14 @@ paragraph of `## The problem` and the blockquote under `## The key question`. Ke
 Question ids are stable (`p:<slug>`, `t:<slug>`, `c:<concept>:<question text>`), so renaming a slug or rewording a
 quiz question resets readers' history for it.
 
+## Try it first
+Problem pages render MDX `h2`s through `components/ProblemH2.astro`, which places the "try it first" box
+(`TryFirst.astro`) before the first section after `## The problem` and `## The key question`. Readers can switch
+it on to hide every solution behind three hints: the pattern (home topic), the best complexity (`best`) and the
+`## Approach N:` titles. So keep those two sections first and free of spoilers, and title approaches
+`## Approach N: <name>`. The setting is one localStorage key (`firstprinciples:tryfirst`); deep links, and
+problems the reader marked solved, open with the solutions shown.
+
 ## RSS feed
 `/rss.xml` lists every problem and read, newest first, dated by `added` (`apps/site/src/lib/feed.ts`, shared with the
 `/feed/` page that explains how to subscribe). Nothing to do per page: new content appears on the next build.

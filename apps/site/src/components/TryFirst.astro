@@ -1,0 +1,118 @@
+---
+/**
+ * "Try it first": an opt-in mode (saved in this browser) that hides a problem's solutions behind three hints.
+ * Off: a one-line invitation. On: everything after this box is hidden until "Show the solutions".
+ * The early inline script on the problem page sets html.tf-on / html.tf-open before the content paints.
+ */
+export interface Props {
+  slug: string;
+  leetcodeUrl: string;
+  number: number;
+  pattern?: { name: string; href: string };
+  best: { time: string; space: string };
+  route: string[];
+}
+const { slug, leetcodeUrl, number, pattern, best, route } = Astro.props;
+---
+<section class="tf-gate" aria-label="Try it first" data-slug={slug}>
+  <div class="tf-invite">
+    <p><strong>Want to try it yourself first?</strong> Hide the solutions and get three hints instead.</p>
+    <button type="button" class="tf-btn" data-tf="on">Hide the solutions</button>
+  </div>
+
+  <div class="tf-panel">
+    <h2 class="tf-title">Try it first</h2>
+    <p class="tf-lead">The solutions are hidden so you can work on the key question above yourself. Open a hint only
+      when you're stuck; each one gives away a little more.</p>
+    <details class="tf-hint">
+      <summary>Hint 1: the pattern</summary>
+      <p>{pattern
+        ? <>It's a <a href={pattern.href}>{pattern.name}</a> problem. The topic page has the clues and a template.</>
+        : <>Think about what you'd need to look up quickly while scanning the input.</>}</p>
+    </details>
+    <details class="tf-hint">
+      <summary>Hint 2: how fast it can go</summary>
+      <p>The best solution runs in <code>{best.time}</code> time and <code>{best.space}</code> space. If your idea is
+        slower, it's a good first step: write it, then look for the repeated work.</p>
+    </details>
+    <details class="tf-hint">
+      <summary>Hint 3: the route</summary>
+      <p>The approaches on this page, in order:</p>
+      <ol>{route.map((r) => <li>{r}</li>)}</ol>
+    </details>
+    <div class="tf-actions">
+      <a class="tf-btn tf-btn--primary" href={leetcodeUrl} target="_blank" rel="noopener">Solve on LeetCode #{number} <span aria-hidden="true">↗</span></a>
+      <button type="button" class="tf-btn" data-tf="show">Show the solutions</button>
+    </div>
+    <p class="tf-small">Try it first is on for every problem, in this browser only. <button type="button" class="tf-link" data-tf="off">Turn it off</button></p>
+  </div>
+
+  <div class="tf-shown">
+    <p>Try it first is on, so other problems open with the solutions hidden.</p>
+    <span class="tf-shown__acts">
+      <button type="button" class="tf-link" data-tf="hide">Hide them again</button>
+      <span aria-hidden="true">·</span>
+      <button type="button" class="tf-link" data-tf="off">Turn it off</button>
+    </span>
+  </div>
+</section>
+
+<script>
+  const KEY = "firstprinciples:tryfirst";
+  const root = document.documentElement;
+  const save = (on: boolean) => { try { on ? localStorage.setItem(KEY, "1") : localStorage.removeItem(KEY); } catch {} };
+  const gate = document.querySelector<HTMLElement>(".tf-gate");
+  gate?.addEventListener("click", (e) => {
+    const btn = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-tf]") : null;
+    if (!btn) return;
+    const act = btn.dataset.tf;
+    if (act === "on") { save(true); root.classList.add("tf-on"); root.classList.remove("tf-open"); }
+    else if (act === "show") root.classList.add("tf-open");
+    else if (act === "hide") { root.classList.remove("tf-open"); }
+    else if (act === "off") { save(false); root.classList.remove("tf-on", "tf-open"); }
+    // Keep the box in view after the content around it changes, and move focus to its new first control.
+    gate.scrollIntoView({ block: "nearest" });
+    const visible = [...gate.querySelectorAll<HTMLElement>("button, a")].find((el) => el.offsetParent !== null);
+    if (act !== "show") visible?.focus({ preventScroll: true });
+  });
+</script>
+
+<style>
+  .tf-gate { margin: 28px 0 8px; }
+  .tf-invite, .tf-shown {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+    padding: 12px 16px; border: 1px dashed var(--border); border-radius: var(--radius); background: var(--surface);
+  }
+  .tf-invite p, .tf-shown p { margin: 0; font-size: 15px; color: var(--text-2); }
+  .tf-panel { padding: 22px 24px; border: 1px solid var(--accent); border-radius: 16px; background: var(--surface); }
+  .tf-panel .tf-title { margin: 0 0 6px; }
+  .tf-lead { margin: 0 0 14px; color: var(--text-2); }
+  .tf-hint { border-top: 1px solid var(--border); padding: 10px 0; }
+  .tf-hint:last-of-type { border-bottom: 1px solid var(--border); }
+  .tf-hint summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  .tf-hint p, .tf-hint ol { margin: 8px 0 0; color: var(--text-2); }
+  .tf-hint ol { padding-left: 22px; }
+  .tf-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .tf-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+    font: 600 15px var(--font-sans); text-decoration: none; cursor: pointer;
+  }
+  .tf-btn:hover { background: var(--accent-soft); }
+  .tf-btn--primary { background: var(--accent); color: #fff; }
+  .tf-btn--primary:hover { background: var(--accent-hover); color: #fff; }
+  .tf-small { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+  .tf-link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .tf-shown { font-size: 14.5px; }
+  .tf-shown__acts { display: inline-flex; gap: 8px; color: var(--muted); }
+
+  /* Which part shows, by mode. */
+  .tf-panel, .tf-shown { display: none; }
+  :global(html.tf-on) .tf-invite { display: none; }
+  :global(html.tf-on:not(.tf-open)) .tf-panel { display: block; }
+  :global(html.tf-on.tf-open) .tf-shown { display: flex; }
+  /* With the solutions hidden: everything after the box, and the contents links that point into it. */
+  :global(html.tf-on:not(.tf-open) .tf-gate ~ *) { display: none !important; }
+  :global(html.tf-on:not(.tf-open) .toc a:nth-child(n + 3)) { display: none; }
+  @media print { .tf-gate { display: none; } }
+</style>

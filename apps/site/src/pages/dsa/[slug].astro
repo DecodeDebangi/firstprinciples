@@ -1,7 +1,8 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
-import { practisedTopics } from "../../data/roadmap";
+import { practisedTopics, homeTopic, topicSlug } from "../../data/roadmap";
+import ProblemH2 from "../../components/ProblemH2.astro";
 import ProgressToggle from "../../components/ProgressToggle.tsx";
 
 export async function getStaticPaths() {
@@ -14,12 +15,33 @@ const { Content, headings } = await render(p);
 const toc = headings.filter((h) => h.depth === 2);
 const topicNames = practisedTopics(p.data.topics).map((t) => t.name);
 const background = (await getCollection("concepts")).filter((c) => topicNames.includes(c.data.topic)).sort((a, b) => a.data.order - b.data.order);
+const home = homeTopic(p.data.topics);
+// For the "try it first" box, which ProblemH2 places before the first solution section.
+Astro.locals.tryFirst = {
+  slug: p.id,
+  leetcodeUrl: p.data.leetcode.url,
+  number: p.data.leetcode.number,
+  pattern: home && { name: home.name, href: `/topics/${topicSlug(home.name)}/` },
+  best: p.data.best,
+  route: toc.filter((h) => /^Approach \d+:/.test(h.text)).map((h) => h.text.replace(/^Approach \d+:\s*/, "")),
+};
 const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 ---
 <Base title={p.data.title} description={p.data.summary} type="article"
   image={`/og/${p.id}.png`}
   imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`}>
   <article class="prose">
+    <script is:inline define:vars={{ slug: p.id }}>
+      // Try it first: hide the solutions before they paint, unless the reader solved it or followed a deep link.
+      try {
+        if (localStorage.getItem("firstprinciples:tryfirst") === "1") {
+          const d = document.documentElement, q = new URLSearchParams(location.search), h = location.hash.slice(1);
+          d.classList.add("tf-on");
+          const solved = JSON.parse(localStorage.getItem("firstprinciples:progress") || "{}")?.problems?.[slug]?.status === "solved";
+          if (solved || q.has("step") || q.has("approach") || (h && h !== "the-problem" && h !== "the-key-question")) d.classList.add("tf-open");
+        }
+      } catch {}
+    </script>
     <a class="back" href="/problems/">← All problems</a>
     <h1 data-pslug={p.id}>{p.data.title}</h1>
     <div class="meta">
@@ -51,7 +73,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
     <nav class="toc" aria-label="On this page">
       {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
     </nav>
-    <Content />
+    <Content components={{ h2: ProblemH2 }} />
     <aside class="your-turn" aria-label="Practice">
       <h2>Your turn</h2>
       <p>You've seen every approach run. Now write the optimal one yourself, without looking, and check it against LeetCode's tests.</p>
