@@ -25,6 +25,8 @@ Astro.locals.tryFirst = {
   best: p.data.best,
   route: toc.filter((h) => /^Approach \d+:/.test(h.text)).map((h) => h.text.replace(/^Approach \d+:\s*/, "")),
 };
+/** "Find the two positions … target. Goes from …" → its first sentence: what the problem asks. */
+const firstSentence = (s: string) => s.split(/(?<=[.?!])\s/)[0];
 const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 ---
 <Base title={p.data.title} description={p.data.summary} type="article"
@@ -67,9 +69,17 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
         </a>
       )}
     </div>
-    {background.length > 0 && (
-      <p class="bg">Background reading: {background.map((c, k) => <>{k > 0 && " · "}<a href={`/concepts/${c.id}/`}>{c.data.title}</a></>)}</p>
-    )}
+    <section class="om" aria-labelledby="om-title">
+      <h2 class="om__title" id="om-title">In one minute</h2>
+      <dl>
+        <div><dt>The problem</dt><dd>{firstSentence(p.data.summary)}</dd></div>
+        {p.data.insight && <div class="om__spoil"><dt>The trick</dt><dd>{p.data.insight}</dd></div>}
+        <div class="om__spoil"><dt>Best</dt><dd><code>{p.data.best.time}</code> time · <code>{p.data.best.space}</code> space</dd></div>
+        {background.length > 0 && (
+          <div><dt>New to this?</dt><dd>Read first: {background.map((c, k) => <>{k > 0 && " · "}<a href={`/concepts/${c.id}/`}>{c.data.title}</a></>)}</dd></div>
+        )}
+      </dl>
+    </section>
     <nav class="toc" aria-label="On this page">
       {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
     </nav>
@@ -86,8 +96,14 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
 </Base>
 
 <style>
-  .bg { margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); font-size: 14.5px; }
-  .bg a { font-weight: 600; }
+  .om { margin: 18px 0 0; padding: 14px 18px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); }
+  .om__title { margin: 0 0 8px; font: 700 13px var(--font-sans); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+  .om dl { margin: 0; display: grid; gap: 8px; }
+  .om dl > div { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 12px; }
+  .om dt { font-weight: 600; font-size: 14.5px; color: var(--muted); padding-top: 1px; }
+  .om dd { margin: 0; font-size: 16px; }
+  .om dd a { font-weight: 600; }
+  @media (max-width: 560px) { .om dl > div { grid-template-columns: minmax(0, 1fr); gap: 0; } }
   .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; }
   .added { color: var(--muted); }

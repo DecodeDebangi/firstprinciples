@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Linked list]
 added: 2026-11-11
 summary: Combine two sorted linked lists into one sorted list by relinking their nodes. Goes from copying and sorting every value to splicing nodes from the two heads with a dummy node.
+insight: "Both lists are sorted, so the smallest value left is always at one of the two fronts. Take it, link it on, and repeat."
 best: { time: "O(n + m)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

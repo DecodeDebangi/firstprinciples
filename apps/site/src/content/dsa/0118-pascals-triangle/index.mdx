@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Array, Dynamic programming]
 added: 2026-11-11
 summary: Build the first rows of Pascal's triangle. Goes from computing every number with factorials, to building each row from the one above with a single addition per number.
+insight: "Each number is the sum of the two numbers above it, so build each row from the one before."
 best: { time: "O(n²)", space: "O(1) extra" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

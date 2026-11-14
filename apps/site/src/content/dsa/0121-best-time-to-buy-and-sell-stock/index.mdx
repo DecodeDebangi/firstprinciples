@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Sliding window, Array]
 added: 2026-11-11
 summary: Pick one day to buy and a later day to sell for the biggest profit. Goes from trying every pair of days to one pass that remembers the cheapest day so far.
+insight: "Walk the days once, remembering the cheapest price so far. Selling today earns today's price minus that cheapest price."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

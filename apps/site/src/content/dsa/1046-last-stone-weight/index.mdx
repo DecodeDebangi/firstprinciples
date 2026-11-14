@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Heap, Array]
 added: 2026-11-13
 summary: Keep smashing the two heaviest stones together and report what's left. Goes from re-sorting the pile every round to a max-heap that always knows the heaviest stone.
+insight: "A max-heap always hands you the heaviest stone, so each round's two heaviest come out in O(log n) instead of a full re-sort."
 best: { time: "O(n log n)", space: "O(n)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Stack, Array]
 added: 2026-11-12
 summary: For each day, count how long until a warmer day. Goes from scanning ahead from every day to one pass with a stack of days still waiting.
+insight: "Keep a stack of days still waiting for a warmer day. Each new day settles every colder day waiting on top."
 best: { time: "O(n)", space: "O(n)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

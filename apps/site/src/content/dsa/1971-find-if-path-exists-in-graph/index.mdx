@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Graph, BFS, DFS]
 added: 2026-11-13
 summary: Can you get from one node to another by following edges? The first graph problem to learn. Builds an adjacency list, then searches outward with a queue (BFS) or a stack (DFS), never visiting a node twice.
+insight: "Explore outward from the start, marking each node the first time you reach it. If the destination gets marked, a path exists."
 best: { time: "O(V + E)", space: "O(V + E)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

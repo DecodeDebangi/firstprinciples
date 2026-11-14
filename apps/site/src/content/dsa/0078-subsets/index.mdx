@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Backtracking, Array]
 added: 2026-11-13
 summary: List every subset of a set of distinct numbers. Goes from doubling a list of subsets one number at a time to backtracking, where every call in the recursion tree is one subset.
+insight: "Every subset is a series of yes-or-no choices, one per number. Backtracking walks every series, and each call is one subset."
 best: { time: "O(n · 2ⁿ)", space: "O(n) extra" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

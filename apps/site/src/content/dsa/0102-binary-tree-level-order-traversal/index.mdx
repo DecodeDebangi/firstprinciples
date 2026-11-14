@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Tree, Binary tree, BFS]
 added: 2026-11-13
 summary: List a tree's values level by level, left to right. Goes from walking down from the root once per level to a queue that visits every node exactly once.
+insight: "A queue hands nodes back in the order they joined, which is level by level. Take one level's worth at a time."
 best: { time: "O(n)", space: "O(w)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

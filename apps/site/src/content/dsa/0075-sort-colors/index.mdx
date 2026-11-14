@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Two pointers, Sorting, Array]
 added: 2026-11-13
 summary: Sort a list of 0s, 1s and 2s in place without a library sort. Goes from counting and rewriting in two passes to the one-pass Dutch national flag algorithm with three pointers.
+insight: "Three pointers split the list into 0s, unknowns and 2s. Each step takes one unknown and swaps it into its region."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

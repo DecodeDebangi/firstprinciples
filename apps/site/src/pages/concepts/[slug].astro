@@ -1,5 +1,6 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
+import ConceptH2 from "../../components/ConceptH2.astro";
 import Base from "../../layouts/Base.astro";
 import { allTopics, practisedTopics, topicSlug } from "../../data/roadmap";
 
@@ -43,7 +44,7 @@ const gentle = practice.length ? [] : GENTLE.map((id) => problems.find((p) => p.
     <nav class="toc" aria-label="On this page">
       {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
     </nav>
-    <Content />
+    <Content components={{ h2: ConceptH2 }} />
     <aside class="after">
       {next ? (
         <a class="next" href={`/concepts/${next.id}/`}>Next read: {next.data.title} →</a>

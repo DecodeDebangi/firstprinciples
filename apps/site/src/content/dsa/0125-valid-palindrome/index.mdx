@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Two pointers, String]
 added: 2026-11-11
 summary: Decide whether a sentence reads the same backwards once you ignore case, spaces and punctuation. Goes from building a cleaned, reversed copy to two pointers that skip as they go.
+insight: "Put a pointer at each end. Skip anything that isn't a letter or digit, compare the two, and move both inward."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

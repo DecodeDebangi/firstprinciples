@@ -51,8 +51,9 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
    - `## The problem`, **in our own words**. Never paste LeetCode's statement, examples or images. Use our own example.
    - `## The key question`: the one question every approach answers faster.
    - `## Approach N: …`, brute force first, then each improvement. Each gets `<Viz client:visible approach="…" />`
-     and a `<Complexity time space>` box that **derives** both bounds and ends with what the approach wastes
-     (which motivates the next one).
+     and a `<Complexity time space>` box that **derives** both bounds and ends with a paragraph starting
+     `**What it wastes:**` (which motivates the next one). The derivation folds under "Show the working"; the badges
+     and the "What it wastes" paragraph stay visible.
    - `## Comparing the approaches`: one line introducing the race, `<Compare client:visible />`, a summary
      table, and `<GrowthChart client:visible series={growth} />`.
    - `## Common mistakes`, then `## Related problems`.
@@ -60,6 +61,9 @@ Create `apps/site/src/content/dsa/<4-digit LC number>-<slug>/` with three files,
    Each problem's link preview image (`/og/<slug>.png`) is generated automatically from the frontmatter.
 
    Frontmatter:
+   - `summary:` starts with one sentence saying what the problem asks; the "In one minute" box at the top shows it.
+   - `insight:` is the key idea in one plain sentence (the "trick" in that box), for someone who has never seen the
+     problem. It's a spoiler, so try-it-first mode hides it.
    - `added:` is the date the page goes up. It puts the problem under "Recently added" on the home page.
    - `leetcode:` is required: `{ number, url: "https://leetcode.com/problems/<slug>/" }`. It drives the
      "Solve on LeetCode" button at the top and the "Your turn" box at the end.

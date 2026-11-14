@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Linked list]
 added: 2026-11-11
 summary: Turn a singly linked list around so the last node becomes the head. Goes from copying the values out, to flipping every arrow in one pass, to doing it recursively.
+insight: "Walk the list once and turn each arrow around as you pass it, keeping three pointers so you never lose the rest of the list."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

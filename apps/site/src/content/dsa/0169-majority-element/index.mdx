@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Hash map, Array]
 added: 2026-11-13
 summary: Find the value that appears more than half the time. Goes from counting every value, to a hash map of counts, to Boyer–Moore voting with just two variables.
+insight: "Pair each copy of one value off against a different value. The majority has more copies than everything else, so it's the one left."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

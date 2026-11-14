@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Two pointers, Greedy, Array]
 added: 2026-11-13
 summary: Pick two vertical lines that hold the most water between them. Goes from trying every pair to two pointers that always give up the shorter line.
+insight: "Start with the widest pair. The shorter line limits the water, so moving the taller one can never help: always move the shorter one inward."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

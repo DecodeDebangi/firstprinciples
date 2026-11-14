@@ -22,6 +22,8 @@ const dsa = defineCollection({
     /** The day it was added to the site. */
     added: z.coerce.date(),
     summary: z.string(),
+    /** The key idea in one plain sentence, for the "In one minute" box (hidden in try-it-first mode). */
+    insight: z.string().optional(),
     /** Best time / space, shown on cards. */
     best: z.object({ time: z.string(), space: z.string() }),
     /** Clean Instagram reel URL for this problem (no ?share-tracking query). */

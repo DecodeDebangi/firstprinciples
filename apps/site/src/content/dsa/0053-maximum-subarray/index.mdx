@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Greedy, Dynamic programming, Array]
 added: 2026-11-12
 summary: Find the contiguous stretch with the largest sum. Goes from trying every start and end to Kadane's one pass, which extends the run or starts fresh when it turns negative.
+insight: "Walk once, keeping the best sum that ends here. If that sum drops below zero it can only hurt what follows, so start fresh."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

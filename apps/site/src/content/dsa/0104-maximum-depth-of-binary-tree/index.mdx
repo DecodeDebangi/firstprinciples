@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Tree, Binary tree]
 added: 2026-11-13
 summary: Count how many levels a binary tree has. Compares asking each subtree for its depth recursively with counting levels one at a time using a queue.
+insight: "A tree's depth is 1 plus the deeper of its two subtrees. Ask each subtree, and the answer builds itself."
 best: { time: "O(n)", space: "O(h)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

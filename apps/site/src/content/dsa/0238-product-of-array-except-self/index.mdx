@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Prefix sum, Array]
 added: 2026-11-12
 summary: For each position, multiply every other number, without using division. Goes from recomputing each product, to prefix and suffix tables, to a single output array and a running product.
+insight: "Each answer is the product of everything to its left times the product of everything to its right. Build both with running products."
 best: { time: "O(n)", space: "O(1) extra" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

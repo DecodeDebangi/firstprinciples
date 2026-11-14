@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Hash map, Array]
 added: 2026-11-13
 summary: Find the longest run of consecutive integers hidden in an unsorted list, in O(n). Goes from sorting and scanning to a hash set that only counts from the start of each run.
+insight: "Put every number in a hash set, and only start counting from a number with no left neighbour, so each run is counted once."
 best: { time: "O(n)", space: "O(n)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Hash map, Array]
 added: 2026-11-12
 summary: Decide whether any value appears twice. Goes from comparing every pair, to sorting so equal values sit side by side, to a set that remembers what it has seen.
+insight: "Keep a hash set of the values seen so far. The first value that's already in it is a duplicate."
 best: { time: "O(n)", space: "O(n)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Two pointers, Array]
 added: 2026-11-13
 summary: Push every zero to the end while keeping the other numbers in order, in place. Goes from bubbling zeros backwards pass after pass to one pass with a read and a write pointer.
+insight: "A write pointer marks where the next non-zero belongs. Copy each non-zero there as you read, and the zeros end up behind."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

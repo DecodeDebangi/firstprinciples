@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Graph, BFS, DFS]
 added: 2026-11-13
 summary: Given courses and their prerequisites, can you finish them all? Yes exactly when the prerequisite arrows have no cycle. Two ways to check, taking whatever is ready (Kahn's topological sort) or a depth-first search that spots a path looping back on itself.
+insight: "You can finish everything unless the prerequisites form a loop. Keep taking courses that have nothing left to wait for, and see if you get stuck."
 best: { time: "O(V + E)", space: "O(V + E)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

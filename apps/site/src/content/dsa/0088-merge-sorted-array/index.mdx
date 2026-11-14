@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Two pointers, Sorting, Array]
 added: 2026-11-13
 summary: Merge one sorted array into another that has empty room at its end. Goes from copying in and re-sorting to filling from the back with three pointers, in place.
+insight: "The free room is at the end, so fill from the back: compare the two largest values left and place the bigger one last."
 best: { time: "O(m + n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

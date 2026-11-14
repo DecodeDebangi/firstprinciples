@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Heap, Hash map, Sorting]
 added: 2026-11-13
 summary: Return the k values that appear most often. Every approach counts first; the difference is how you pick the top k. Goes from sorting the counts, to a size-k heap, to buckets indexed by count.
+insight: "Count every value first. Then drop each value into a bucket numbered by its count, and read the buckets from the highest count down."
 best: { time: "O(n)", space: "O(n)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

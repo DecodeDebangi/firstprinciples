@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Array, Prefix sum]
 added: 2026-11-11
 summary: Find the position where everything on the left adds up to everything on the right. Goes from re-adding both sides every time, to prefix sums, to one running total.
+insight: "Keep a running total of the left side as you walk. The right side is the total, minus the left, minus the current number."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Binary search, Array]
 added: 2026-11-12
 summary: Find where a number is, or where it would go, in a sorted list. Goes from a linear scan to a binary search whose stopping point is the answer.
+insight: "Binary search halves the range each step, and when the number isn't there, the spot where the search stops is exactly where it would go."
 best: { time: "O(log n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Backtracking, Array]
 added: 2026-11-13
 summary: List every ordering of a set of distinct numbers. Goes from inserting each new number into every gap to backtracking, filling one position at a time and undoing each choice.
+insight: "Fill the positions one at a time: try each unused number, go deeper, then take it back and try the next one."
 best: { time: "O(n · n!)", space: "O(n) extra" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

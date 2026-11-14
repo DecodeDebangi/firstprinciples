@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Heap, Binary search]
 added: 2026-11-13
 summary: Numbers keep arriving, and after each one you report the kth largest so far. Goes from keeping every number sorted to a min-heap that keeps only the k largest.
+insight: "Keep only the k largest numbers in a min-heap. Its smallest value, on top, is the kth largest overall."
 best: { time: "O(log k) per add", space: "O(k)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

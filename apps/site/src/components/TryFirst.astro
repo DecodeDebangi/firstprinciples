@@ -114,5 +114,7 @@ const { slug, leetcodeUrl, number, pattern, best, route } = Astro.props;
   /* With the solutions hidden: everything after the box, and the contents links that point into it. */
   :global(html.tf-on:not(.tf-open) .tf-gate ~ *) { display: none !important; }
   :global(html.tf-on:not(.tf-open) .toc a:nth-child(n + 3)) { display: none; }
+  /* The "In one minute" box's trick and best complexity are spoilers too (they're hints 2 and 3). */
+  :global(html.tf-on:not(.tf-open) .om__spoil) { display: none !important; }
   @media print { .tf-gate { display: none; } }
 </style>

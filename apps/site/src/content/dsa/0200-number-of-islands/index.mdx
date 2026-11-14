@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Graph, DFS, BFS]
 added: 2026-11-13
 summary: Count the islands on a map of land and water. A grid is a graph in disguise. Scan for land nobody has claimed, then flood the whole island with DFS or BFS so it's counted once.
+insight: "Scan the grid. Each time you find land nobody has claimed, count a new island and flood all of it, so it's never counted again."
 best: { time: "O(rows × cols)", space: "O(rows × cols)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

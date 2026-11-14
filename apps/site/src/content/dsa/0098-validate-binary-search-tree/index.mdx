@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Tree, BST, Binary tree]
 added: 2026-11-13
 summary: Check that every value in a node's left subtree is smaller and every value in its right subtree is bigger, at every node. Goes from checking whole subtrees at each node to one pass with an in-order walk or inherited ranges.
+insight: "Every node must fit inside a range set by the nodes above it. Pass that range down as you go, and each node is checked once."
 best: { time: "O(n)", space: "O(h)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Hash map, String]
 added: 2026-11-12
 summary: Decide whether two words use exactly the same letters. Goes from sorting both and comparing, to counting letters in one word and cancelling them with the other.
+insight: "Count each letter of the first word, then subtract the letters of the second. Anagrams cancel out exactly to zero."
 best: { time: "O(n)", space: "O(k)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

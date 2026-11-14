@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Sliding window, Hash map, String]
 added: 2026-11-11
 summary: Find the longest stretch of a string with no repeated character. Goes from growing a run from every start, to a sliding window, to a window that jumps using each character's last position.
+insight: "Keep a window with no repeats. When a character repeats, jump the window's left edge past its last appearance instead of starting over."
 best: { time: "O(n)", space: "O(k)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

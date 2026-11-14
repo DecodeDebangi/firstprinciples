@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Array, Hash map, Two pointers]
 added: 2026-11-06
 summary: Find the two positions whose numbers add up to a target. Goes from checking every pair, to sorting, to remembering what you've already seen.
+insight: "For each number, the partner you need is target minus it. Keep every number you've passed in a hash map, and each partner is found in one step."
 best: { time: "O(n)", space: "O(n)" }
 reel: https://www.instagram.com/reel/DfZSEoUAptq/
 ---

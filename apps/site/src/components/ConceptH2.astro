@@ -1,0 +1,12 @@
+---
+/** The `h2` used inside concept reads: marks the interview-prep section as optional depth for beginners. */
+const { id, ...rest } = Astro.props;
+const deeper = id === "interview-theory";
+---
+<h2 id={id} {...rest}><slot />{deeper && <span class="deeper">Go deeper</span>}</h2>
+{deeper && <p class="deeper-note">For interview prep. Skip it on a first read: everything above is the core idea.</p>}
+
+<style>
+  .deeper { margin-left: 10px; vertical-align: middle; font: 700 11.5px var(--font-sans); text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .deeper-note { margin: -4px 0 12px; font-size: 15px; color: var(--muted); }
+</style>

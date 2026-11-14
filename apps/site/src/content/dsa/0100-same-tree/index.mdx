@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Tree, Binary tree]
 added: 2026-11-13
 summary: Decide whether two binary trees have the same shape and the same values. Goes from writing both trees out in full to walking them in step and stopping at the first difference.
+insight: "Walk both trees together, and stop at the first spot where one has a node the other doesn't, or the values differ."
 best: { time: "O(n)", space: "O(h)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

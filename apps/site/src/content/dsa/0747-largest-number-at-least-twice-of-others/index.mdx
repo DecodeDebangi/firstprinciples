@@ -5,6 +5,7 @@ difficulty: Easy
 topics: [Array]
 added: 2026-11-11
 summary: Decide whether the biggest number is at least double every other one. Goes from testing every candidate against everyone, to two passes, to tracking just the top two.
+insight: "Track the largest and second-largest numbers in one pass. The answer exists only if the largest is at least twice the runner-up."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";

@@ -5,6 +5,7 @@ difficulty: Medium
 topics: [Two pointers, Array, Binary search]
 added: 2026-11-11
 summary: Find two numbers in a sorted list that add up to a target, using constant extra space. Goes from every pair, to binary-searching each partner, to two pointers squeezing in from the ends.
+insight: "The list is sorted, so start at both ends: a sum that's too small moves the left pointer right, too big moves the right one left."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";
