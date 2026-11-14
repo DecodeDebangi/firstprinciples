@@ -1,0 +1,112 @@
+---
+title: Intersection of Two Linked Lists
+leetcode: { number: 160, url: "https://leetcode.com/problems/intersection-of-two-linked-lists/" }
+difficulty: Easy
+topics: [Linked list, Two pointers, Hash map]
+added: 2026-11-14
+summary: Find the node where two linked lists join and share the rest of their nodes. Goes from comparing every pair of nodes, to remembering A's nodes in a set, to two pointers that swap lists so they arrive together.
+insight: "Let each pointer walk its own list and then the other one. Both travel the same total distance, so they reach the shared node at the same moment."
+best: { time: "O(m + n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the heads of two singly linked lists, `headA` and `headB`. At some point the two lists may join: from
+that node on, they share the very same nodes all the way to the end, like two roads merging into one. Return the
+first shared node, or `none` if they never join. The lists must stay as they are.
+
+For example, A is `2 → 7 → 9 → 4` and B is `3 → 7 → 1 → 9 → 4`, where `9 → 4` is one shared tail. The answer is
+the node holding `9`. Both lists also contain a `7`, but those are two separate nodes that happen to hold the same
+value, so they don't count.
+
+In the animations, shaded nodes are the shared ones. They appear in both rows because they *are* the same nodes:
+`9`'s `next` is `4` whether you arrived from A or from B.
+
+## The key question
+
+> **How can I tell that two pointers are on the *same node*, and get them there at the same time?**
+
+Comparing values isn't enough (two different nodes can hold `7`). You have to compare the nodes themselves. The
+approaches differ in how much work they do to find a match.
+
+## Approach 1: Brute force, every pair of nodes
+
+For each node in A, walk all of B and ask whether this is the very same node.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(m · n)" space="O(1)">
+**Time.** For each of the `m` nodes in A, the inner loop can walk all `n` nodes of B: up to `m · n` comparisons,
+**O(m · n)**. With two lists of 10,000 nodes that's 100 million checks.
+
+**Space.** Just the two pointers `a` and `b`: **O(1)**.
+
+**What it wastes:** it walks the whole of B again for every node of A, even though B never changes.
+</Complexity>
+
+## Approach 2: Hash set of A's nodes
+
+Walk A once and put every node (not its value) into a set. Then walk B: the first node already in the set is
+where the lists meet.
+
+<Viz client:visible approach="hashSet" />
+
+<Complexity time="O(m + n)" space="O(m)">
+**Time.** One pass over A to fill the set, one pass over B to check it, each step O(1) on average: **O(m + n)**.
+
+**Space.** The set holds every node of A: **O(m)**.
+
+**What it wastes:** memory for all of A, when the only thing that matters is *where* the shared part starts.
+</Complexity>
+
+## Approach 3: Two pointers that switch lists (optimal)
+
+The trouble with walking A and B side by side is that they have different lengths before the shared part, so the
+pointers reach it at different times. The trick: when a pointer reaches the end of its list, send it to the start
+of the **other** list.
+
+Then `a` walks A's own part, the shared part, and B's own part. `b` walks B's own part, the shared part, and A's
+own part. Same total distance, so they step onto the first shared node together. If the lists never meet, both
+reach `none` at the same moment instead, and `a = b` ends the loop there too.
+
+<Viz client:visible approach="twoPointers" />
+
+<Complexity time="O(m + n)" space="O(1)">
+**Time.** Each pointer walks at most both lists once: at most `m + n + 2` steps each, **O(m + n)**.
+
+**Space.** Two pointers and nothing else: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same lists, one shared clock ticking once per check:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Every pair of nodes | O(m · n) | O(1) | rewalks B for every node of A |
+| Hash set of A's nodes | O(m + n) | O(m) | fast, but stores all of A |
+| Two pointers that switch | O(m + n) | O(1) | fast and stores nothing |
+
+<GrowthChart client:visible series={growth} caption="Checks when the lists never meet, as their total length n grows." />
+
+## Common mistakes
+
+- **Comparing values instead of nodes.** `a.val = b.val` matches B's `7` with A's `7`, which aren't shared. Compare
+  the nodes themselves (`a = b`).
+- **Switching on `a.next = none` instead of `a = none`.** If a pointer jumps to the other list without first
+  stepping onto `none`, then when the lists never meet, the two pointers never land on `none` together, and the
+  loop never ends.
+- **Changing the lists.** Tricks like marking visited nodes or reversing a list break the rule that the lists must
+  stay as they were.
+
+## Related problems
+
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/): another walk over two lists at once.
+- [Reverse Linked List](/dsa/reverse-linked-list/): rewiring pointers, the other core linked-list skill.
+- Linked List Cycle (LeetCode 141) uses the same "two pointers that eventually meet" idea, with one moving faster.
