@@ -1,0 +1,151 @@
+---
+/**
+ * Header search: a button (and the / or Ctrl/⌘+K keys) opens a dialog that searches /search.json, fetched the first
+ * time it opens. Results are links, so Enter and middle-click work; arrow keys move between them.
+ * Without JavaScript the button is a plain link to the problem list, which has its own search.
+ */
+const SUGGEST = ["two sum", "recursion", "hash map", "O(log n)", "dp", "704"];
+---
+<a class="search-btn" id="search-open" href="/problems/" aria-label="Search the site" title="Search (press /)" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+  <span class="search-btn__label">Search</span>
+  <kbd class="search-btn__kbd">/</kbd>
+</a>
+
+<dialog class="sd" id="search-dlg" aria-label="Search the site">
+  <form method="dialog" class="sd__bar" role="search" onsubmit="return false">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+    <input id="sd-q" type="search" placeholder="Search problems, reads, topics, terms" autocomplete="off" spellcheck="false"
+      aria-describedby="sd-status" aria-controls="sd-results" />
+    <button type="button" class="sd__close" id="sd-close">Close</button>
+  </form>
+  <p class="sd__status" id="sd-status" role="status" aria-live="polite"></p>
+  <div class="sd__body">
+    <div class="sd__empty" id="sd-empty">
+      <p>Try one of these, a LeetCode number, or any word from a page:</p>
+      <p class="sd__suggest">{SUGGEST.map((s) => <button type="button" data-q={s}>{s}</button>)}</p>
+    </div>
+    <ul class="sd__results" id="sd-results"></ul>
+  </div>
+  <p class="sd__hint"><kbd>↑</kbd> <kbd>↓</kbd> to move · <kbd>Enter</kbd> to open · <kbd>Esc</kbd> to close</p>
+</dialog>
+
+<script>
+  import { search, type SearchItem } from "../lib/search";
+
+  const dlg = document.getElementById("search-dlg") as HTMLDialogElement | null;
+  const opener = document.getElementById("search-open");
+  const q = document.getElementById("sd-q") as HTMLInputElement;
+  const list = document.getElementById("sd-results")!;
+  const status = document.getElementById("sd-status")!;
+  const empty = document.getElementById("sd-empty")!;
+  const LABEL: Record<SearchItem["k"], string> = { problem: "Problem", read: "Read", topic: "Topic", term: "Glossary", page: "Page" };
+  let items: Promise<SearchItem[]> | null = null;
+  const load = () => (items ??= fetch("/search.json").then((r) => r.json()).catch(() => { items = null; return []; }));
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  async function render() {
+    const query = q.value.trim();
+    empty.hidden = !!query;
+    if (!query) { list.innerHTML = ""; status.textContent = ""; return; }
+    const all = await load();
+    if (q.value.trim() !== query) return; // typed on while loading
+    if (!all.length) { list.innerHTML = ""; status.textContent = "Search couldn't load. Check your connection and try again."; return; }
+    const hits = search(all, query);
+    status.textContent = hits.length ? `${hits.length === 20 ? "Top 20" : hits.length} result${hits.length === 1 ? "" : "s"}` : `Nothing matches "${query}". Try fewer or shorter words.`;
+    list.innerHTML = hits.map(({ item, snippet }) => `
+      <li><a class="sd__hit" href="${esc(item.u)}">
+        <span class="sd__kind sd__kind--${item.k}">${LABEL[item.k]}</span>
+        <span class="sd__title">${esc(item.t)}</span>
+        <span class="sd__sub">${esc(item.s)}</span>
+        ${snippet ? `<span class="sd__snip">${snippet}</span>` : ""}
+      </a></li>`).join("");
+  }
+
+  let timer = 0;
+  q?.addEventListener("input", () => { clearTimeout(timer); timer = window.setTimeout(render, 60); });
+
+  const open = () => {
+    if (!dlg) return;
+    if (!dlg.open) dlg.showModal();
+    q.focus(); q.select();
+    load();
+  };
+  const close = () => dlg?.open && dlg.close();
+
+  opener?.addEventListener("click", (e) => { if (!dlg) return; e.preventDefault(); open(); });
+  document.getElementById("sd-close")?.addEventListener("click", close);
+  dlg?.addEventListener("click", (e) => { if (e.target === dlg) close(); }); // a click on the backdrop
+  dlg?.addEventListener("close", () => opener?.focus());
+  empty.addEventListener("click", (e) => {
+    const b = e.target instanceof Element ? e.target.closest<HTMLButtonElement>("button[data-q]") : null;
+    if (b) { q.value = b.dataset.q!; render(); q.focus(); }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+    if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey)) {
+      e.preventDefault(); open(); return;
+    }
+    if (dlg?.open && e.key === "Escape") { e.preventDefault(); close(); return; }
+    if (!dlg?.open || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
+    const links = [...list.querySelectorAll<HTMLAnchorElement>("a")];
+    if (!links.length) return;
+    e.preventDefault();
+    const i = links.indexOf(document.activeElement as HTMLAnchorElement);
+    if (e.key === "ArrowDown") (links[i + 1] ?? links[0]).focus();
+    else if (i <= 0) q.focus();
+    else links[i - 1].focus();
+  });
+</script>
+
+<style is:global>
+  .search-btn {
+    margin-left: 18px; height: 34px; display: inline-flex; align-items: center; gap: 8px; padding: 0 10px 0 11px; flex: none;
+    border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); text-decoration: none;
+    font: 500 14px var(--font-sans);
+  }
+  .search-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .search-btn kbd { font: 600 11px var(--font-mono); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); }
+  .site-header .search-btn ~ .theme-toggle { margin-left: 8px; }
+  @media (max-width: 900px) { .search-btn__label, .search-btn__kbd { display: none; } .search-btn { width: 34px; padding: 0; justify-content: center; } }
+  @media (max-width: 560px) { .search-btn { margin-left: auto; width: 32px; height: 32px; } .site-header .search-btn ~ .theme-toggle { margin-left: 8px; } }
+
+  .sd {
+    width: min(640px, calc(100vw - 32px)); max-height: min(78vh, 720px); margin: 10vh auto auto; padding: 0;
+    border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text);
+    box-shadow: 0 30px 80px -20px rgb(var(--shadow-rgb) / .45); overflow: hidden;
+  }
+  .sd[open] { display: flex; flex-direction: column; }
+  .sd::backdrop { background: rgb(var(--shadow-rgb) / .35); backdrop-filter: blur(2px); }
+  .sd__bar:focus-within { box-shadow: inset 0 -2px 0 var(--accent); }
+  .sd__bar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .sd__bar input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--text); font: 17px var(--font-sans); }
+  .sd__bar input::-webkit-search-cancel-button { display: none; }
+  .sd__close { font: 600 13px var(--font-sans); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; }
+  .sd__status { margin: 0; padding: 8px 16px 0; font-size: 13px; color: var(--muted); min-height: 0; }
+  .sd__status:empty { display: none; }
+  .sd__body { overflow-y: auto; padding: 6px 8px 8px; }
+  .sd__empty { padding: 10px 8px; color: var(--text-2); font-size: 15px; }
+  .sd__empty p { margin: 0 0 10px; }
+  .sd__suggest { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sd__suggest button { font: 500 14px var(--font-mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; }
+  .sd__suggest button:hover { border-color: var(--accent); color: var(--accent); }
+  .sd__results { list-style: none; margin: 0; padding: 0; }
+  .sd__hit {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; row-gap: 2px; padding: 10px; border-radius: 10px;
+    text-decoration: none; color: var(--text); outline: none;
+  }
+  .sd__hit:hover, .sd__hit:focus-visible, .sd__hit:focus { background: var(--accent-soft); }
+  .sd__kind { grid-row: span 3; align-self: start; margin-top: 2px; font: 700 10.5px var(--font-sans); text-transform: uppercase; letter-spacing: .05em; padding: 3px 7px; border-radius: 6px; background: var(--surface-2); color: var(--muted); min-width: 5.6em; white-space: nowrap; text-align: center; }
+  .sd__title { font-weight: 600; }
+  .sd__sub { font-size: 13px; color: var(--muted); }
+  .sd__snip { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+  .sd__snip mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .sd__hint { margin: 0; padding: 8px 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--muted); }
+  .sd__hint kbd { font: 600 11px var(--font-mono); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); }
+  @media (max-width: 560px) {
+    .sd { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+    .sd__hint { display: none; }
+  }
+</style>

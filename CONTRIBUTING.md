@@ -143,6 +143,12 @@ lists them all. Code, headings, links and the players are never marked, and a re
 When a page uses a word a beginner wouldn't know, add it to the glossary rather than defining it inline. Avoid match
 words with an everyday meaning ("edge", "leaves"), and check a new term's matches in context before committing.
 
+## Search
+The header search (`components/Search.astro`, also opened with `/` or Ctrl/⌘+K) searches `/search.json`, built from
+every problem, read, topic, glossary term and main page (`pages/search.json.ts`); the ranking lives in
+`lib/search.ts`. New content is indexed automatically. If a topic has a common short form people type ("dp", "bfs"),
+add it to `ALIASES` in `search.json.ts`.
+
 ## RSS feed
 `/rss.xml` lists every problem and read, newest first, dated by `added` (`apps/site/src/lib/feed.ts`, shared with the
 `/feed/` page that explains how to subscribe). Nothing to do per page: new content appears on the next build.
@@ -161,6 +167,17 @@ component (use `--on-accent` for text on accent buttons, `color-mix()` on a tone
 device setting. Dark is screen-only: printing, the studio and the link preview images stay light. Each theme's chart
 series (light: terracotta, teal, plum; dark: indigo, teal, orange) was validated as a colour-blind-safe set on its
 own surface; re-validate if you change one.
+
+## Accessibility
+- Text must reach 4.5:1 contrast (3:1 for large text) in **both** themes. The tokens are tuned for that: use
+  `--text`, `--text-2`, `--muted`, `--accent` for text, never a tone *border* colour (those are for borders;
+  difficulty pills have their own `--pill-*-ink`).
+- Every control needs a name a screen reader can say: visible text, or `aria-label` on icon-only buttons.
+  Decorative SVGs get `aria-hidden="true"`.
+- Don't remove focus outlines without a replacement; the global `:focus-visible` ring covers most elements.
+- Headings go in order (h1, then h2, then h3); add a visually hidden heading (`class="sr"`) rather than skip one.
+- Motion: the global `prefers-reduced-motion` rule shortens every transition; never autoplay when it's set.
+- Step messages are announced (`aria-live`); keep them as complete sentences.
 
 ## Commands
 - `npm run dev`: local dev server

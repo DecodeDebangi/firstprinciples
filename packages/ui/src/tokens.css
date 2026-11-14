@@ -9,9 +9,9 @@
   --border: #e6d9c4;
   --text: #2b2118;
   --text-2: #5e4e3e;
-  --muted: #7d6a55;
-  --accent: #b4532a;
-  --accent-hover: #9a4422;
+  --muted: #74634f;
+  --accent: #a64c27;
+  --accent-hover: #8f4120;
   --accent-soft: #f8e4d6;
   --on-accent: #fff;          /* text on an accent-filled button */
   --code-ink: #6e3a1f;        /* inline code */
@@ -29,6 +29,11 @@
   --tone-active-border: #b4532a;
   --tone-miss-bg: #f6dcd6;
   --tone-miss-border: #b0413a;
+
+  /* Difficulty pill text: darker than the tone borders so small text passes 4.5:1 on the pill background. */
+  --pill-easy-ink: #477331;
+  --pill-medium-ink: #895f0e;
+  --pill-hard-ink: #9c3933;
 
   /* Chart series: validated as a set on --surface (all pairs, CVD-safe) */
   --series-1: #c2562b; /* terracotta */
@@ -73,6 +78,9 @@
     --tone-active-border: #7c93ff;
     --tone-miss-bg: #3b1418;
     --tone-miss-border: #f85149;
+    --pill-easy-ink: #3fb950;
+    --pill-medium-ink: #e3b341;
+    --pill-hard-ink: #f85149;
 
     --series-1: #7489ee; /* indigo */
     --series-2: #00ab98; /* teal */
