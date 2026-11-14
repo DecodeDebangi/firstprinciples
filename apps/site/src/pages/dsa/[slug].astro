@@ -100,8 +100,8 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
     transition: background-color .15s, color .15s, box-shadow .15s;
   }
   .act:hover { background: var(--accent-soft); color: var(--accent-hover); box-shadow: var(--shadow); }
-  .act--primary { background: var(--accent); color: #fff; }
-  .act--primary:hover { background: var(--accent-hover); color: #fff; }
+  .act--primary { background: var(--accent); color: var(--on-accent); }
+  .act--primary:hover { background: var(--accent-hover); color: var(--on-accent); }
   .your-turn {
     margin-top: 56px; padding: 28px; text-align: center;
     background: var(--accent-soft); border-radius: 20px;

@@ -2,7 +2,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 2px 4px rgb(74 52 30 / .05), 0 18px 40px -12px rgb(74 52 30 / .22);
+  box-shadow: 0 2px 4px rgb(var(--shadow-rgb) / .05), 0 18px 40px -12px rgb(var(--shadow-rgb) / .22);
   overflow: hidden;
 }
 .fp-demo__bar {

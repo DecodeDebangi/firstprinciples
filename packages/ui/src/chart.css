@@ -26,7 +26,7 @@
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13px;
-  box-shadow: 0 4px 16px rgb(74 52 30 / .14);
+  box-shadow: 0 4px 16px rgb(var(--shadow-rgb) / .14);
   white-space: nowrap;
 }
 .fp-chart__tip-title { font-weight: 600; margin-bottom: 4px; }

@@ -129,8 +129,8 @@ const how = [
     z-index: -1;
     inset: -40px calc(50% - 50vw) 0;
     background:
-      radial-gradient(circle at 1px 1px, rgb(180 83 42 / .16) 1px, transparent 0) 0 0 / 22px 22px,
-      linear-gradient(180deg, #f8ead9 0%, var(--bg) 100%);
+      radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(180deg, var(--hero-top) 0%, var(--bg) 100%);
     mask-image: linear-gradient(180deg, #000 70%, transparent);
   }
   @media (max-width: 860px) {
@@ -155,8 +155,8 @@ const how = [
     transition: transform .15s, box-shadow .15s, background-color .15s;
   }
   .btn:hover { color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow); }
-  .btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn--primary:hover { background: var(--accent-hover); color: #fff; }
+  .btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn--primary:hover { background: var(--accent-hover); color: var(--on-accent); }
   .reassure { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
   .demo-note { margin: 12px 4px 0; font-size: 13px; color: var(--muted); text-align: center; }
 
@@ -183,7 +183,7 @@ const how = [
   .card__date { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
   .more { margin-top: 20px; }
   .day h3 { display: flex; align-items: center; gap: 10px; font: 600 15px var(--font-sans); color: var(--muted); margin: 24px 0 12px; }
-  .new { font-size: 12px; font-weight: 600; color: #fff; background: var(--accent); padding: 1px 9px; border-radius: 999px; }
+  .new { font-size: 12px; font-weight: 600; color: var(--on-accent); background: var(--accent); padding: 1px 9px; border-radius: 999px; }
   .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
   .card {
     display: flex; flex-direction: column; height: 100%;

@@ -1,5 +1,6 @@
 /* Shared design tokens for every firstprinciples app (site now, dashboard later).
-   Light only, warm palette: cream paper, brown ink, terracotta accent. */
+   Light: warm paper, brown ink, terracotta accent. Dark ("Midnight"): navy, cool ink, indigo accent.
+   Dark follows the device unless the reader picks a theme (html[data-theme]); print is always light. */
 :root {
   color-scheme: light;
   --bg: #faf5ec;
@@ -12,6 +13,12 @@
   --accent: #b4532a;
   --accent-hover: #9a4422;
   --accent-soft: #f8e4d6;
+  --on-accent: #fff;          /* text on an accent-filled button */
+  --code-ink: #6e3a1f;        /* inline code */
+  --header-bg: rgb(250 245 236 / .9);
+  --hero-top: #f8ead9;
+  --hero-dot: rgb(180 83 42 / .16);
+  --shadow-rgb: 74 52 30;     /* shadow colour, used as rgb(var(--shadow-rgb) / alpha) */
 
   /* Animation cell states */
   --tone-compare-bg: #fbe8b8;
@@ -34,6 +41,49 @@
   --radius: 12px;
   --shadow: 0 1px 2px rgb(74 52 30 / .06), 0 4px 14px rgb(74 52 30 / .05);
 }
+
+/* Dark ("Midnight"): the same token names, so components need no theme logic. The site's head script sets
+   html[data-theme] from the reader's choice, or the device setting if they haven't chosen. Screen only, so
+   printing stays light. Chart series validated as a set on --surface (dark band, CVD, contrast). */
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0a0f1e;
+    --surface: #111829;
+    --surface-2: #182136;
+    --border: #26304a;
+    --text: #e5e9f5;
+    --text-2: #b3bcd4;
+    --muted: #8590ad;
+    --accent: #7c93ff;
+    --accent-hover: #9cadff;
+    --accent-soft: #1c2550;
+    --on-accent: #0a0f1e;
+    --code-ink: #9ecbff;
+    --header-bg: rgb(10 15 30 / .85);
+    --hero-top: #182136;
+    --hero-dot: rgb(255 255 255 / .07);
+    --shadow-rgb: 0 0 0;
+
+    --tone-compare-bg: #3a2f0c;
+    --tone-compare-border: #e3b341;
+    --tone-found-bg: #0f2e1c;
+    --tone-found-border: #3fb950;
+    --tone-active-bg: #1c2550;
+    --tone-active-border: #7c93ff;
+    --tone-miss-bg: #3b1418;
+    --tone-miss-border: #f85149;
+
+    --series-1: #7489ee; /* indigo */
+    --series-2: #00ab98; /* teal */
+    --series-3: #d6751e; /* orange */
+
+    /* Headings go sans in dark, to read like a dev tool. */
+    --font-serif: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 4px 14px rgb(0 0 0 / .3);
+  }
+}
+
 
 /* Show code exactly as typed: no ligatures turning != into ≠ or == into a joined glyph.
    !important because component `font:` shorthands would otherwise reset it. */

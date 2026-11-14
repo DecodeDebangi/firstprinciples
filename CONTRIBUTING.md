@@ -126,9 +126,14 @@ recording. It reads the same `steps.ts`, so nothing extra is needed per problem.
 kept out of search and the sitemap. `?approach=<id>` opens a specific approach.
 
 ## Look and feel
-Light only, warm: cream paper, brown ink, terracotta accent; Fraunces headings, Inter body, JetBrains Mono code.
-All colours are tokens in `packages/ui/src/tokens.css`. The chart series (terracotta, teal, plum) were validated
-as a colour-blind-safe set; re-validate them if you change them.
+Two themes, same token names. **Light**: warm cream paper, brown ink, terracotta accent, Fraunces headings.
+**Dark ("Midnight")**: navy, cool ink, indigo accent, Inter headings, so it reads like a dev tool. Inter body and
+JetBrains Mono code in both. All colours are tokens in `packages/ui/src/tokens.css`; never hard-code a colour in a
+component (use `--on-accent` for text on accent buttons, `color-mix()` on a tone token for glows). The head script in
+`Base.astro` sets `html[data-theme]` from the reader's choice (header toggle, saved as `firstprinciples:theme`) or the
+device setting. Dark is screen-only: printing, the studio and the link preview images stay light. Each theme's chart
+series (light: terracotta, teal, plum; dark: indigo, teal, orange) was validated as a colour-blind-safe set on its
+own surface; re-validate if you change one.
 
 ## Commands
 - `npm run dev`: local dev server
