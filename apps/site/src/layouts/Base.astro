@@ -1,6 +1,7 @@
 ---
 import "@firstprinciples/ui/tokens.css";
 import "../styles/global.css";
+import TermPopover from "../components/TermPopover.astro";
 
 interface Props {
   title: string;
@@ -86,6 +87,7 @@ const ogImage = new URL(image, Astro.site);
         <span>© {new Date().getFullYear()} stacknaut</span>
         <span class="footer-right">
           <a href="/cheatsheet/">Cheat sheet</a>
+          <a href="/glossary/">Glossary</a>
           <a href="/feed/">RSS</a>
           <span>Made with algorithms and <span role="img" aria-label="love">❤️</span></span>
           <a class="social" href="https://www.instagram.com/stacknaut" target="_blank" rel="noopener" aria-label="stacknaut on Instagram">
@@ -102,6 +104,7 @@ const ogImage = new URL(image, Astro.site);
         </span>
       </div>
     </footer>
+    <TermPopover />
     <script>import "../lib/marks";</script>
     <script>
       const btn = document.getElementById("theme-toggle");

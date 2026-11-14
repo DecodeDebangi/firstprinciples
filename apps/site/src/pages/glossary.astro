@@ -1,0 +1,82 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { glossary } from "../data/glossary.mjs";
+
+/** Every term, A to Z, with its definition and the read that explains it. Terms on pages link to their entry here. */
+const concepts = await getCollection("concepts");
+const titleOf = new Map(concepts.map((c) => [c.id, c.data.title]));
+const terms = [...glossary].sort((a, b) => a.term.localeCompare(b.term, "en", { sensitivity: "base" }));
+const groups = new Map<string, typeof terms>();
+for (const t of terms) {
+  const k = /[A-Z]/i.test(t.term[0]) ? t.term[0].toUpperCase() : "#";
+  groups.set(k, [...(groups.get(k) ?? []), t]);
+}
+---
+<Base title="Glossary" description={`Plain-English definitions of ${terms.length} words used in DSA, from array and index to recursion, Big-O, hash maps and dynamic programming.`}>
+  <article class="gl">
+    <a class="back" href="/">← Home</a>
+    <h1>Glossary</h1>
+    <p class="lead">Every word the problems and reads lean on, in plain English. On any page, a word with a dotted
+      underline is in here: tap it to see its meaning without leaving the page.</p>
+
+    <label class="gl-find">
+      <span class="sr">Find a term</span>
+      <input type="search" id="gl-q" placeholder={`Find a term (${terms.length} in all)`} autocomplete="off" />
+    </label>
+    <nav class="gl-letters" aria-label="Jump to a letter">
+      {[...groups.keys()].map((k) => <a href={`#letter-${k}`}>{k}</a>)}
+    </nav>
+
+    {[...groups].map(([k, list]) => (
+      <section class="gl-group" id={`letter-${k}`} data-group>
+        <h2>{k}</h2>
+        <dl>
+          {list.map((t) => (
+            <div class="gl-item" id={t.id} data-text={`${t.term} ${t.match.join(" ")} ${t.def}`.toLowerCase()}>
+              <dt>{t.term}</dt>
+              <dd>
+                {t.def}
+                {t.read && titleOf.has(t.read) && <> <a href={`/concepts/${t.read}/`}>Read: {titleOf.get(t.read)}</a></>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    ))}
+    <p class="gl-none" id="gl-none" hidden>No term matches that. Try a shorter word.</p>
+  </article>
+</Base>
+
+<script>
+  const q = document.getElementById("gl-q") as HTMLInputElement | null;
+  const items = [...document.querySelectorAll<HTMLElement>(".gl-item")];
+  const groups = [...document.querySelectorAll<HTMLElement>("[data-group]")];
+  q?.addEventListener("input", () => {
+    const v = q.value.trim().toLowerCase();
+    items.forEach((it) => { it.hidden = !!v && !(it.dataset.text ?? "").includes(v); });
+    groups.forEach((g) => { g.hidden = !g.querySelector(".gl-item:not([hidden])"); });
+    document.getElementById("gl-none")!.hidden = items.some((it) => !it.hidden);
+  });
+</script>
+
+<style>
+  .back { font-size: 15px; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+  .gl h1 { margin: 0; }
+  .lead { color: var(--text-2); max-width: 64ch; margin: 12px 0 18px; }
+  .gl-find input {
+    width: 100%; max-width: 440px; box-sizing: border-box; font: 16px var(--font-sans); padding: 10px 14px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  .gl-letters { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 14px 0 8px; }
+  .gl-letters a { min-width: 30px; text-align: center; padding: 3px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); text-decoration: none; font-weight: 600; font-size: 14px; }
+  .gl-group { scroll-margin-top: 90px; }
+  .gl-group h2 { margin: 26px 0 6px; font-size: 22px; color: var(--accent); }
+  .gl-group dl { margin: 0; }
+  .gl-item { padding: 10px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 90px; }
+  .gl-item:target { background: var(--accent-soft); border-radius: 8px; padding-inline: 10px; }
+  .gl-item dt { font-weight: 700; }
+  .gl-item dd { margin: 2px 0 0; color: var(--text-2); max-width: 70ch; }
+  .gl-item dd a { white-space: nowrap; font-weight: 600; font-size: 14.5px; }
+  .gl-none { color: var(--muted); }
+</style>

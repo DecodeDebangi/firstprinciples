@@ -130,6 +130,15 @@ it on to hide every solution behind three hints: the pattern (home topic), the b
 `## Approach N: <name>`. The setting is one localStorage key (`firstprinciples:tryfirst`); deep links, and
 problems the reader marked solved, open with the solutions shown.
 
+## Glossary
+Beginner terms live in `apps/site/src/data/glossary.mjs` (term, the words to match, a one- or two-sentence
+definition, and the read that explains it). When the site builds, a Markdown plugin (`src/lib/rehype-glossary.mjs`,
+registered as a `hastPlugins` entry on Astro's Sätteri processor in `astro.config.mjs`) marks the first use of each
+term on every problem and read; tapping it shows the definition (`components/TermPopover.astro`). `/glossary/`
+lists them all. Code, headings, links and the players are never marked, and a read never marks its own terms.
+When a page uses a word a beginner wouldn't know, add it to the glossary rather than defining it inline. Avoid match
+words with an everyday meaning ("edge", "leaves"), and check a new term's matches in context before committing.
+
 ## RSS feed
 `/rss.xml` lists every problem and read, newest first, dated by `added` (`apps/site/src/lib/feed.ts`, shared with the
 `/feed/` page that explains how to subscribe). Nothing to do per page: new content appears on the next build.

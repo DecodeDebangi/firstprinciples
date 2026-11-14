@@ -1,0 +1,72 @@
+---
+/**
+ * Tap-to-define for glossary terms (links marked by src/lib/rehype-glossary.mjs). One shared card: tapping a
+ * term opens it under the word; tapping again, Escape or tapping elsewhere closes it. Without JavaScript the
+ * term is a plain link to /glossary/.
+ */
+---
+<div class="tp" id="term-pop" role="dialog" aria-modal="false" aria-labelledby="tp-term" hidden>
+  <p class="tp__term" id="tp-term"></p>
+  <p class="tp__def" id="tp-def"></p>
+  <p class="tp__links"><a id="tp-read" href="#">Learn more</a><a id="tp-all" href="/glossary/">All terms</a></p>
+</div>
+
+<script>
+  const pop = document.getElementById("term-pop") as HTMLDivElement | null;
+  const $ = (id: string) => document.getElementById(id)!;
+  let open: HTMLAnchorElement | null = null;
+  const close = (refocus = false) => {
+    if (!pop || !open) return;
+    pop.hidden = true;
+    open.setAttribute("aria-expanded", "false");
+    if (refocus) open.focus();
+    open = null;
+  };
+  const place = (t: HTMLElement) => {
+    if (!pop) return;
+    const r = t.getBoundingClientRect(), w = Math.min(320, innerWidth - 24);
+    pop.style.width = `${w}px`;
+    pop.style.left = `${Math.max(12, Math.min(r.left + scrollX, scrollX + innerWidth - w - 12))}px`;
+    pop.style.top = `${r.bottom + scrollY + 8}px`;
+  };
+  document.addEventListener("click", (e) => {
+    const t = e.target instanceof Element ? e.target.closest<HTMLAnchorElement>("a.term") : null;
+    if (t && pop) {
+      e.preventDefault();
+      if (open === t) { close(); return; }
+      close();
+      $("tp-term").textContent = t.dataset.term ?? t.textContent;
+      $("tp-def").textContent = t.dataset.def ?? "";
+      const read = $("tp-read") as HTMLAnchorElement;
+      read.hidden = !t.dataset.read;
+      if (t.dataset.read) read.href = t.dataset.read;
+      ($("tp-all") as HTMLAnchorElement).href = t.getAttribute("href") ?? "/glossary/";
+      pop.hidden = false;
+      place(t);
+      t.setAttribute("aria-expanded", "true");
+      open = t;
+      return;
+    }
+    if (open && !(e.target instanceof Node && pop?.contains(e.target))) close();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && open) close(true); });
+  addEventListener("resize", () => open && place(open));
+</script>
+
+<style is:global>
+  a.term {
+    color: inherit; text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help;
+  }
+  a.term:hover, a.term[aria-expanded="true"] { color: var(--accent); text-decoration-style: solid; }
+  .tp {
+    position: absolute; z-index: 50; padding: 12px 14px; border-radius: 12px; background: var(--surface);
+    border: 1px solid var(--border); box-shadow: 0 10px 30px -10px rgb(var(--shadow-rgb) / .35); font: 15px/1.5 var(--font-sans);
+  }
+  .tp[hidden] { display: none; }
+  .tp__term { margin: 0 0 4px; font-weight: 700; color: var(--text); }
+  .tp__def { margin: 0; color: var(--text-2); }
+  .tp__links { margin: 10px 0 0; display: flex; gap: 16px; font-size: 14px; font-weight: 600; }
+  .tp__links a[hidden] { display: none; }
+  @media print { a.term { text-decoration: none; } .tp { display: none !important; } }
+</style>
