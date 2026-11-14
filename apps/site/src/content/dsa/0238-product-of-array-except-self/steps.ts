@@ -19,15 +19,15 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function productExceptSelf(nums)
-  n ← length(nums)
-  out ← empty list
-  for i ← 0 to n - 1
-    p ← 1
-    for j ← 0 to n - 1
-      if j ≠ i
-        p *= nums[j]
-    out.push(p)
-  return out
+    n ← length(nums)
+    out ← empty list
+    for i ← 0 to n - 1
+        p ← 1
+        for j ← 0 to n - 1
+            if j ≠ i
+                p *= nums[j]
+        out.push(p)
+    return out
 `,
   run({ nums: a }, t) {
     const n = a.length;
@@ -50,13 +50,13 @@ const twoArrays: Approach<Input> = {
   id: "arrays",
   name: "Prefix and suffix arrays",
   code: `function productExceptSelf(nums)
-  n ← length(nums)
-  left, right ← two arrays of n, all 1
-  for i ← 1 to n - 1
-    left[i] ← left[i - 1] * nums[i - 1]
-  for i ← n - 2 down to 0
-    right[i] ← right[i + 1] * nums[i + 1]
-  return [left[i] * right[i] for each i]
+    n ← length(nums)
+    left, right ← two arrays of n, all 1
+    for i ← 1 to n - 1
+        left[i] ← left[i - 1] * nums[i - 1]
+    for i ← n - 2 down to 0
+        right[i] ← right[i + 1] * nums[i + 1]
+    return [left[i] * right[i] for each i]
 `,
   run({ nums: a }, t) {
     const n = a.length;
@@ -90,15 +90,15 @@ const oneArray: Approach<Input> = {
   id: "inplace",
   name: "One output array",
   code: `function productExceptSelf(nums)
-  n ← length(nums)
-  out ← array of n, all 1
-  for i ← 1 to n - 1
-    out[i] ← out[i - 1] * nums[i - 1]
-  right ← 1
-  for i ← n - 1 down to 0
-    out[i] *= right
-    right *= nums[i]
-  return out
+    n ← length(nums)
+    out ← array of n, all 1
+    for i ← 1 to n - 1
+        out[i] ← out[i - 1] * nums[i - 1]
+    right ← 1
+    for i ← n - 1 down to 0
+        out[i] *= right
+        right *= nums[i]
+    return out
 `,
   run({ nums: a }, t) {
     const n = a.length;

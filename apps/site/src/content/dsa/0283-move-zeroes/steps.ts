@@ -14,11 +14,11 @@ const bubble: Approach<Input> = {
   id: "bubble",
   name: "Bubble each zero to the end",
   code: `function moveZeroes(nums)
-  n ← length(nums)
-  for i ← 0 to n - 1
-    for j ← 0 to n - 2 - i
-      if nums[j] = 0 and nums[j + 1] ≠ 0
-        swap nums[j] and nums[j + 1]
+    n ← length(nums)
+    for i ← 0 to n - 1
+        for j ← 0 to n - 2 - i
+            if nums[j] = 0 and nums[j + 1] ≠ 0
+                swap nums[j] and nums[j + 1]
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -47,11 +47,11 @@ const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers: read and write",
   code: `function moveZeroes(nums)
-  write ← 0
-  for read ← 0 to length(nums) - 1
-    if nums[read] ≠ 0
-      swap nums[write] and nums[read]
-      write += 1
+    write ← 0
+    for read ← 0 to length(nums) - 1
+        if nums[read] ≠ 0
+            swap nums[write] and nums[read]
+            write += 1
 `,
   run({ nums }, t) {
     const a = [...nums];

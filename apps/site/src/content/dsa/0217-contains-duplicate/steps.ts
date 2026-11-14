@@ -14,12 +14,12 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function containsDuplicate(nums)
-  n ← length(nums)
-  for i ← 0 to n - 1
-    for j ← i + 1 to n - 1
-      if nums[i] = nums[j]
-        return true
-  return false
+    n ← length(nums)
+    for i ← 0 to n - 1
+        for j ← i + 1 to n - 1
+            if nums[i] = nums[j]
+                return true
+    return false
 `,
   run({ nums: a }, t) {
     t.step({ line: 2, array: a, vars: { i: null, j: null }, message: "Compare every number with every number after it." });
@@ -43,11 +43,11 @@ const sortNeighbours: Approach<Input> = {
   id: "sort",
   name: "Sort, then check neighbours",
   code: `function containsDuplicate(nums)
-  nums ← sorted(nums)
-  for i ← 1 to length(nums) - 1
-    if nums[i] = nums[i - 1]
-      return true
-  return false
+    nums ← sorted(nums)
+    for i ← 1 to length(nums) - 1
+        if nums[i] = nums[i - 1]
+            return true
+    return false
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -77,12 +77,12 @@ const hashSet: Approach<Input> = {
   id: "set",
   name: "Hash set",
   code: `function containsDuplicate(nums)
-  seen ← empty set
-  for each x in nums
-    if x in seen
-      return true
-    seen.add(x)
-  return false
+    seen ← empty set
+    for each x in nums
+        if x in seen
+            return true
+        seen.add(x)
+    return false
 `,
   run({ nums: a }, t) {
     const seen = new Set<number>();

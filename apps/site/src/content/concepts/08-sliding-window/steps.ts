@@ -25,14 +25,14 @@ const recompute: Approach<Input> = {
   id: "recompute",
   name: "Recompute every window",
   code: `function maxWindowSum(a, k)
-  best ← none
-  for i ← 0 to length(a) - k
-    s ← 0
-    for j ← i to i + k - 1
-      s += a[j]  // add it again
-    if best = none or s > best
-      best ← s
-  return best
+    best ← none
+    for i ← 0 to length(a) - k
+        s ← 0
+        for j ← i to i + k - 1
+            s += a[j]  // add it again
+        if best = none or s > best
+            best ← s
+    return best
 `,
   run({ nums: a, k }, t) {
     let best: number | null = null;
@@ -59,12 +59,12 @@ const slide: Approach<Input> = {
   id: "slide",
   name: "Fixed window: add one, drop one",
   code: `function maxWindowSum(a, k)
-  s ← sum(a[0..k - 1])  // the first window
-  best ← s
-  for r ← k to length(a) - 1
-    s += a[r] - a[r - k]  // in, out
-    best ← max(best, s)
-  return best
+    s ← sum(a[0..k - 1])  // the first window
+    best ← s
+    for r ← k to length(a) - 1
+        s += a[r] - a[r - k]  // in, out
+        best ← max(best, s)
+    return best
 `,
   run({ nums: a, k }, t) {
     let s = 0;
@@ -93,15 +93,15 @@ const grow: Approach<Input> = {
   id: "grow-shrink",
   name: "Variable window: grow, then shrink",
   code: `function shortestWindow(a, target)  // a > 0
-  best ← ∞
-  lo ← 0, s ← 0
-  for each index hi, value x in a
-    s += x  // grow right
-    while s ≥ target
-      best ← min(best, hi - lo + 1)
-      s -= a[lo]  // shrink left
-      lo += 1
-  if best = ∞ then return 0 else return best
+    best ← ∞
+    lo ← 0, s ← 0
+    for each index hi, value x in a
+        s += x  // grow right
+        while s ≥ target
+            best ← min(best, hi - lo + 1)
+            s -= a[lo]  // shrink left
+            lo += 1
+    if best = ∞ then return 0 else return best
 `,
   run({ nums: a, target }, t) {
     let lo = 0, s = 0, best = Infinity;

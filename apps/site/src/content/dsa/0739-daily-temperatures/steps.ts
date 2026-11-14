@@ -14,14 +14,14 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: look ahead from each day",
   code: `function dailyTemperatures(temps)
-  n ← length(temps)
-  answer ← array of n, all 0
-  for i ← 0 to n - 1
-    for j ← i + 1 to n - 1
-      if temps[j] > temps[i]
-        answer[i] ← j - i
-        break
-  return answer
+    n ← length(temps)
+    answer ← array of n, all 0
+    for i ← 0 to n - 1
+        for j ← i + 1 to n - 1
+            if temps[j] > temps[i]
+                answer[i] ← j - i
+                break
+    return answer
 `,
   run({ temps: a }, t) {
     const n = a.length;
@@ -50,14 +50,14 @@ const monoStack: Approach<Input> = {
   id: "stack",
   name: "Monotonic stack",
   code: `function dailyTemperatures(temps)
-  answer ← array of length(temps), all 0
-  stack ← empty stack  // days still waiting
-  for each index i, value t in temps
-    while stack's top day is colder than t
-      j ← stack.pop()
-      answer[j] ← i - j
-    stack.push(i)
-  return answer
+    answer ← array of length(temps), all 0
+    stack ← empty stack  // days still waiting
+    for each index i, value t in temps
+        while stack's top day is colder than t
+            j ← stack.pop()
+            answer[j] ← i - j
+        stack.push(i)
+    return answer
 `,
   run({ temps: a }, t) {
     const n = a.length;

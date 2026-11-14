@@ -49,32 +49,32 @@ const ruleWords: Record<Rule, string> = { start: "the earliest start", short: "t
 
 const codes: Record<Rule, string> = {
   start: `function maxMeetings(meetings)
-  sort meetings by start time
-  count, freeAt ← 0, 0
-  for each (start, end) in meetings
-    if start ≥ freeAt  // room is free
-      count += 1
-      freeAt ← end
-  return count
+    sort meetings by start time
+    count, freeAt ← 0, 0
+    for each (start, end) in meetings
+        if start ≥ freeAt  // room is free
+            count += 1
+            freeAt ← end
+    return count
 `,
   short: `function maxMeetings(meetings)
-  sort meetings by length (end - start)
-  kept ← empty list
-  for each (s, e) in meetings
-    ok ← no (a, b) in kept overlaps (s, e)
-          // they overlap when s < b and a < e
-    if ok  // clashes with nothing kept
-      kept.push((s, e))
-  return length(kept)
+    sort meetings by length (end - start)
+    kept ← empty list
+    for each (s, e) in meetings
+        ok ← no (a, b) in kept overlaps (s, e)
+            // they overlap when s < b and a < e
+        if ok  // clashes with nothing kept
+            kept.push((s, e))
+    return length(kept)
 `,
   end: `function maxMeetings(meetings)
-  sort meetings by end time
-  count, freeAt ← 0, 0
-  for each (start, end) in meetings
-    if start ≥ freeAt  // room is free
-      count += 1
-      freeAt ← end
-  return count
+    sort meetings by end time
+    count, freeAt ← 0, 0
+    for each (start, end) in meetings
+        if start ≥ freeAt  // room is free
+            count += 1
+            freeAt ← end
+    return count
 `,
 };
 

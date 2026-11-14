@@ -1,0 +1,69 @@
+---
+title: Arrays and indices
+topic: Coding basics
+kind: Explainer
+order: 2
+summary: What an array is, why positions start at 0, how a loop visits every value, and the mistakes almost everyone makes at the edges. Most problems on this site start from an array.
+added: 2026-11-14
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
+
+## A row of numbered boxes
+
+An **array** is a list of values kept in a row, like a row of boxes. Each box has a number written on it, its
+**index** (its position). Here is an array called `a`:
+
+| index | 0 | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|---|
+| value | 7 | 3 | 9 | 4 | 6 |
+
+- `a[0]` is 7, `a[2]` is 9, `a[4]` is 6.
+- `length(a)` is 5: there are five boxes.
+- The **first** index is always 0, and the **last** is `length(a) - 1`, here 4.
+
+Why 0 and not 1? The index says how far a box is from the start. The first box is zero steps from the start.
+Nearly every language counts this way, so it's worth getting used to now.
+
+**Reading any box is instant.** Asking for `a[3]` doesn't mean walking past boxes 0, 1 and 2. The computer jumps
+straight there, however long the array is. That's what makes arrays so useful.
+
+Text works the same way. The word `"code"` is an array of characters: `s[0]` is `"c"` and `s[3]` is `"e"`.
+
+## Visiting every box
+
+Most problems need to look at every value. A loop does that by moving an index `i` from the first box to the
+last. Step through it and watch `i`, `a[i]` and `sum` in the Variables panel:
+
+<Viz client:visible approach="total" />
+
+Five boxes took five steps. Ten boxes would take ten. That idea, **work that grows with the size of the input**,
+is what [Big-O](/concepts/big-o-in-plain-words/) measures. The next read builds up to it.
+
+## Keeping track of the best so far
+
+Another everyday pattern: walk once and remember the best value you've seen. Here the loop starts at index 1,
+because the first box is already the starting guess:
+
+<Viz client:visible approach="biggest" />
+
+Notice you can't stop early. Until the last box has been checked, a bigger value might still be waiting there.
+
+## Grids: arrays of arrays
+
+Some problems give you a grid, like a map or a board. That's an array whose boxes are themselves arrays:
+`grid[r][c]` is row `r`, column `c`. Both start at 0, so the top-left corner is `grid[0][0]`.
+
+## Mistakes everyone makes at the edges
+
+- **Going one past the end.** `a[length(a)]` doesn't exist: the last box is `a[length(a) - 1]`. This is called an
+  *off-by-one* error, and it's the most common bug in all of programming.
+- **Forgetting the empty array.** If `a` has no values, `a[0]` doesn't exist either. Ask what your code does when
+  the input is empty.
+- **Changing the array while walking it.** Adding or removing boxes in the middle of a loop shifts every index
+  after them, so the loop skips or repeats values.
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

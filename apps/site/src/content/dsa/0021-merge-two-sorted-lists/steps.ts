@@ -28,17 +28,17 @@ const sortRebuild: Approach<Input> = {
   id: "sort",
   name: "Collect, sort, rebuild",
   code: `function mergeTwoLists(list1, list2)
-  vals ← empty list
-  for each node in [list1, list2]
-    while node ≠ none
-      vals.push(node.val)
-      node ← node.next
-  vals.sort()
-  dummy ← new ListNode(), tail ← dummy
-  for each v in vals
-    tail.next ← new ListNode(v)
-    tail ← tail.next
-  return dummy.next
+    vals ← empty list
+    for each node in [list1, list2]
+        while node ≠ none
+            vals.push(node.val)
+            node ← node.next
+    vals.sort()
+    dummy ← new ListNode(), tail ← dummy
+    for each v in vals
+        tail.next ← new ListNode(v)
+        tail ← tail.next
+    return dummy.next
 `,
   run({ list1, list2 }, t) {
     const A = nodesOf(list1, "a"), B = nodesOf(list2, "b");
@@ -78,17 +78,17 @@ const splice: Approach<Input> = {
   id: "splice",
   name: "Splice with a dummy head",
   code: `function mergeTwoLists(list1, list2)
-  dummy ← new ListNode(), tail ← dummy
-  while list1 ≠ none and list2 ≠ none
-    if list1.val ≤ list2.val
-      tail.next ← list1
-      list1 ← list1.next
-    else
-      tail.next ← list2
-      list2 ← list2.next
-    tail ← tail.next
-  tail.next ← the list that is left over
-  return dummy.next
+    dummy ← new ListNode(), tail ← dummy
+    while list1 ≠ none and list2 ≠ none
+        if list1.val ≤ list2.val
+            tail.next ← list1
+            list1 ← list1.next
+        else
+            tail.next ← list2
+            list2 ← list2.next
+        tail ← tail.next
+    tail.next ← the list that is left over
+    return dummy.next
 `,
   run({ list1, list2 }, t) {
     const A = nodesOf(list1, "a"), B = nodesOf(list2, "b");

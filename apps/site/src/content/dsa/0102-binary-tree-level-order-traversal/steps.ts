@@ -15,22 +15,22 @@ const rewalk: Approach<Input> = {
   id: "rewalk",
   name: "One walk per level",
   code: `function levelOrder(root)
-  result, depth ← [], 0
-  while true
-    level ← empty list
-    collect(root, 0, depth, level)
-    if level is empty
-      return result
-    result.push(level)
-    depth += 1
+    result, depth ← [], 0
+    while true
+        level ← empty list
+        collect(root, 0, depth, level)
+        if level is empty
+            return result
+        result.push(level)
+        depth += 1
 
 function collect(node, d, target, level)
-  if node = none or d > target
-    return
-  if d = target
-    level.push(node.val)
-  collect(node.left, d + 1, target, level)
-  collect(node.right, d + 1, target, level)
+    if node = none or d > target
+        return
+    if d = target
+        level.push(node.val)
+    collect(node.left, d + 1, target, level)
+    collect(node.right, d + 1, target, level)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -71,17 +71,17 @@ const bfs: Approach<Input> = {
   id: "bfs",
   name: "Queue, one level at a time",
   code: `function levelOrder(root)
-  result ← empty list
-  queue ← root = none ? [] : queue of [root]
-  while queue not empty
-    level ← empty list
-    repeat length(queue) times
-      node ← queue.popFront()
-      level.push(node.val)
-      queue.push(node.left) if it exists
-      queue.push(node.right) if it exists
-    result.push(level)
-  return result
+    result ← empty list
+    queue ← root = none ? [] : queue of [root]
+    while queue not empty
+        level ← empty list
+        repeat length(queue) times
+            node ← queue.popFront()
+            level.push(node.val)
+            queue.push(node.left) if it exists
+            queue.push(node.right) if it exists
+        result.push(level)
+    return result
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

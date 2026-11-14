@@ -18,12 +18,12 @@ const recursive: Approach<Input> = {
   id: "dfs",
   name: "Recursive: swap, then recurse",
   code: `function invertTree(root)
-  if root = none
-    return none
-  swap root.left and root.right
-  invertTree(root.left)
-  invertTree(root.right)
-  return root
+    if root = none
+        return none
+    swap root.left and root.right
+    invertTree(root.left)
+    invertTree(root.right)
+    return root
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -56,13 +56,13 @@ const bfs: Approach<Input> = {
   id: "bfs",
   name: "Iterative with a queue",
   code: `function invertTree(root)
-  queue ← root = none ? [] : queue of [root]
-  while queue not empty
-    node ← queue.popFront()
-    swap node.left and node.right
-    queue.push(node.left) if it exists
-    queue.push(node.right) if it exists
-  return root
+    queue ← root = none ? [] : queue of [root]
+    while queue not empty
+        node ← queue.popFront()
+        swap node.left and node.right
+        queue.push(node.left) if it exists
+        queue.push(node.right) if it exists
+    return root
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

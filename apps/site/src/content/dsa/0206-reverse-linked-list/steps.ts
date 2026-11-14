@@ -37,15 +37,15 @@ const copyRebuild: Approach<Input> = {
   id: "copy",
   name: "Copy the values, rebuild backwards",
   code: `function reverseList(head)
-  vals ← empty list
-  while head ≠ none
-    vals.push(head.val)
-    head ← head.next
-  dummy ← new ListNode(), tail ← dummy
-  for each v in vals, last to first
-    tail.next ← new ListNode(v)
-    tail ← tail.next
-  return dummy.next
+    vals ← empty list
+    while head ≠ none
+        vals.push(head.val)
+        head ← head.next
+    dummy ← new ListNode(), tail ← dummy
+    for each v in vals, last to first
+        tail.next ← new ListNode(v)
+        tail ← tail.next
+    return dummy.next
 `,
   run({ head: vals }, t) {
     const next = original(vals);
@@ -82,13 +82,13 @@ const iterative: Approach<Input> = {
   id: "iterative",
   name: "Three pointers, in place",
   code: `function reverseList(head)
-  prev, curr ← none, head
-  while curr ≠ none
-    nxt ← curr.next
-    curr.next ← prev
-    prev ← curr
-    curr ← nxt
-  return prev
+    prev, curr ← none, head
+    while curr ≠ none
+        nxt ← curr.next
+        curr.next ← prev
+        prev ← curr
+        curr ← nxt
+    return prev
 `,
   run({ head: vals }, t) {
     const next = original(vals);
@@ -126,12 +126,12 @@ const recursive: Approach<Input> = {
   id: "recursive",
   name: "Recursive",
   code: `function reverseList(head)
-  if head = none or head.next = none
-    return head
-  newHead ← reverseList(head.next)
-  head.next.next ← head
-  head.next ← none
-  return newHead
+    if head = none or head.next = none
+        return head
+    newHead ← reverseList(head.next)
+    head.next.next ← head
+    head.next ← none
+    return newHead
 `,
   run({ head: vals }, t) {
     const next = original(vals);

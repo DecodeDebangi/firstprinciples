@@ -18,15 +18,15 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function dominantIndex(nums)
-  for i ← 0 to length(nums) - 1
-    ok ← true
-    for j ← 0 to length(nums) - 1
-      if j ≠ i and nums[i] < 2 * nums[j]
-        ok ← false
-        break
-    if ok
-      return i
-  return -1
+    for i ← 0 to length(nums) - 1
+        ok ← true
+        for j ← 0 to length(nums) - 1
+            if j ≠ i and nums[i] < 2 * nums[j]
+                ok ← false
+                break
+        if ok
+            return i
+    return -1
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -61,14 +61,14 @@ const twoPasses: Approach<Input> = {
   id: "two",
   name: "Find max, then check",
   code: `function dominantIndex(nums)
-  best ← 0
-  for i ← 1 to length(nums) - 1
-    if nums[i] > nums[best]
-      best ← i
-  for i ← 0 to length(nums) - 1
-    if i ≠ best and nums[best] < 2 * nums[i]
-      return -1
-  return best
+    best ← 0
+    for i ← 1 to length(nums) - 1
+        if nums[i] > nums[best]
+            best ← i
+    for i ← 0 to length(nums) - 1
+        if i ≠ best and nums[best] < 2 * nums[i]
+            return -1
+    return best
 `,
   run({ nums }, t) {
     const n = nums.length;
@@ -107,15 +107,15 @@ const onePass: Approach<Input> = {
   id: "one",
   name: "One pass: largest and runner-up",
   code: `function dominantIndex(nums)
-  first, second ← -1, -1  // top two
-  best ← -1
-  for each index i, value x in nums
-    if x > first
-      second ← first
-      first, best ← x, i
-    else if x > second
-      second ← x
-  return first ≥ 2 * second ? best : -1
+    first, second ← -1, -1  // top two
+    best ← -1
+    for each index i, value x in nums
+        if x > first
+            second ← first
+            first, best ← x, i
+        else if x > second
+            second ← x
+    return first ≥ 2 * second ? best : -1
 `,
   run({ nums }, t) {
     let first = -1, second = -1, best = -1;

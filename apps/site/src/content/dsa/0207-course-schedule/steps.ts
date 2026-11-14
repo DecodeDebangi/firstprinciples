@@ -43,20 +43,20 @@ const kahn: Approach<Input> = {
   name: "Take what's ready (Kahn's algorithm)",
   code: `// queue: join at back, leave from front
 function canFinish(n, prereqs)
-  after ← n empty lists
-  indeg ← array of n, all 0  // prereqs left
-  for each (a, b) in prereqs
-    after[b].push(a); indeg[a] += 1
-  ready ← queue of every i with indeg[i] = 0
-  taken ← 0
-  while ready not empty
-    b ← ready.popFront()
-    taken += 1
-    for each a in after[b]
-      indeg[a] -= 1  // one prerequisite done
-      if indeg[a] = 0
-        ready.push(a)
-  return taken = n
+    after ← n empty lists
+    indeg ← array of n, all 0  // prereqs left
+    for each (a, b) in prereqs
+        after[b].push(a); indeg[a] += 1
+    ready ← queue of every i with indeg[i] = 0
+    taken ← 0
+    while ready not empty
+        b ← ready.popFront()
+        taken += 1
+        for each a in after[b]
+            indeg[a] -= 1  // one prerequisite done
+            if indeg[a] = 0
+                ready.push(a)
+    return taken = n
 `,
   run(input, t) {
     const { n } = input;
@@ -106,22 +106,22 @@ const dfs: Approach<Input> = {
   id: "dfs",
   name: "Depth-first cycle check (three states)",
   code: `function canFinish(n, prereqs)
-  after ← n empty lists
-  for each (a, b) in prereqs
-    after[b].push(a)  // b comes before a
-  state ← n zeros  // 0 new, 1 open, 2 done
-  function hasCycle(b)
-    if state[b] = 1
-      return true  // back on our own path
-    if state[b] = 2
-      return false  // checked already
-    state[b] ← 1
-    for each a in after[b]
-      if hasCycle(a)
-        return true
-    state[b] ← 2
-    return false
-  return no i in 0 to n - 1 has hasCycle(i)
+    after ← n empty lists
+    for each (a, b) in prereqs
+        after[b].push(a)  // b comes before a
+    state ← n zeros  // 0 new, 1 open, 2 done
+    function hasCycle(b)
+        if state[b] = 1
+            return true  // back on our own path
+        if state[b] = 2
+            return false  // checked already
+        state[b] ← 1
+        for each a in after[b]
+            if hasCycle(a)
+                return true
+        state[b] ← 2
+        return false
+    return no i in 0 to n - 1 has hasCycle(i)
 `,
   run(input, t) {
     const { n } = input;

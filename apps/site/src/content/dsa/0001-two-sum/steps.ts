@@ -18,12 +18,12 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function twoSum(nums, target)
-  n ← length(nums)
-  for i ← 0 to n - 1
-    for j ← i + 1 to n - 1
-      if nums[i] + nums[j] = target
-        return [i, j]
-  return []
+    n ← length(nums)
+    for i ← 0 to n - 1
+        for j ← i + 1 to n - 1
+            if nums[i] + nums[j] = target
+                return [i, j]
+    return []
 `,
   run({ nums, target }, t) {
     const n = nums.length;
@@ -57,17 +57,17 @@ const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Sort + two pointers",
   code: `function twoSum(nums, target)
-  pairs ← (value, index) pairs, by value
-  lo, hi ← 0, length(pairs) - 1
-  while lo < hi
-    s ← pairs[lo][0] + pairs[hi][0]
-    if s = target
-      return [pairs[lo][1], pairs[hi][1]]
-    else if s < target
-      lo += 1
-    else
-      hi -= 1
-  return []
+    pairs ← (value, index) pairs, by value
+    lo, hi ← 0, length(pairs) - 1
+    while lo < hi
+        s ← pairs[lo][0] + pairs[hi][0]
+        if s = target
+            return [pairs[lo][1], pairs[hi][1]]
+        else if s < target
+            lo += 1
+        else
+            hi -= 1
+    return []
 `,
   run({ nums, target }, t) {
     const n = nums.length;
@@ -116,13 +116,13 @@ const hashMap: Approach<Input> = {
   id: "hash",
   name: "Hash map (one pass)",
   code: `function twoSum(nums, target)
-  seen ← empty map  // value → index
-  for each index i, value x in nums
-    need ← target - x
-    if need in seen
-      return [seen[need], i]
-    seen[x] ← i
-  return []
+    seen ← empty map  // value → index
+    for each index i, value x in nums
+        need ← target - x
+        if need in seen
+            return [seen[need], i]
+        seen[x] ← i
+    return []
 `,
   run({ nums, target }, t) {
     const seen = new Map<number, number>();

@@ -7,6 +7,19 @@ import { GraphView, BoardView } from "./GraphView";
 import { InputForm, parseDraft, toText, type InputField, type InputValues, type Prepared } from "./input";
 import "./player.css";
 
+/** Each 4-space indent becomes a 4ch-wide span with a faint guide line, like an editor's indent guides. */
+function Indented({ line }: { line: string }) {
+  if (!line) return <>{" "}</>;
+  const lead = line.length - line.trimStart().length;
+  const levels = Math.floor(lead / 4);
+  return (
+    <>
+      {Array.from({ length: levels }, (_, k) => <span key={k} className="fp-indent">{"    "}</span>)}
+      {line.slice(levels * 4)}
+    </>
+  );
+}
+
 export type { InputField, InputValues, Prepared } from "./input";
 
 export interface ArrayPlayerProps<I extends InputValues> {
@@ -276,9 +289,10 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
           {codeLines.map((l, i) => (
             <div key={i} className={`fp-line${step.line === i + 1 && !question ? " is-current" : ""}`}>
               <span className="fp-ln">{i + 1}</span>
-              <code>{l || " "}</code>
+              <code><Indented line={l} /></code>
             </div>
           ))}
+          <a className="fp-code-help" href="/concepts/how-to-read-the-code/">How to read this code</a>
         </pre>
       </div>
 

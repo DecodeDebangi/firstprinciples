@@ -11,7 +11,7 @@
 
 .fp-player__top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
   gap: 16px;
 }
 @media (max-width: 760px) {
@@ -165,6 +165,11 @@
 /* Line numbers never pass 2 digits, so a narrow gutter leaves room for ~48 characters of code. */
 .fp-ln { width: 2em; flex: 0 0 auto; text-align: right; padding-right: 10px; color: var(--muted); user-select: none; }
 .fp-line code { font: inherit; white-space: pre; }
+.fp-code-help { display: block; margin: 8px 12px 0 calc(2em + 13px); font: 500 12.5px var(--font-sans); color: var(--muted); }
+.fp-code-help:hover { color: var(--accent); }
+/* Indent guides: one faint line per nesting level. */
+.fp-indent { box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent); }
+.fp-line.is-current .fp-indent { box-shadow: inset 1px 0 0 color-mix(in srgb, var(--accent) 35%, transparent); }
 
 .fp-controls, .fp-input {
   display: flex;

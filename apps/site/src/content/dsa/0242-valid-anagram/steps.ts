@@ -18,13 +18,13 @@ const sortCompare: Approach<Input> = {
   id: "sort",
   name: "Sort both, compare",
   code: `function isAnagram(s, t)
-  if length(s) ≠ length(t)
-    return false
-  a, b ← sorted(s), sorted(t)
-  for i ← 0 to length(a) - 1
-    if a[i] ≠ b[i]
-      return false
-  return true
+    if length(s) ≠ length(t)
+        return false
+    a, b ← sorted(s), sorted(t)
+    for i ← 0 to length(a) - 1
+        if a[i] ≠ b[i]
+            return false
+    return true
 `,
   run({ s, t: w }, t) {
     t.op();
@@ -58,16 +58,16 @@ const counting: Approach<Input> = {
   id: "count",
   name: "Count letters",
   code: `function isAnagram(s, t)
-  if length(s) ≠ length(t)
-    return false
-  count ← empty map
-  for each ch in s
-    count[ch] ← (count[ch] or 0) + 1
-  for each ch in t
-    count[ch] ← (count[ch] or 0) - 1
-    if count[ch] < 0
-      return false
-  return true
+    if length(s) ≠ length(t)
+        return false
+    count ← empty map
+    for each ch in s
+        count[ch] ← (count[ch] or 0) + 1
+    for each ch in t
+        count[ch] ← (count[ch] or 0) - 1
+        if count[ch] < 0
+            return false
+    return true
 `,
   run({ s, t: w }, t) {
     t.op();

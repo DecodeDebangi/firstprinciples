@@ -46,15 +46,15 @@ const bfs: Approach<Input> = {
   name: "BFS: distances, level by level",
   code: `// queue: join at back, leave from front
 function distances(graph, start)
-  dist ← map {start: 0}
-  queue ← queue of [start]
-  while queue not empty
-    node ← queue.popFront()
-    for each nxt in graph[node]
-      if nxt not in dist  // first time seen
-        dist[nxt] ← dist[node] + 1
-        queue.push(nxt)
-  return dist
+    dist ← map {start: 0}
+    queue ← queue of [start]
+    while queue not empty
+        node ← queue.popFront()
+        for each nxt in graph[node]
+            if nxt not in dist  // first time seen
+                dist[nxt] ← dist[node] + 1
+                queue.push(nxt)
+    return dist
 `,
   run(input, t) {
     const s = input.source;
@@ -97,15 +97,15 @@ const dfs: Approach<Input> = {
   id: "dfs",
   name: "DFS: go deep, then back up",
   code: `function explore(graph, start)
-  seen, order ← empty set, []
-  function dfs(node)
-    seen.add(node)
-    order.push(node)
-    for each nxt in graph[node]
-      if nxt not in seen
-        dfs(nxt)  // go deeper first
-  dfs(start)
-  return order
+    seen, order ← empty set, []
+    function dfs(node)
+        seen.add(node)
+        order.push(node)
+        for each nxt in graph[node]
+            if nxt not in seen
+                dfs(nxt)  // go deeper first
+    dfs(start)
+    return order
 `,
   run(input, t) {
     const s = input.source;
@@ -147,9 +147,9 @@ const noSeen: Approach<Input> = {
   id: "no-seen",
   name: "The bug: DFS with no visited set",
   code: `function dfs(node)  // BUG: forgets visits
-  visit(node)
-  for each nxt in graph[node]
-    dfs(nxt)
+    visit(node)
+    for each nxt in graph[node]
+        dfs(nxt)
 `,
   run(input, t) {
     const s = input.source;

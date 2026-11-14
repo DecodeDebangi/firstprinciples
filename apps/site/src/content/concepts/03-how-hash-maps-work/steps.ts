@@ -26,24 +26,24 @@ const chaining: Approach<Input> = {
   id: "chaining",
   name: "Separate chaining (with resizing)",
   code: `class HashMap
-  constructor()
-    buckets ← 4 empty lists
-    size ← 0
+    constructor()
+        buckets ← 4 empty lists
+        size ← 0
 
-  function put(key)
-    b ← buckets[hash(key) % length(buckets)]
-    if key in b
-      return  // already stored
-    b.push(key)
-    size += 1
-    if size > 0.75 * length(buckets)
-      resize()
+    function put(key)
+        b ← buckets[hash(key) % length(buckets)]
+        if key in b
+            return  // already stored
+        b.push(key)
+        size += 1
+        if size > 0.75 * length(buckets)
+            resize()
 
-  function resize()
-    old ← every key in every bucket
-    buckets ← 2 × length(buckets) empty lists
-    for each k in old
-      add k to its bucket in the new list
+    function resize()
+        old ← every key in every bucket
+        buckets ← 2 × length(buckets) empty lists
+        for each k in old
+            add k to its bucket in the new list
 `,
   run({ keys }, t) {
     let buckets: number[][] = Array.from({ length: 4 }, () => []);
@@ -95,13 +95,13 @@ const probing: Approach<Input> = {
   id: "probing",
   name: "Open addressing (linear probing)",
   code: `function put(table, key)
-  m ← length(table)
-  i ← hash(key) % m
-  while table[i] ≠ none
-    if table[i] = key
-      return  // already stored
-    i ← (i + 1) % m  // taken: try the next
-  table[i] ← key
+    m ← length(table)
+    i ← hash(key) % m
+    while table[i] ≠ none
+        if table[i] = key
+            return  // already stored
+        i ← (i + 1) % m  // taken: try the next
+    table[i] ← key
 `,
   run({ keys }, t) {
     const m = 10; // with 10 slots a key's home slot is just its last digit

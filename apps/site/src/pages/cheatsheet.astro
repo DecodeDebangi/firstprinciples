@@ -103,7 +103,7 @@ const toolbox: { what: string; cost: string; use: Record<Lang, string> }[] = [
           </div>
           <div>
             <h3>Template</h3>
-            <pre class="cs-code"><code>{guide.template}</code></pre>
+            <pre class="cs-code"><code>{guide.template.split("\n").map((l, i, all) => { const lead = l.length - l.trimStart().length; const lv = Math.floor(lead / 4); return <>{Array.from({ length: lv }, () => <span class="ind">{"    "}</span>)}{l.slice(lv * 4)}{i < all.length - 1 ? "\n" : ""}</>; })}</code></pre>
           </div>
         </div>
         {problems.length > 0 && (
@@ -185,6 +185,7 @@ const toolbox: { what: string; cost: string; use: Record<Lang, string> }[] = [
   .cs-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 4px 24px; }
   .cs-signals { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 15px; }
   .cs-payoff { margin: 10px 0 0; font-size: 14.5px; color: var(--text-2); }
+  .cs-code .ind { box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent); }
   .cs-code { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; line-height: 1.55; overflow-x: auto; white-space: pre; }
   .cs-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
   .cs-table th { text-align: left; font: 600 12px var(--font-sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); }

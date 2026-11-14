@@ -1,0 +1,135 @@
+---
+title: How to read the code on this site
+topic: Coding basics
+kind: Explainer
+order: 1
+summary: Every page shows its code in pseudocode, a plain notation that works whatever language you write in. Here is every symbol it uses, what each line means, and how to drive the animations.
+added: 2026-11-14
+---
+import Viz from "../16-arrays-and-indices/Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
+
+## Why pseudocode?
+
+The code on every page is **pseudocode**: not Python, Java, C++ or JavaScript, but a simple notation that
+looks like all of them. You can't run it. You read it, the way you'd read a recipe, and then write the same steps
+in whatever language you use.
+
+Each line does one small thing, and the animation next to it shows that thing happening. Here's a complete
+example. Read it top to bottom:
+
+```text
+function total(a)
+    sum ← 0
+    for i ← 0 to length(a) - 1
+        sum += a[i]
+    return sum
+```
+
+In words: *"To work out `total` of a list `a`: start `sum` at 0. Then, for every position `i` from the first to the
+last, add the value at that position to `sum`. When the loop is done, hand back `sum`."*
+
+## Storing values
+
+| You'll see | It means |
+|---|---|
+| `sum ← 0` | Put 0 into a box called `sum`. Read it as "sum gets 0". The old value, if any, is replaced. |
+| `lo, hi ← 0, 9` | Two at once: `lo` gets 0 and `hi` gets 9. |
+| `count += 1` | Add 1 to `count`. `-=` subtracts, `*=` multiplies. |
+| `none` | "Nothing here yet", like an empty box. Other languages call it `null`, `None` or `nil`. |
+| `true`, `false` | Yes and no. |
+| `// a comment` | A note for you. It doesn't do anything. |
+
+The arrow `←` is only for storing. That leaves `=` free for its everyday meaning: asking whether two things are
+equal.
+
+## Comparing
+
+| You'll see | It means |
+|---|---|
+| `x = 5` | Is `x` equal to 5? The answer is true or false. |
+| `x ≠ 5` | Is `x` different from 5? |
+| `<`, `≤`, `>`, `≥` | Less than, less than or equal, greater than, greater than or equal. |
+| `a and b` | True only if both are true. |
+| `a or b` | True if at least one is true. |
+| `not a` | Flips true to false and false to true. |
+| `x % 2` | The remainder after dividing by 2: 0 for even numbers, 1 for odd ones. |
+| `floor(7 / 2)` | Divide, then round down to a whole number: 3. |
+
+## Making decisions
+
+```text
+if x > best
+    best ← x
+else if x = best
+    ties += 1
+else
+    smaller += 1
+```
+
+Only the first branch whose condition is true runs. **Indentation shows what belongs to what**: the lines pushed
+in under an `if` run only when that `if` is true. The faint vertical lines in the code panels mark each level.
+
+You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` is true, use `a`, otherwise use `b`".
+
+## Repeating
+
+| You'll see | It means |
+|---|---|
+| `for i ← 0 to n - 1` | Run the indented lines with `i` = 0, then 1, then 2, up to and including `n - 1`. |
+| `for i ← n - 1 down to 0` | The same, counting down. |
+| `for each x in nums` | Run once per value in `nums`, with `x` holding that value. |
+| `for each index i, value x in nums` | The same, but you also get each value's position `i`. |
+| `repeat k times` | Run the indented lines `k` times. |
+| `while lo < hi` | Keep running while the condition stays true. Check it, run, check again. |
+| `break` | Leave the loop right now. |
+| `continue` | Skip the rest of this round and start the next one. |
+
+## Collections
+
+| You'll see | It means |
+|---|---|
+| `a[0]`, `a[i]` | The value at position 0, or at position `i`. Positions start at **0**. |
+| `length(a)` | How many values `a` holds. The last position is `length(a) - 1`. |
+| `a[2..5]` | Positions 2 to 5, both included. `a[3..end]` runs to the last one. |
+| `array of n, all 0` | A new list of `n` values, every one 0. |
+| `empty map`, `seen[x] ← i` | A lookup table: store `i` under the key `x`. Later, `seen[x]` gives `i` back. |
+| `x in seen` | Is `x` stored in `seen`? |
+| `empty set`, `seen.add(x)` | A collection of distinct values, for quick "have I seen this?" checks. |
+| `stack.push(x)`, `stack.pop()`, `stack.top()` | Add on top, take from the top, look at the top. Last in, first out. |
+| `queue.push(x)`, `queue.popFront()` | Join at the back, leave from the front. First in, first out. |
+| `heap.push(x)`, `heap.popMin()`, `heap.min()` | A heap always knows its smallest value (or largest, with `popMax`). |
+| `node.next`, `node.left` | Linked lists and trees: the node this one points to. |
+| `swap a[i] and a[j]` | Exchange the two values. |
+
+## Functions
+
+```text
+function biggest(a)
+    ...
+    return best
+```
+
+A **function** is a named recipe. `a` is its input. `return` stops the function and hands back the answer.
+A function can call another one, and sometimes it calls **itself** on a smaller piece of the problem. That's
+called **recursion**, and the tree pages show it as a tree of calls.
+
+## Using the animations
+
+Every animation runs the real algorithm on a real input, and you control the pace. Try it here:
+
+<Viz client:visible approach="total" />
+
+- **The highlighted line** is the one running right now. The box under the picture says what it decided, and why.
+- **Variables** shows every value as it changes. A crossed-out number is the old value.
+- **Play**, or step one line at a time with the arrow buttons (or the left and right arrow keys). The slider jumps anywhere.
+- **Predict mode** pauses before each decision and asks what happens next. It's the quickest way to check that you
+  really follow it.
+- **Try your own input** reruns everything on your numbers. Small, odd cases teach a lot: one value, all the same,
+  already sorted.
+- **Link to this step** copies a link that opens this exact moment, to share or come back to.
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

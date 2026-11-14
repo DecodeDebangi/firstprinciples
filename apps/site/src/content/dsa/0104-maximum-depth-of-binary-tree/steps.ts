@@ -15,11 +15,11 @@ const recursive: Approach<Input> = {
   id: "dfs",
   name: "Recursive (depth-first)",
   code: `function maxDepth(root)
-  if root = none
-    return 0
-  left ← maxDepth(root.left)
-  right ← maxDepth(root.right)
-  return 1 + max(left, right)
+    if root = none
+        return 0
+    left ← maxDepth(root.left)
+    right ← maxDepth(root.right)
+    return 1 + max(left, right)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -58,16 +58,16 @@ const bfs: Approach<Input> = {
   id: "bfs",
   name: "Level by level (breadth-first)",
   code: `function maxDepth(root)
-  if root = none
-    return 0
-  depth, queue ← 0, queue of [root]
-  while queue not empty
-    depth += 1
-    repeat length(queue) times
-      node ← queue.popFront()
-      queue.push(node.left) if it exists
-      queue.push(node.right) if it exists
-  return depth
+    if root = none
+        return 0
+    depth, queue ← 0, queue of [root]
+    while queue not empty
+        depth += 1
+        repeat length(queue) times
+            node ← queue.popFront()
+            queue.push(node.left) if it exists
+            queue.push(node.right) if it exists
+    return depth
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

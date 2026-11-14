@@ -45,6 +45,7 @@ const how = [
         <a class="btn" href="/problems/">Browse problems</a>
       </div>
       <p class="reassure">Free · No sign-up · Works on your phone</p>
+      <p class="newbie">New to coding? <a href="/concepts/how-to-read-the-code/">Start here</a>: three short reads on arrays, loops and reading the code, with animations.</p>
     </div>
     <div class="hero__demo">
       <HeroDemo client:load />
@@ -157,6 +158,8 @@ const how = [
   .btn:hover { color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow); }
   .btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .btn--primary:hover { background: var(--accent-hover); color: var(--on-accent); }
+  .newbie { margin: 6px 0 0; font-size: 15px; color: var(--text-2); }
+  .newbie a { font-weight: 600; }
   .reassure { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
   .demo-note { margin: 12px 4px 0; font-size: 13px; color: var(--muted); text-align: center; }
 

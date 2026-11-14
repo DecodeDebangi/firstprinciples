@@ -18,11 +18,11 @@ const recursive: Approach<Input> = {
   id: "dfs",
   name: "Compare node by node",
   code: `function same(p, q)
-  if p = none and q = none
-    return true
-  if p = none or q = none or p.val ≠ q.val
-    return false
-  return same(p.left, q.left) and same(p.right, q.right)
+    if p = none and q = none
+        return true
+    if p = none or q = none or p.val ≠ q.val
+        return false
+    return same(p.left, q.left) and same(p.right, q.right)
 `,
   run({ p: pv, q: qv }, t) {
     const P = treeFromLevelOrder(pv), Q = treeFromLevelOrder(qv);
@@ -64,16 +64,16 @@ const serialize: Approach<Input> = {
   id: "serialize",
   name: "Serialize both, compare",
   code: `function same(p, q)
-  function walk(node, out)
-    if node = none
-      out.push("#")
-      return
-    out.push(node.val)
-    walk(node.left, out)
-    walk(node.right, out)
-  a, b ← [], []
-  walk(p, a); walk(q, b)
-  return a = b
+    function walk(node, out)
+        if node = none
+            out.push("#")
+            return
+        out.push(node.val)
+        walk(node.left, out)
+        walk(node.right, out)
+    a, b ← [], []
+    walk(p, a); walk(q, b)
+    return a = b
 `,
   run({ p: pv, q: qv }, t) {
     const P = treeFromLevelOrder(pv), Q = treeFromLevelOrder(qv);

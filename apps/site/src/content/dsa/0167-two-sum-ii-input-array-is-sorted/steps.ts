@@ -20,11 +20,11 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function twoSum(numbers, target)
-  n ← length(numbers)
-  for i ← 0 to n - 1
-    for j ← i + 1 to n - 1
-      if numbers[i] + numbers[j] = target
-        return [i + 1, j + 1]
+    n ← length(numbers)
+    for i ← 0 to n - 1
+        for j ← i + 1 to n - 1
+            if numbers[i] + numbers[j] = target
+                return [i + 1, j + 1]
 `,
   run({ numbers: a, target }, t) {
     const n = a.length;
@@ -50,17 +50,17 @@ const binary: Approach<Input> = {
   id: "binary",
   name: "Binary search for the partner",
   code: `function twoSum(numbers, target)
-  for i ← 0 to length(numbers) - 1
-    need ← target - numbers[i]
-    lo, hi ← i + 1, length(numbers) - 1
-    while lo ≤ hi
-      mid ← floor((lo + hi) / 2)
-      if numbers[mid] = need
-        return [i + 1, mid + 1]
-      else if numbers[mid] < need
-        lo ← mid + 1
-      else
-        hi ← mid - 1
+    for i ← 0 to length(numbers) - 1
+        need ← target - numbers[i]
+        lo, hi ← i + 1, length(numbers) - 1
+        while lo ≤ hi
+            mid ← floor((lo + hi) / 2)
+            if numbers[mid] = need
+                return [i + 1, mid + 1]
+            else if numbers[mid] < need
+                lo ← mid + 1
+            else
+                hi ← mid - 1
 `,
   run({ numbers: a, target }, t) {
     const n = a.length;
@@ -95,15 +95,15 @@ const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers",
   code: `function twoSum(numbers, target)
-  lo, hi ← 0, length(numbers) - 1
-  while lo < hi
-    s ← numbers[lo] + numbers[hi]
-    if s = target
-      return [lo + 1, hi + 1]
-    else if s < target
-      lo += 1
-    else
-      hi -= 1
+    lo, hi ← 0, length(numbers) - 1
+    while lo < hi
+        s ← numbers[lo] + numbers[hi]
+        if s = target
+            return [lo + 1, hi + 1]
+        else if s < target
+            lo += 1
+        else
+            hi -= 1
 `,
   run({ numbers: a, target }, t) {
     let lo = 0, hi = a.length - 1;

@@ -30,9 +30,9 @@ const sortApproach: Approach<Input> = {
   name: "Count, then sort",
   code: `// count: value → how often it appears
 function topKFrequent(nums, k)
-  count ← how often each value appears in nums
-  byFreq ← values by count, highest first
-  return the first k of byFreq
+    count ← how often each value appears in nums
+    byFreq ← values by count, highest first
+    return the first k of byFreq
 `,
   run({ nums, k }, t) {
     const count = new Map<number, number>();
@@ -59,13 +59,13 @@ const heapApproach: Approach<Input> = {
   code: `// heap: a min-heap, smallest item on top
 // count: value → how often it appears
 function topKFrequent(nums, k)
-  count ← how often each value appears in nums
-  heap ← empty min-heap  // (count, value)
-  for each (x, c) in count
-    heap.push((c, x))
-    if length(heap) > k
-      heap.popMin()
-  return the value of every pair left in heap
+    count ← how often each value appears in nums
+    heap ← empty min-heap  // (count, value)
+    for each (x, c) in count
+        heap.push((c, x))
+        if length(heap) > k
+            heap.popMin()
+    return the value of every pair left in heap
 `,
   run({ nums, k }, t) {
     const count = countAll(nums, t);
@@ -102,16 +102,16 @@ const bucket: Approach<Input> = {
   name: "Count, then buckets by frequency",
   code: `// count: value → how often it appears
 function topKFrequent(nums, k)
-  count ← how often each value appears in nums
-  buckets ← length(nums) + 1 empty lists
-  for each (x, c) in count
-    buckets[c].push(x)  // index = how often
-  out ← empty list
-  for c ← length(nums) down to 1
-    for each x in buckets[c]
-      out.push(x)
-      if length(out) = k
-        return out
+    count ← how often each value appears in nums
+    buckets ← length(nums) + 1 empty lists
+    for each (x, c) in count
+        buckets[c].push(x)  // index = how often
+    out ← empty list
+    for c ← length(nums) down to 1
+        for each x in buckets[c]
+            out.push(x)
+            if length(out) = k
+                return out
 `,
   run({ nums, k }, t) {
     const count = countAll(nums, t);

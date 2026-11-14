@@ -18,14 +18,14 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: count each value",
   code: `function majorityElement(nums)
-  n ← length(nums)
-  for each x in nums
-    count ← 0
-    for each y in nums
-      if y = x
-        count += 1
-    if count > floor(n / 2)
-      return x
+    n ← length(nums)
+    for each x in nums
+        count ← 0
+        for each y in nums
+            if y = x
+                count += 1
+        if count > floor(n / 2)
+            return x
 `,
   run({ nums: a }, t) {
     const n = a.length, half = Math.floor(n / 2);
@@ -50,11 +50,11 @@ const counting: Approach<Input> = {
   id: "hash",
   name: "Hash map of counts",
   code: `function majorityElement(nums)
-  counts ← empty map
-  for each x in nums
-    counts[x] ← (counts[x] or 0) + 1
-    if counts[x] > floor(length(nums) / 2)
-      return x
+    counts ← empty map
+    for each x in nums
+        counts[x] ← (counts[x] or 0) + 1
+        if counts[x] > floor(length(nums) / 2)
+            return x
 `,
   run({ nums: a }, t) {
     const n = a.length, half = Math.floor(n / 2);
@@ -81,12 +81,12 @@ const voting: Approach<Input> = {
   id: "vote",
   name: "Boyer–Moore voting",
   code: `function majorityElement(nums)
-  candidate, count ← none, 0
-  for each x in nums
-    if count = 0
-      candidate ← x
-    count += (x = candidate) ? 1 : -1
-  return candidate
+    candidate, count ← none, 0
+    for each x in nums
+        if count = 0
+            candidate ← x
+        count += (x = candidate) ? 1 : -1
+    return candidate
 `,
   run({ nums: a }, t) {
     let candidate: number | null = null, count = 0;

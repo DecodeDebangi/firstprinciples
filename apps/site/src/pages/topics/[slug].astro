@@ -70,7 +70,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
         </section>
         <section class="card">
           <h2>Template</h2>
-          <pre class="tpl"><code>{guide.template.replace(/ {2,}\/\//g, "  //")}</code></pre>
+          <pre class="tpl"><code>{guide.template.split("\n").map((l, i, all) => { const lead = l.length - l.trimStart().length; const lv = Math.floor(lead / 4); return <>{Array.from({ length: lv }, () => <span class="ind">{"    "}</span>)}{l.slice(lv * 4)}{i < all.length - 1 ? "\n" : ""}</>; })}</code></pre>
         </section>
       </div>
     )}
@@ -121,6 +121,7 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
   .card h2 { margin: 0 0 10px; font-size: 20px; }
   .signals { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); font-size: 15px; }
   .payoff { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 15px; }
+  .tpl .ind { box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent); }
   .tpl { margin: 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13.5px/1.6 var(--font-mono); }
   .sub { color: var(--text-2); margin: 0 0 14px; }
   .plist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }

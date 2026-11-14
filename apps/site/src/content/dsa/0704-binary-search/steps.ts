@@ -23,10 +23,10 @@ const linear: Approach<Input> = {
   id: "linear",
   name: "Linear scan",
   code: `function search(nums, target)
-  for i ← 0 to length(nums) - 1
-    if nums[i] = target
-      return i
-  return -1
+    for i ← 0 to length(nums) - 1
+        if nums[i] = target
+            return i
+    return -1
 `,
   run({ nums, target }, t) {
     t.step({ line: 2, array: nums, vars: { target }, message: `Check each number from the left until we hit ${target}. This ignores that the list is sorted.` });
@@ -47,16 +47,16 @@ const iterative: Approach<Input> = {
   id: "iterative",
   name: "Binary search",
   code: `function search(nums, target)
-  lo, hi ← 0, length(nums) - 1
-  while lo ≤ hi
-    mid ← floor((lo + hi) / 2)
-    if nums[mid] = target
-      return mid
-    else if nums[mid] < target
-      lo ← mid + 1
-    else
-      hi ← mid - 1
-  return -1
+    lo, hi ← 0, length(nums) - 1
+    while lo ≤ hi
+        mid ← floor((lo + hi) / 2)
+        if nums[mid] = target
+            return mid
+        else if nums[mid] < target
+            lo ← mid + 1
+        else
+            hi ← mid - 1
+    return -1
 `,
   run({ nums, target }, t) {
     let lo = 0, hi = nums.length - 1;
@@ -92,17 +92,17 @@ const recursive: Approach<Input> = {
   id: "recursive",
   name: "Binary search (recursive)",
   code: `function search(nums, target)
-  return go(nums, target, 0, length(nums) - 1)
+    return go(nums, target, 0, length(nums) - 1)
 
 function go(nums, target, lo, hi)
-  if lo > hi
-    return -1
-  mid ← floor((lo + hi) / 2)
-  if nums[mid] = target
-    return mid
-  if nums[mid] < target
-    return go(nums, target, mid + 1, hi)
-  return go(nums, target, lo, mid - 1)
+    if lo > hi
+        return -1
+    mid ← floor((lo + hi) / 2)
+    if nums[mid] = target
+        return mid
+    if nums[mid] < target
+        return go(nums, target, mid + 1, hi)
+    return go(nums, target, lo, mid - 1)
 `,
   run({ nums, target }, t) {
     const stack: string[] = [];

@@ -28,11 +28,11 @@ const sorted: Approach<Input> = {
   name: "Keep everything sorted",
   code: `// vals stays sorted, smallest first
 class KthLargest
-  constructor(k, nums)
-    this.k, this.vals ← k, sorted(nums)
-  function add(val)
-    insert val in sorted order  // shifts rest
-    return this.vals[length(this.vals) - k]
+    constructor(k, nums)
+        this.k, this.vals ← k, sorted(nums)
+    function add(val)
+        insert val in sorted order  // shifts rest
+        return this.vals[length(this.vals) - k]
 `,
   run({ k, nums, adds }, t) {
     const a = [...nums].sort((p, q) => { t.op(); return p - q; });
@@ -63,15 +63,15 @@ const heapApproach: Approach<Input> = {
   name: "Min-heap of the k largest",
   code: `// heap: a min-heap, smallest item on top
 class KthLargest
-  constructor(k, nums)
-    this.k, this.heap ← k, empty min-heap
-    for each x in nums
-      this.add(x)
-  function add(val)
-    this.heap.push(val)
-    if length(this.heap) > this.k
-      this.heap.popMin()  // drop the smallest
-    return this.heap.min()  // the kth largest
+    constructor(k, nums)
+        this.k, this.heap ← k, empty min-heap
+        for each x in nums
+            this.add(x)
+    function add(val)
+        this.heap.push(val)
+        if length(this.heap) > this.k
+            this.heap.popMin()  // drop the smallest
+        return this.heap.min()  // the kth largest
 `,
   run({ k, nums, adds }, t) {
     type I = { id: string; val: number };

@@ -28,10 +28,10 @@ const iterative: Approach<Input> = {
   id: "iterative",
   name: "Iterative: copy and add",
   code: `function subsets(nums)
-  result ← [[]]
-  for each x in nums
-    add a copy of each s in result, plus x
-  return result
+    result ← [[]]
+    for each x in nums
+        add a copy of each s in result, plus x
+    return result
 `,
   run({ nums }, t) {
     const result: number[][] = [[]];
@@ -56,15 +56,15 @@ const backtrack: Approach<Input> = {
   id: "backtrack",
   name: "Backtracking: choose, explore, undo",
   code: `function subsets(nums)
-  result, path ← [], []
-  function backtrack(start)
-    result.push(copy(path))  // always a subset
-    for i ← start to length(nums) - 1
-      path.push(nums[i])  // choose
-      backtrack(i + 1)  // explore
-      path.pop()  // undo
-  backtrack(0)
-  return result
+    result, path ← [], []
+    function backtrack(start)
+        result.push(copy(path))  // always a subset
+        for i ← start to length(nums) - 1
+            path.push(nums[i])  // choose
+            backtrack(i + 1)  // explore
+            path.pop()  // undo
+    backtrack(0)
+    return result
 `,
   run({ nums }, t) {
     const tree = new CallTree();

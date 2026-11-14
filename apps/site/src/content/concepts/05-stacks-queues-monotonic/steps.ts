@@ -16,10 +16,10 @@ const stack: Approach<Input> = {
   name: "Stack: last in, first out",
   code: `stack ← empty stack
 for each x in items
-  stack.push(x)  // push onto the top
+    stack.push(x)  // push onto the top
 out ← empty list
 while stack not empty
-  out.push(stack.pop())  // take from the top
+    out.push(stack.pop())  // take from the top
 `,
   run({ nums }, t) {
     const s: number[] = [];
@@ -54,10 +54,10 @@ const queue: Approach<Input> = {
   code: `// queue: join at back, leave from front
 queue ← empty queue
 for each x in items
-  queue.push(x)  // join at the back
+    queue.push(x)  // join at the back
 out ← empty list
 while queue not empty
-  out.push(queue.popFront())  // oldest first
+    out.push(queue.popFront())  // oldest first
 `,
   run({ nums }, t) {
     const q: number[] = [];
@@ -89,13 +89,13 @@ const monotonic: Approach<Input> = {
   id: "monotonic",
   name: "Monotonic stack: next greater element",
   code: `function nextGreater(a)
-  answer ← array of length(a), all -1
-  stack ← empty stack  // values shrink upward
-  for each index i, value x in a
-    while stack not empty and a[stack.top()] < x
-      answer[stack.pop()] ← x
-    stack.push(i)
-  return answer
+    answer ← array of length(a), all -1
+    stack ← empty stack  // values shrink upward
+    for each index i, value x in a
+        while stack not empty and a[stack.top()] < x
+            answer[stack.pop()] ← x
+        stack.push(i)
+    return answer
 `,
   run({ nums: a }, t) {
     const ans: number[] = Array(a.length).fill(-1);

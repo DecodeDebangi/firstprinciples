@@ -1,0 +1,82 @@
+---
+title: Loops, nested loops and functions
+topic: Coding basics
+kind: Explainer
+order: 3
+summary: How a function runs line by line, how a loop repeats, and why a loop inside a loop gets slow so fast. Watch both count their work, and see the idea Big-O is built on.
+added: 2026-11-14
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
+
+## A function is a recipe
+
+Every solution on this site is a **function**: a named recipe with inputs and one answer.
+
+```text
+function countAbove(a, limit)
+    count ← 0
+    for each x in a
+        if x > limit
+            count += 1
+    return count
+```
+
+- `countAbove` is its name. `a` and `limit` are its **inputs**: you hand them over each time you use it.
+- Its lines run **from top to bottom**, one at a time.
+- `return count` stops the function and hands `count` back as the answer.
+
+So `countAbove([4, 8, 1, 6, 3], 5)` works through the list and returns 2, because only 8 and 6 are above 5.
+
+## A loop repeats
+
+The `for each` line is a **loop**: the indented lines under it run once for every value in `a`. Watch `x` move
+along and `count` grow:
+
+<Viz client:visible approach="oneLoop" />
+
+Five values, five checks. A list of a thousand would take a thousand. When the work grows in step with the
+input like this, it's called **linear**.
+
+## A loop inside a loop
+
+Some questions are about **pairs**: do any two values add up to a target? To try every pair, put one loop inside
+another. For each `i`, the inner loop runs `j` over every box after it:
+
+<Viz client:visible approach="pairs" />
+
+Five values made 10 checks. That doesn't sound like much, but watch what happens as the input grows. Doubling the
+values roughly **quadruples** the checks, because every new value pairs up with all the others:
+
+| values | one loop | every pair |
+|---|---|---|
+| 5 | 5 | 10 |
+| 10 | 10 | 45 |
+| 100 | 100 | 4,950 |
+| 10,000 | 10,000 | about 50 million |
+
+<GrowthChart client:visible series={growth} caption="Checks made by each function as the list grows." />
+
+## Racing them
+
+Here are both on the same list, sharing one clock that ticks once per check. The single loop is done long
+before the pairs are:
+
+<Compare client:visible />
+
+This is the heart of the whole site. Most problems have a first idea that tries every pair (or every
+possibility), and a better idea that gets the same answer in one pass. The [Big-O read](/concepts/big-o-in-plain-words/)
+gives you the words for it: the single loop is **O(n)**, every pair is **O(n²)**.
+
+## Functions that call themselves
+
+A function can call another function, and it can even call **itself** on a smaller piece of the problem. That's
+**recursion**. To add up a list recursively: the total is the first value plus the total of the rest. Each call
+waits for the smaller one to finish, and the computer keeps track of all the waiting calls on the **call stack**.
+You'll meet recursion properly in the [tree reads](/concepts/tree-traversals/), where the animations draw every call.
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

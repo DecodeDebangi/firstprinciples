@@ -37,19 +37,19 @@ const explore: Approach<Input> = {
   id: "explore",
   name: "Choose, explore, undo (no pruning)",
   code: `function combinationSum(c, target)
-  result, path ← [], []
-  function backtrack(start, rem)
-    if rem = 0
-      result.push(copy(path))  // an answer
-      return
-    if rem < 0
-      return  // overshot: dead end
-    for i ← start to length(c) - 1
-      path.push(c[i])  // choose
-      backtrack(i, rem - c[i])  // reuse is ok
-      path.pop()  // undo
-  backtrack(0, target)
-  return result
+    result, path ← [], []
+    function backtrack(start, rem)
+        if rem = 0
+            result.push(copy(path))  // an answer
+            return
+        if rem < 0
+            return  // overshot: dead end
+        for i ← start to length(c) - 1
+            path.push(c[i])  // choose
+            backtrack(i, rem - c[i])  // reuse is ok
+            path.pop()  // undo
+    backtrack(0, target)
+    return result
 `,
   run({ candidates: c, target }, t) {
     const tree = new CallTree();
@@ -92,20 +92,20 @@ const prune: Approach<Input> = {
   id: "prune",
   name: "Sort, then prune early",
   code: `function combinationSum(c, target)
-  c.sort()  // small to large
-  result, path ← [], []
-  function backtrack(start, rem)
-    if rem = 0
-      result.push(copy(path))
-      return
-    for i ← start to length(c) - 1
-      if c[i] > rem
-        break  // the rest are bigger still
-      path.push(c[i])
-      backtrack(i, rem - c[i])
-      path.pop()
-  backtrack(0, target)
-  return result
+    c.sort()  // small to large
+    result, path ← [], []
+    function backtrack(start, rem)
+        if rem = 0
+            result.push(copy(path))
+            return
+        for i ← start to length(c) - 1
+            if c[i] > rem
+                break  // the rest are bigger still
+            path.push(c[i])
+            backtrack(i, rem - c[i])
+            path.pop()
+    backtrack(0, target)
+    return result
 `,
   run({ candidates, target }, t) {
     const c = [...candidates].sort((a, b) => a - b);

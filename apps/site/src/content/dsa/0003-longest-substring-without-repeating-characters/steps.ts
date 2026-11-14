@@ -18,15 +18,15 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: grow from every start",
   code: `function lengthOfLongestSubstring(s)
-  best ← 0
-  for i ← 0 to length(s) - 1
-    seen ← empty set
-    for j ← i to length(s) - 1
-      if s[j] in seen
-        break
-      seen.add(s[j])
-      best ← max(best, j - i + 1)
-  return best
+    best ← 0
+    for i ← 0 to length(s) - 1
+        seen ← empty set
+        for j ← i to length(s) - 1
+            if s[j] in seen
+                break
+            seen.add(s[j])
+            best ← max(best, j - i + 1)
+    return best
 `,
   run({ s }, t) {
     const a = [...s];
@@ -56,15 +56,15 @@ const windowSet: Approach<Input> = {
   id: "window",
   name: "Sliding window with a set",
   code: `function lengthOfLongestSubstring(s)
-  seen ← empty set
-  left ← 0, best ← 0
-  for each index right, value ch in s
-    while ch in seen
-      seen.remove(s[left])
-      left += 1
-    seen.add(ch)
-    best ← max(best, right - left + 1)
-  return best
+    seen ← empty set
+    left ← 0, best ← 0
+    for each index right, value ch in s
+        while ch in seen
+            seen.remove(s[left])
+            left += 1
+        seen.add(ch)
+        best ← max(best, right - left + 1)
+    return best
 `,
   run({ s }, t) {
     const a = [...s];
@@ -104,14 +104,14 @@ const jump: Approach<Input> = {
   id: "jump",
   name: "Sliding window, jump with last index",
   code: `function lengthOfLongestSubstring(s)
-  last ← empty map
-  left ← 0, best ← 0
-  for each index right, value ch in s
-    if ch in last and last[ch] ≥ left
-      left ← last[ch] + 1
-    last[ch] ← right
-    best ← max(best, right - left + 1)
-  return best
+    last ← empty map
+    left ← 0, best ← 0
+    for each index right, value ch in s
+        if ch in last and last[ch] ≥ left
+            left ← last[ch] + 1
+        last[ch] ← right
+        best ← max(best, right - left + 1)
+    return best
 `,
   run({ s }, t) {
     const a = [...s];

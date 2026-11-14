@@ -57,31 +57,31 @@ function search(kind: "bfs" | "dfs"): Approach<Input> {
     name: bfs ? "Breadth-first search (queue)" : "Depth-first search (stack)",
     code: bfs ? `// queue: join at back, leave from front
 function validPath(n, edges, source, dest)
-  graph ← n empty lists
-  for each (a, b) in edges
-    graph[a].push(b); graph[b].push(a)
-  seen, queue ← set {source}, queue of [source]
-  while queue not empty
-    node ← queue.popFront()  // oldest first
-    if node = dest
-      return true
-    for each nxt in graph[node]
-      if nxt not in seen
-        seen.add(nxt); queue.push(nxt)
-  return false
+    graph ← n empty lists
+    for each (a, b) in edges
+        graph[a].push(b); graph[b].push(a)
+    seen, queue ← set {source}, queue of [source]
+    while queue not empty
+        node ← queue.popFront()  // oldest first
+        if node = dest
+            return true
+        for each nxt in graph[node]
+            if nxt not in seen
+                seen.add(nxt); queue.push(nxt)
+    return false
 ` : `function validPath(n, edges, source, dest)
-  graph ← n empty lists
-  for each (a, b) in edges
-    graph[a].push(b); graph[b].push(a)
-  seen, stack ← set {source}, [source]
-  while stack not empty
-    node ← stack.pop()  // newest first
-    if node = dest
-      return true
-    for each nxt in graph[node]
-      if nxt not in seen
-        seen.add(nxt); stack.push(nxt)
-  return false
+    graph ← n empty lists
+    for each (a, b) in edges
+        graph[a].push(b); graph[b].push(a)
+    seen, stack ← set {source}, [source]
+    while stack not empty
+        node ← stack.pop()  // newest first
+        if node = dest
+            return true
+        for each nxt in graph[node]
+            if nxt not in seen
+                seen.add(nxt); stack.push(nxt)
+    return false
 `,
     run(input, t) {
       const { source: s, destination: d } = input;

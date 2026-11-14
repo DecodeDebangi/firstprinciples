@@ -20,13 +20,13 @@ const formula: Approach<Input> = {
   code: `// f(n) = n!, the factorial
 
 function generate(numRows)
-  rows ← empty list
-  for r ← 0 to numRows - 1
-    row ← empty list
-    for c ← 0 to r
-      row.push(f(r) / (f(c) * f(r - c)))
-    rows.push(row)
-  return rows
+    rows ← empty list
+    for r ← 0 to numRows - 1
+        row ← empty list
+        for c ← 0 to r
+            row.push(f(r) / (f(c) * f(r - c)))
+        rows.push(row)
+    return rows
 `,
   run({ numRows }, t) {
     const fact = (k: number) => { let x = 1n; for (let m = 2n; m <= BigInt(k); m++) x *= m; return x; };
@@ -57,14 +57,14 @@ const buildRows: Approach<Input> = {
   id: "build",
   name: "Build each row from the one above",
   code: `function generate(numRows)
-  rows ← [[1]]
-  for r ← 1 to numRows - 1
-    prev ← rows.last()
-    row ← array of r + 1, all 1
-    for c ← 1 to r - 1
-      row[c] ← prev[c - 1] + prev[c]
-    rows.push(row)
-  return rows
+    rows ← [[1]]
+    for r ← 1 to numRows - 1
+        prev ← rows.last()
+        row ← array of r + 1, all 1
+        for c ← 1 to r - 1
+            row[c] ← prev[c - 1] + prev[c]
+        rows.push(row)
+    return rows
 `,
   run({ numRows }, t) {
     const rows: number[][] = [[1]];

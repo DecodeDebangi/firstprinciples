@@ -27,20 +27,20 @@ const backtrack: Approach<Input> = {
   id: "backtrack",
   name: "Backtracking with a used list",
   code: `function permute(nums)
-  result, path ← [], []
-  used ← array of length(nums), all false
-  function backtrack()
-    if length(path) = length(nums)
-      result.push(copy(path))  // all placed
-      return
-    for each index i, value x in nums
-      if used[i]
-        continue  // already placed
-      used[i] ← true; path.push(x)  // choose
-      backtrack()  // explore
-      used[i] ← false; path.pop()  // undo
-  backtrack()
-  return result
+    result, path ← [], []
+    used ← array of length(nums), all false
+    function backtrack()
+        if length(path) = length(nums)
+            result.push(copy(path))  // all placed
+            return
+        for each index i, value x in nums
+            if used[i]
+                continue  // already placed
+            used[i] ← true; path.push(x)  // choose
+            backtrack()  // explore
+            used[i] ← false; path.pop()  // undo
+    backtrack()
+    return result
 `,
   run({ nums }, t) {
     const tree = new CallTree();
@@ -81,11 +81,11 @@ const insert: Approach<Input> = {
   id: "insert",
   name: "Iterative: insert into every gap",
   code: `function permute(nums)
-  perms ← [[]]
-  for each x in nums
-    perms ← every p in perms with x inserted
+    perms ← [[]]
+    for each x in nums
+        perms ← every p in perms with x inserted
             at each position 0 to length(p)
-  return perms
+    return perms
 `,
   run({ nums }, t) {
     let perms: number[][] = [[]];

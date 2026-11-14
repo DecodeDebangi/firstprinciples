@@ -33,11 +33,11 @@ const brute: Approach<Input> = {
   id: "brute",
   name: "Brute force: every pair",
   code: `function pairSum(a, target)
-  for i ← 0 to length(a) - 1
-    for j ← i + 1 to length(a) - 1
-      if a[i] + a[j] = target
-        return [i, j]
-  return none
+    for i ← 0 to length(a) - 1
+        for j ← i + 1 to length(a) - 1
+            if a[i] + a[j] = target
+                return [i, j]
+    return none
 `,
   run({ nums: a, target }, t) {
     const n = a.length;
@@ -72,16 +72,16 @@ const ends: Approach<Input> = {
   id: "ends",
   name: "Two pointers from both ends",
   code: `function pairSum(a, target)  // a is sorted
-  lo, hi ← 0, length(a) - 1
-  while lo < hi
-    s ← a[lo] + a[hi]
-    if s = target
-      return [lo, hi]
-    if s < target
-      lo += 1  // a[lo] too small for all
-    else
-      hi -= 1  // a[hi] too big for all
-  return none
+    lo, hi ← 0, length(a) - 1
+    while lo < hi
+        s ← a[lo] + a[hi]
+        if s = target
+            return [lo, hi]
+        if s < target
+            lo += 1  // a[lo] too small for all
+        else
+            hi -= 1  // a[hi] too big for all
+    return none
 `,
   run({ nums: a, target }, t) {
     const n = a.length;
@@ -131,12 +131,12 @@ const readwrite: Approach<Input> = {
   id: "readwrite",
   name: "Same direction: remove duplicates",
   code: `function dedupe(a)  // a is sorted
-  w ← 1  // next slot to write
-  for r ← 1 to length(a) - 1
-    if a[r] ≠ a[w - 1]
-      a[w] ← a[r]  // keep it
-      w += 1
-  return w  // a[0..w - 1] is unique
+    w ← 1  // next slot to write
+    for r ← 1 to length(a) - 1
+        if a[r] ≠ a[w - 1]
+            a[w] ← a[r]  // keep it
+            w += 1
+    return w  // a[0..w - 1] is unique
 `,
   run({ nums }, t) {
     const a = [...nums];

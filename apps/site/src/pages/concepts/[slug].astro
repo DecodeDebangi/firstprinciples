@@ -20,11 +20,19 @@ const toc = headings.filter((h) => h.depth === 2);
 const topic = allTopics.find((t) => t.name === c.data.topic)!;
 const slug = topicSlug(topic.name);
 const siblings = concepts.filter((x) => x.data.topic === c.data.topic).sort((a, b) => a.data.order - b.data.order);
-const next = siblings[siblings.indexOf(c) + 1];
+const byOrder = (a: typeof c, b: typeof c) => a.data.order - b.data.order;
+/** Next read: the next one in this topic, or else the first read of the next roadmap topic that has one. */
+const next = siblings[siblings.indexOf(c) + 1]
+  ?? allTopics.slice(allTopics.indexOf(topic) + 1)
+    .map((t) => concepts.filter((x) => x.data.topic === t.name).sort(byOrder)[0])
+    .find(Boolean);
 const rank = { Easy: 0, Medium: 1, Hard: 2 } as const;
+/** For a topic with no problems of its own (Coding basics): a few gentle first problems. */
+const GENTLE = ["two-sum", "contains-duplicate", "binary-search", "valid-parentheses"];
 const practice = problems
   .filter((p) => practisedTopics(p.data.topics).includes(topic))
   .sort((a, b) => rank[a.data.difficulty] - rank[b.data.difficulty] || a.data.leetcode.number - b.data.leetcode.number);
+const gentle = practice.length ? [] : GENTLE.map((id) => problems.find((p) => p.id === id)).filter((p) => p !== undefined);
 ---
 <Base title={c.data.title} description={c.data.summary} type="article">
   <article class="prose">
@@ -47,6 +55,15 @@ const practice = problems
             <li><a href={`/dsa/${p.id}/`}><span class="num">#{p.data.leetcode.number}</span> {p.data.title}</a> <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span></li>
           ))}
         </ul>
+      ) : gentle.length ? (
+        <>
+          <p>Ready for a first problem? These are the gentlest, and each one starts from the most obvious idea:</p>
+          <ul>
+            {gentle.map((p) => (
+              <li><a href={`/dsa/${p.id}/`}><span class="num">#{p.data.leetcode.number}</span> {p.data.title}</a> <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span></li>
+            ))}
+          </ul>
+        </>
       ) : (
         <p>Problems for {topic.name} are on the way. Meanwhile, <a href="/problems/">browse all problems</a>.</p>
       )}

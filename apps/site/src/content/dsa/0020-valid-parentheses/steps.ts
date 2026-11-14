@@ -18,11 +18,11 @@ const removePairs: Approach<Input> = {
   id: "remove",
   name: "Remove pairs until stuck",
   code: `function isValid(s)
-  while true
-    t ← s without any "()", "[]" or "{}"
-    if t = s
-      return s = ""
-    s ← t
+    while true
+        t ← s without any "()", "[]" or "{}"
+        if t = s
+            return s = ""
+        s ← t
 `,
   run({ s }, t) {
     // Each remaining character keeps its original position, shown under the cell.
@@ -73,16 +73,16 @@ const stackApproach: Approach<Input> = {
   id: "stack",
   name: "Stack",
   code: `function isValid(s)
-  match ← map {")": "(", "]": "[", "}": "{"}
-  stack ← empty stack
-  for each ch in s
-    if ch in match
-      if stack empty or stack.top() ≠ match[ch]
-        return false
-      stack.pop()
-    else
-      stack.push(ch)
-  return stack is empty
+    match ← map {")": "(", "]": "[", "}": "{"}
+    stack ← empty stack
+    for each ch in s
+        if ch in match
+            if stack empty or its top ≠ match[ch]
+                return false
+            stack.pop()
+        else
+            stack.push(ch)
+    return stack is empty
 `,
   run({ s }, t) {
     const match: Record<string, string> = { ")": "(", "]": "[", "}": "{" };

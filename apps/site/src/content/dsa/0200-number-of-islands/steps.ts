@@ -43,22 +43,22 @@ const dfs: Approach<Input> = {
   name: "Depth-first: sink each island",
   code: `DIRS ← [(1, 0), (-1, 0), (0, 1), (0, -1)]
 function numIslands(grid)
-  R, C ← length(grid), length(grid[0])
-  function sink(r, c)
-    if not (0 ≤ r < R and 0 ≤ c < C)
-      return  // off the map
-    if grid[r][c] ≠ "1"
-      return  // water, or sunk already
-    grid[r][c] ← "0"  // sink it: visited
-    for each (dr, dc) in DIRS
-      sink(r + dr, c + dc)
-  count ← 0
-  for r ← 0 to R - 1
-    for c ← 0 to C - 1
-      if grid[r][c] = "1"
-        count += 1  // a new island
-        sink(r, c)
-  return count
+    R, C ← length(grid), length(grid[0])
+    function sink(r, c)
+        if not (0 ≤ r < R and 0 ≤ c < C)
+            return  // off the map
+        if grid[r][c] ≠ "1"
+            return  // water, or sunk already
+        grid[r][c] ← "0"  // sink it: visited
+        for each (dr, dc) in DIRS
+            sink(r + dr, c + dc)
+    count ← 0
+    for r ← 0 to R - 1
+        for c ← 0 to C - 1
+            if grid[r][c] = "1"
+                count += 1  // a new island
+                sink(r, c)
+    return count
 `,
   run({ map }, t) {
     const g = parse(map);
@@ -98,24 +98,24 @@ const bfs: Approach<Input> = {
   code: `// queue: join at back, leave from front
 DIRS ← [(1, 0), (-1, 0), (0, 1), (0, -1)]
 function numIslands(grid)
-  R, C ← length(grid), length(grid[0])
-  count ← 0
-  for r ← 0 to R - 1
-    for c ← 0 to C - 1
-      if grid[r][c] ≠ "1"
-        continue
-      count += 1  // a new island
-      grid[r][c] ← "0"  // mark when queued
-      queue ← queue of [(r, c)]
-      while queue not empty
-        i, j ← queue.popFront()
-        for each (di, dj) in DIRS
-          x, y ← i + di, j + dj
-          inside ← 0 ≤ x < R and 0 ≤ y < C
-          if inside and grid[x][y] = "1"
-            grid[x][y] ← "0"
-            queue.push((x, y))
-  return count
+    R, C ← length(grid), length(grid[0])
+    count ← 0
+    for r ← 0 to R - 1
+        for c ← 0 to C - 1
+            if grid[r][c] ≠ "1"
+                continue
+            count += 1  // a new island
+            grid[r][c] ← "0"  // mark when queued
+            queue ← queue of [(r, c)]
+            while queue not empty
+                i, j ← queue.popFront()
+                for each (di, dj) in DIRS
+                    x, y ← i + di, j + dj
+                    inside ← 0 ≤ x < R and 0 ≤ y < C
+                    if inside and grid[x][y] = "1"
+                        grid[x][y] ← "0"
+                        queue.push((x, y))
+    return count
 `,
   run({ map }, t) {
     const g = parse(map);

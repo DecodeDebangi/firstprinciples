@@ -15,14 +15,14 @@ const counting: Approach<Input> = {
   id: "count",
   name: "Count, then overwrite",
   code: `function sortColors(nums)
-  count ← [0, 0, 0]
-  for each x in nums
-    count[x] += 1
-  i ← 0
-  for color ← 0 to 2
-    repeat count[color] times
-      nums[i] ← color
-      i += 1
+    count ← [0, 0, 0]
+    for each x in nums
+        count[x] += 1
+    i ← 0
+    for color ← 0 to 2
+        repeat count[color] times
+            nums[i] ← color
+            i += 1
 `,
   run({ nums }, t) {
     const a = [...nums];
@@ -53,17 +53,17 @@ const dutchFlag: Approach<Input> = {
   id: "flag",
   name: "Dutch national flag (one pass)",
   code: `function sortColors(nums)
-  lo, mid, hi ← 0, 0, length(nums) - 1
-  while mid ≤ hi
-    if nums[mid] = 0
-      swap nums[lo] and nums[mid]
-      lo += 1
-      mid += 1
-    else if nums[mid] = 1
-      mid += 1
-    else
-      swap nums[mid] and nums[hi]
-      hi -= 1
+    lo, mid, hi ← 0, 0, length(nums) - 1
+    while mid ≤ hi
+        if nums[mid] = 0
+            swap nums[lo] and nums[mid]
+            lo += 1
+            mid += 1
+        else if nums[mid] = 1
+            mid += 1
+        else
+            swap nums[mid] and nums[hi]
+            hi -= 1
 `,
   run({ nums }, t) {
     const a = [...nums];

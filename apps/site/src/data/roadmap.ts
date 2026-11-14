@@ -17,6 +17,12 @@ export interface RoadmapStep {
 
 export const roadmap: RoadmapStep[] = [
   {
+    title: "Start here",
+    topics: [
+      { name: "Coding basics", blurb: "Arrays, loops, functions, and how to read the code on this site.", tags: ["Basics"] },
+    ],
+  },
+  {
     title: "Foundations",
     topics: [
       { name: "Big-O & complexity", blurb: "How to measure and compare an algorithm's cost.", tags: ["Complexity"] },

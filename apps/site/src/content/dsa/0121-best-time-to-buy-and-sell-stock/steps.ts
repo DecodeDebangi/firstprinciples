@@ -16,11 +16,11 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force",
   code: `function maxProfit(prices)
-  best ← 0
-  for i ← 0 to length(prices) - 1
-    for j ← i + 1 to length(prices) - 1
-      best ← max(best, prices[j] - prices[i])
-  return best
+    best ← 0
+    for i ← 0 to length(prices) - 1
+        for j ← i + 1 to length(prices) - 1
+            best ← max(best, prices[j] - prices[i])
+    return best
 `,
   run({ prices: p }, t) {
     let best = 0, bi = -1, bj = -1;
@@ -47,14 +47,14 @@ const onePass: Approach<Input> = {
   id: "window",
   name: "One pass: cheapest day so far",
   code: `function maxProfit(prices)
-  cheapest ← prices[0]
-  best ← 0
-  for each p in prices[1..end]
-    if p < cheapest
-      cheapest ← p
-    else
-      best ← max(best, p - cheapest)
-  return best
+    cheapest ← prices[0]
+    best ← 0
+    for each p in prices[1..end]
+        if p < cheapest
+            cheapest ← p
+        else
+            best ← max(best, p - cheapest)
+    return best
 `,
   run({ prices: p }, t) {
     let buy = 0, best = 0, bi = -1, bj = -1;

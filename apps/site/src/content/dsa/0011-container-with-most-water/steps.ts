@@ -16,12 +16,12 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Brute force: every pair of lines",
   code: `function maxArea(h)
-  best ← 0
-  for i ← 0 to length(h) - 1
-    for j ← i + 1 to length(h) - 1
-      area ← (j - i) * min(h[i], h[j])
-      best ← max(best, area)
-  return best
+    best ← 0
+    for i ← 0 to length(h) - 1
+        for j ← i + 1 to length(h) - 1
+            area ← (j - i) * min(h[i], h[j])
+            best ← max(best, area)
+    return best
 `,
   run({ height: h }, t) {
     let best = 0, bi = 0, bj = 1;
@@ -45,16 +45,16 @@ const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers: move the shorter line",
   code: `function maxArea(h)
-  lo, hi ← 0, length(h) - 1
-  best ← 0
-  while lo < hi
-    area ← (hi - lo) * min(h[lo], h[hi])
-    best ← max(best, area)
-    if h[lo] < h[hi]
-      lo += 1
-    else
-      hi -= 1
-  return best
+    lo, hi ← 0, length(h) - 1
+    best ← 0
+    while lo < hi
+        area ← (hi - lo) * min(h[lo], h[hi])
+        best ← max(best, area)
+        if h[lo] < h[hi]
+            lo += 1
+        else
+            hi -= 1
+    return best
 `,
   run({ height: h }, t) {
     let lo = 0, hi = h.length - 1, best = 0, bi = 0, bj = hi;

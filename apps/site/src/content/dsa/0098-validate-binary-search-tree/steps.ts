@@ -17,13 +17,13 @@ const bruteForce: Approach<Input> = {
   id: "brute",
   name: "Check every subtree against every node",
   code: `function valid(root)
-  if root = none
-    return true
-  if any value under root.left ≥ root.val
-    return false
-  if any value under root.right ≤ root.val
-    return false
-  return valid(root.left) and valid(root.right)
+    if root = none
+        return true
+    if any value under root.left ≥ root.val
+        return false
+    if any value under root.right ≤ root.val
+        return false
+    return valid(root.left) and valid(root.right)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -60,18 +60,18 @@ const inorder: Approach<Input> = {
   id: "inorder",
   name: "In-order traversal must increase",
   code: `function valid(root)
-  prev ← none
-  function inorder(node)
-    // prev is shared by every call
-    if node = none
-      return true
-    if not inorder(node.left)
-      return false
-    if prev ≠ none and node.val ≤ prev
-      return false
-    prev ← node.val
-    return inorder(node.right)
-  return inorder(root)
+    prev ← none
+    function inorder(node)
+        // prev is shared by every call
+        if node = none
+            return true
+        if not inorder(node.left)
+            return false
+        if prev ≠ none and node.val ≤ prev
+            return false
+        prev ← node.val
+        return inorder(node.right)
+    return inorder(root)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);
@@ -114,12 +114,12 @@ const bounds: Approach<Input> = {
   id: "bounds",
   name: "Pass down allowed ranges",
   code: `function valid(root, lo, hi)  // start: -∞, ∞
-  if root = none
-    return true
-  if not (lo < root.val and root.val < hi)
-    return false
-  return valid(root.left, lo, root.val)
-      and valid(root.right, root.val, hi)
+    if root = none
+        return true
+    if not (lo < root.val and root.val < hi)
+        return false
+    return valid(root.left, lo, root.val)
+            and valid(root.right, root.val, hi)
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

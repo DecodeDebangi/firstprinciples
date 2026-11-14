@@ -26,25 +26,25 @@ type Order = "pre" | "in" | "post";
 
 const codes: Record<Order, string> = {
   pre: `function preorder(node, out)
-  if node = none
-    return
-  out.push(node.val)  // before both
-  preorder(node.left, out)
-  preorder(node.right, out)
+    if node = none
+        return
+    out.push(node.val)  // before both
+    preorder(node.left, out)
+    preorder(node.right, out)
 `,
   in: `function inorder(node, out)
-  if node = none
-    return
-  inorder(node.left, out)
-  out.push(node.val)  // between
-  inorder(node.right, out)
+    if node = none
+        return
+    inorder(node.left, out)
+    out.push(node.val)  // between
+    inorder(node.right, out)
 `,
   post: `function postorder(node, out)
-  if node = none
-    return
-  postorder(node.left, out)
-  postorder(node.right, out)
-  out.push(node.val)  // after both
+    if node = none
+        return
+    postorder(node.left, out)
+    postorder(node.right, out)
+    out.push(node.val)  // after both
 `,
 };
 
@@ -125,14 +125,14 @@ const bfs: Approach<Input> = {
   name: "Breadth-first (level order)",
   code: `// queue: join at back, leave from front
 function levelOrder(root)
-  out, queue ← [], queue of [root]
-  while queue not empty
-    node ← queue.popFront()  // oldest first
-    out.push(node.val)
-    for each child in [node.left, node.right]
-      if child ≠ none
-        queue.push(child)
-  return out
+    out, queue ← [], queue of [root]
+    while queue not empty
+        node ← queue.popFront()  // oldest first
+        out.push(node.val)
+        for each child in [node.left, node.right]
+            if child ≠ none
+                queue.push(child)
+    return out
 `,
   run({ root: vals }, t) {
     const { root, nodes } = treeFromLevelOrder(vals);

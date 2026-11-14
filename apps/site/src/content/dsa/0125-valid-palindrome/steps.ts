@@ -18,12 +18,12 @@ const cleanReverse: Approach<Input> = {
   id: "reverse",
   name: "Clean, reverse, compare",
   code: `function isPalindrome(s)
-  clean ← lowercase letters and digits of s
-  rev ← reverse(clean)
-  for i ← 0 to length(clean) - 1
-    if clean[i] ≠ rev[i]
-      return false
-  return true
+    clean ← lowercase letters and digits of s
+    rev ← reverse(clean)
+    for i ← 0 to length(clean) - 1
+        if clean[i] ≠ rev[i]
+            return false
+    return true
 `,
   run({ s }, t) {
     const raw = [...s];
@@ -62,18 +62,18 @@ const twoPointers: Approach<Input> = {
   id: "pointers",
   name: "Two pointers, in place",
   code: `function isPalindrome(s)
-  i, j ← 0, length(s) - 1
-  while i < j
-    if s[i] is not a letter or digit
-      i += 1
-    else if s[j] is not a letter or digit
-      j -= 1
-    else if lowercase(s[i]) ≠ lowercase(s[j])
-      return false
-    else
-      i += 1
-      j -= 1
-  return true
+    i, j ← 0, length(s) - 1
+    while i < j
+        if s[i] is not a letter or digit
+            i += 1
+        else if s[j] is not a letter or digit
+            j -= 1
+        else if lowercase(s[i]) ≠ lowercase(s[j])
+            return false
+        else
+            i += 1
+            j -= 1
+    return true
 `,
   run({ s }, t) {
     const arr = [...s].map(show);

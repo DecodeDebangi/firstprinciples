@@ -22,12 +22,12 @@ export const topicGuides: Record<string, TopicGuide> = {
       "Order doesn't matter, only membership or frequency",
       "Prefix or running totals would answer range questions",
     ],
-    template: `seen ← empty map    // value → index
+    template: `seen ← empty map  // value → index
 for each index i, value x in nums
-  need ← target - x
-  if need in seen   // O(1) lookup
-    return seen[need], i
-  seen[x] ← i`,
+    need ← target - x
+    if need in seen  // O(1) lookup
+        return seen[need], i
+    seen[x] ← i`,
     payoff: "An O(n²) \"compare every pair\" becomes one O(n) pass, at the cost of O(n) memory.",
   },
   Sorting: {
@@ -39,7 +39,7 @@ for each index i, value x in nums
       "The input is almost sorted already, or has a small value range",
     ],
     template: `// use your language's built-in sort
-sort items          // O(n log n)
+sort items  // O(n log n)
 sort intervals by end
 sort people by score, highest first`,
     payoff: "A comparison sort costs O(n log n) once, and then many questions about the data become O(n) or O(log n).",
@@ -54,13 +54,13 @@ sort people by score, highest first`,
     ],
     template: `lo, hi ← 0, length(nums) - 1
 while lo < hi
-  s ← nums[lo] + nums[hi]
-  if s = target
-    return lo, hi
-  else if s < target
-    lo += 1         // drop nums[lo]
-  else
-    hi -= 1         // drop nums[hi]`,
+    s ← nums[lo] + nums[hi]
+    if s = target
+        return lo, hi
+    else if s < target
+        lo += 1  // drop nums[lo]
+    else
+        hi -= 1  // drop nums[hi]`,
     payoff: "Each comparison eliminates one element permanently, so a pair search drops from O(n²) to O(n) with O(1) space.",
   },
   Stack: {
@@ -73,11 +73,11 @@ while lo < hi
     ],
     template: `stack ← empty stack  // waiting
 for each index i, value x in nums
-  while stack not empty and
-      nums[stack.top()] < x
-    j ← stack.pop()  // x settles j
-    answer[j] ← i - j
-  stack.push(i)`,
+    while stack not empty and
+            nums[stack.top()] < x
+        j ← stack.pop()  // x settles j
+        answer[j] ← i - j
+    stack.push(i)`,
     payoff: "Each item is pushed once and popped once, so \"look ahead from every position\" in O(n²) becomes O(n).",
   },
   "Binary search": {
@@ -90,14 +90,14 @@ for each index i, value x in nums
     ],
     template: `lo, hi ← 0, length(nums) - 1
 while lo ≤ hi
-  mid ← floor((lo + hi) / 2)
-  if nums[mid] = target
-    return mid
-  else if nums[mid] < target
-    lo ← mid + 1
-  else
-    hi ← mid - 1
-return lo           // insert position`,
+    mid ← floor((lo + hi) / 2)
+    if nums[mid] = target
+        return mid
+    else if nums[mid] < target
+        lo ← mid + 1
+    else
+        hi ← mid - 1
+return lo  // insert position`,
     payoff: "About log₂ n comparisons instead of n: 20 checks for a million items.",
   },
   "Sliding window": {
@@ -109,11 +109,11 @@ return lo           // insert position`,
     ],
     template: `left ← 0
 for each index right, value x in s
-  add(x)              // grow
-  while not valid()   // shrink
-    remove(s[left])
-    left += 1
-  best ← max(best, right - left + 1)`,
+    add(x)  // grow
+    while not valid()  // shrink
+        remove(s[left])
+        left += 1
+    best ← max(best, right - left + 1)`,
     payoff: "Each element enters and leaves the window at most once, so O(n²) start-and-end pairs become O(n).",
   },
   "Linked lists": {
@@ -125,9 +125,9 @@ for each index right, value x in s
     ],
     template: `prev, curr ← none, head
 while curr ≠ none
-  nxt ← curr.next    // save the rest
-  curr.next ← prev   // flip one
-  prev, curr ← curr, nxt
+    nxt ← curr.next  // save the rest
+    curr.next ← prev  // flip one
+    prev, curr ← curr, nxt
 return prev`,
     payoff: "Relinking nodes in place takes O(n) time and O(1) space; copying into an array costs O(n) space.",
   },
@@ -135,11 +135,11 @@ return prev`,
     idea: "Solve the left subtree and the right subtree recursively, then combine their answers at the node.",
     signals: ["Depth, height, balance or paths", "Compare, invert or validate a tree", "Level-by-level questions (use BFS instead)"],
     template: `function solve(node)
-  if node = none
-    return baseCase
-  left ← solve(node.left)
-  right ← solve(node.right)
-  return combine(node, left, right)`,
+    if node = none
+        return baseCase
+    left ← solve(node.left)
+    right ← solve(node.right)
+    return combine(node, left, right)`,
     payoff: "Each node is visited once: O(n) time, with O(h) stack space for a tree of height h.",
   },
   Heaps: {
@@ -147,9 +147,9 @@ return prev`,
     signals: ["Top k, kth largest or smallest", "Repeatedly take the best remaining option", "Merging k sorted sources"],
     template: `heap ← empty min-heap
 for each x in nums
-  heap.push(x)
-  if length(heap) > k
-    heap.popMin()  // keep k largest
+    heap.push(x)
+    if length(heap) > k
+        heap.popMin()  // keep k largest
 return heap.min()`,
     payoff: "Top k in O(n log k) instead of sorting everything in O(n log n).",
   },
@@ -157,13 +157,13 @@ return heap.min()`,
     idea: "Build a candidate one choice at a time, recurse, then undo the choice and try the next.",
     signals: ["Generate all subsets, permutations or combinations", "Place items under constraints", "The answer is a list of every valid arrangement"],
     template: `function backtrack(path, choices)
-  if done(path)
-    results.push(copy(path))
-    return
-  for each c in choices
-    path.push(c)        // choose
-    backtrack(path, next(c))
-    path.pop()          // undo`,
+    if done(path)
+        results.push(copy(path))
+        return
+    for each c in choices
+        path.push(c)  // choose
+        backtrack(path, next(c))
+        path.pop()  // undo`,
     payoff: "Pruning invalid branches early avoids exploring arrangements that can never work.",
   },
   Graphs: {
@@ -172,11 +172,11 @@ return heap.min()`,
     template: `seen ← set {start}
 queue ← queue of [start]
 while queue not empty
-  node ← queue.popFront()
-  for each nxt in neighbours(node)
-    if nxt not in seen
-      seen.add(nxt)
-      queue.push(nxt)`,
+    node ← queue.popFront()
+    for each nxt in neighbours(node)
+        if nxt not in seen
+            seen.add(nxt)
+            queue.push(nxt)`,
     payoff: "Every node and edge is handled once: O(V + E).",
   },
   "Dynamic programming": {
@@ -184,7 +184,7 @@ while queue not empty
     signals: ["Count the ways, or find the best value", "The answer for n depends on answers for smaller n", "A recursive solution repeats the same subproblems"],
     template: `dp ← array of n + 1, all base
 for i ← 1 to n
-  dp[i] ← best(dp[i - 1], dp[i - 2])
+    dp[i] ← best(dp[i - 1], dp[i - 2])
 return dp[n]`,
     payoff: "Overlapping subproblems are solved once each, turning exponential recursion into polynomial time.",
   },
@@ -193,8 +193,8 @@ return dp[n]`,
     signals: ["Maximise or minimise with one pass", "Intervals to merge, schedule or count", "A running best that can be reset safely"],
     template: `best ← nums[0], cur ← nums[0]
 for each x in nums[1..end]
-  cur ← max(x, cur + x)
-  best ← max(best, cur)
+    cur ← max(x, cur + x)
+    best ← max(best, cur)
 return best`,
     payoff: "One pass, O(n), when the greedy choice is provably safe.",
   },

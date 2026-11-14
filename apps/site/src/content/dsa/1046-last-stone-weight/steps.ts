@@ -24,13 +24,13 @@ const resort: Approach<Input> = {
   id: "sort",
   name: "Re-sort every round",
   code: `function lastStoneWeight(stones)
-  while length(stones) > 1
-    stones.sort()  // heaviest at the end
-    y ← stones.pop()  // heaviest
-    x ← stones.pop()  // next heaviest
-    if y ≠ x
-      stones.push(y - x)
-  return stones is empty ? 0 : stones[0]
+    while length(stones) > 1
+        stones.sort()  // heaviest at the end
+        y ← stones.pop()  // heaviest
+        x ← stones.pop()  // next heaviest
+        if y ≠ x
+            stones.push(y - x)
+    return stones is empty ? 0 : stones[0]
 `,
   run({ stones }, t) {
     const a = [...stones];
@@ -61,14 +61,14 @@ const heap: Approach<Input> = {
   name: "Max-heap",
   code: `// heap: a max-heap, heaviest stone on top
 function lastStoneWeight(stones)
-  heap ← stones
-  arrange heap as a max-heap
-  while length(heap) > 1
-    y ← heap.popMax()  // heaviest
-    x ← heap.popMax()  // next heaviest
-    if y ≠ x
-      heap.push(y - x)
-  return heap is empty ? 0 : heap.max()
+    heap ← stones
+    arrange heap as a max-heap
+    while length(heap) > 1
+        y ← heap.popMax()  // heaviest
+        x ← heap.popMax()  // next heaviest
+        if y ≠ x
+            heap.push(y - x)
+    return heap is empty ? 0 : heap.max()
 `,
   run({ stones }, t) {
     type S = { id: string; val: number };

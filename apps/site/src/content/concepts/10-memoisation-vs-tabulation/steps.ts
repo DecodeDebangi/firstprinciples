@@ -34,9 +34,9 @@ const naive: Approach<Input> = {
   id: "naive",
   name: "Plain recursion",
   code: `function ways(n)
-  if n ≤ 1
-    return 1  // one way: stay, or one step
-  return ways(n - 1) + ways(n - 2)
+    if n ≤ 1
+        return 1  // one way: stay, or one step
+    return ways(n - 1) + ways(n - 2)
 `,
   run({ n }, t) {
     const T = callTree(n);
@@ -92,12 +92,12 @@ const memo: Approach<Input> = {
   name: "Top-down: recursion + memo",
   code: `memo ← empty map
 function ways(n)
-  if n ≤ 1
-    return 1
-  if n in memo
-    return memo[n]  // saved answer
-  memo[n] ← ways(n - 1) + ways(n - 2)
-  return memo[n]
+    if n ≤ 1
+        return 1
+    if n in memo
+        return memo[n]  // saved answer
+    memo[n] ← ways(n - 1) + ways(n - 2)
+    return memo[n]
 `,
   run({ n }, t) {
     const T = callTree(n);
@@ -157,10 +157,10 @@ const table: Approach<Input> = {
   id: "table",
   name: "Bottom-up: fill a table",
   code: `function ways(n)
-  dp ← array of n + 1, all 1  // base cases
-  for i ← 2 to n
-    dp[i] ← dp[i - 1] + dp[i - 2]
-  return dp[n]
+    dp ← array of n + 1, all 1  // base cases
+    for i ← 2 to n
+        dp[i] ← dp[i - 1] + dp[i - 2]
+    return dp[n]
 `,
   run({ n }, t) {
     const dp: (number | string)[] = Array(n + 1).fill("?");
