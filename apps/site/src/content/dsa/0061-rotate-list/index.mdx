@@ -1,0 +1,96 @@
+---
+title: Rotate List
+leetcode: { number: 61, url: "https://leetcode.com/problems/rotate-list/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-16
+summary: Rotate a linked list to the right by k places, so the last k nodes move to the front. Goes from moving the last node to the front k times, to counting the length, reducing k with a remainder, closing the list into a ring and cutting it in the right place.
+insight: "Rotating by the list's length changes nothing, so only k % n matters. Join the tail to the head to make a ring, walk n − k − 1 steps to the new tail, and cut the ring after it."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list and a whole number `k`. Rotate the list to the right by `k` places:
+each rotation by one takes the last node and moves it to the front. Return the new head. `k` can be far bigger than
+the list is long (up to 2 billion).
+
+For example, rotating `6 → 2 → 8 → 4 → 9` right by 1 gives `9 → 6 → 2 → 8 → 4`, and by 2 gives
+`4 → 9 → 6 → 2 → 8`. Rotating it by 7 also gives `4 → 9 → 6 → 2 → 8`, because after 5 rotations the list is back
+where it started.
+
+## The key question
+
+> **What does a rotation by k actually change, and do I need to do k separate moves to get there?**
+
+After all `k` rotations, the last `k % n` nodes sit at the front, in their original order, and the rest follow. So
+the real job is to find one cut point, not to move nodes one at a time.
+
+## Approach 1: Move the last node to the front, k times
+
+Do exactly what the problem describes. Each round, walk to the second-to-last node (the one whose `next` must
+become `none`), cut the last node off, and attach it in front of the head.
+
+<Viz client:visible approach="oneAtATime" />
+
+<Complexity time="O(n · k)" space="O(1)">
+**Time.** Each round walks about n nodes, and there are k rounds: **O(n · k)**. With `k` in the billions, that's
+billions of walks, even for a list of 5 nodes.
+
+**Space.** A couple of pointers: **O(1)**.
+
+**What it wastes:** every n rounds bring the list back to where it started, so all but the last `k % n` rounds do
+nothing useful. And even those can be done with a single cut.
+</Complexity>
+
+## Approach 2: Close it into a ring, cut in the right place (optimal)
+
+1. **Count:** walk to the tail, counting `n` nodes.
+2. **Reduce k:** rotating by `n` changes nothing, so only `k % n` matters. If it's 0, return the list as it is.
+3. **Close the ring:** point the tail at the head. Now the list has no start or end, and rotating is just choosing
+   where to cut.
+4. **Cut:** the new head is `k` nodes from the end, which is `n − k` nodes from the start. So walk `n − k − 1` steps
+   from the head to the new **tail**, make the node after it the new head, and set the new tail's `next` to
+   `none`.
+
+<Viz client:visible approach="ring" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One walk of n − 1 steps to count, then fewer than n steps to the cut: **O(n)**, however big `k` is.
+
+**Space.** A few pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Move the last node, k times | O(n · k) | O(1) | redoes whole circles for nothing |
+| Ring and cut | O(n) | O(1) | one count, one cut |
+
+<GrowthChart client:visible series={growth} caption="Steps when k = n − 1: the one-at-a-time version grows like n², the ring version in a straight line." />
+
+## Common mistakes
+
+- **Not reducing k.** Without `k % n`, a huge `k` makes even a short list take forever.
+- **Dividing by zero.** `k % n` with an empty list crashes. Handle the empty list (and the one-node list) first.
+- **Off by one at the cut.** The new tail is `n − k − 1` steps from the head, not `n − k`: you stop on the node
+  *before* the new head, so you can set its `next` to `none`.
+- **Forgetting to break the ring.** After closing it, `newTail.next ← none` is what makes it a list again.
+  Without it, the answer loops forever.
+
+## Related problems
+
+- [Remove Nth Node From End of List](/dsa/remove-nth-node-from-end-of-list/): finding the node k from the end,
+  there with two pointers a fixed distance apart.
+- [Insert into a Sorted Circular Linked List](/dsa/insert-into-a-sorted-circular-linked-list/): a list that is a
+  ring on purpose.
+- Rotate Array (LeetCode 189) asks the same for an array, where three reversals do it in place.
