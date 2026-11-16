@@ -76,7 +76,7 @@ const insertWrong: Approach<Input> = {
   code: `function insertAfterWrong(node, x)
     added ← new ListNode(x)
     node.next ← added  // too early!
-    added.next ← node.next  // node.next is added now
+    added.next ← node.next  // that's added now!
 `,
   run({ nums, x, after }, t) {
     const ns = nodesOf(nums), fresh: N = { id: NEW, val: x };

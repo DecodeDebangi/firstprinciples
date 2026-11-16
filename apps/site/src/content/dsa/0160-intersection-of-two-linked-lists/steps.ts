@@ -50,7 +50,7 @@ const brute: Approach<P> = {
     while a ≠ none
         b ← headB
         while b ≠ none
-            if a = b  // same node, not just same value
+            if a = b  // same node, not same value
                 return a
             b ← b.next
         a ← a.next

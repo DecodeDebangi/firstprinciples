@@ -1,0 +1,107 @@
+---
+title: Design Linked List
+leetcode: { number: 707, url: "https://leetcode.com/problems/design-linked-list/" }
+difficulty: Medium
+topics: [Linked list, Array]
+added: 2026-11-16
+summary: Build your own list with five operations, get, add at the head, add at the tail, add at an index and delete at an index. Goes from secretly using an array, which shifts values on every insert, to a real linked list with a dummy head and a size count.
+insight: "Keep a dummy node in front and a size count. Every insert or delete is then the same move: walk to the node just before the index, and rewire one or two pointers."
+best: { time: "O(index) per operation", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Build a list class from scratch, without using your language's built-in list. It must support five operations,
+where positions (indexes) start at 0:
+
+- `get(index)`: return the value at that position, or `-1` if there isn't one.
+- `addAtHead(val)`: put `val` at the front.
+- `addAtTail(val)`: put `val` at the end.
+- `addAtIndex(index, val)`: put `val` so that it ends up at position `index`. If `index` equals the current length,
+  that means the end; if it's bigger, do nothing.
+- `deleteAtIndex(index)`: remove the value at that position, if there is one.
+
+For example, `addAtHead 4, addAtTail 9, addAtIndex 1 6` builds `4 → 6 → 9`. Then `get 2` returns `9`,
+`deleteAtIndex 0` leaves `6 → 9`, and `get 0` returns `6`.
+
+## The key question
+
+> **What does each operation cost, and can I make every one of them just "walk to the spot, change a pointer"?**
+
+The five operations pull in different directions: reading by position wants an array, inserting at the front wants
+a linked list. The answer is to make every operation the same shape.
+
+## Approach 1: Backed by an array
+
+The quick way: keep the values in an array and translate each operation. Reading is instant, but inserting or
+deleting anywhere except the end shifts every value after that spot. Watch the values slide:
+
+<Viz client:visible approach="arrayBacked" />
+
+<Complexity time="O(n) per add or delete" space="O(n)">
+**Time.** `get` is **O(1)**: jump straight to the position. But adding at position `index` shifts the
+`n − index` values after it one place right, and deleting shifts them left: **O(n)** at the front.
+
+**Space.** One array slot per value: **O(n)**.
+
+**What it wastes:** every insert or delete near the front moves almost every value, just to open or close a gap.
+</Complexity>
+
+## Approach 2: A real linked list with a dummy head (optimal)
+
+Store nodes instead, with two helpers that make every operation simple:
+
+- A **dummy node** in front of the real head, so position 0 has a node before it like every other position. Adding
+  or deleting at the head is then the same code as anywhere else (see [the dummy head](/concepts/dummy-head/)).
+- A **size** count, so "is this index valid?" is answered instantly, without walking.
+
+Then every operation is: check the index against `size`, walk to the node *before* the position, and rewire. Adding
+at the head and tail just call `addAtIndex` with `0` and `size`.
+
+<Viz client:visible approach="linked" />
+
+<Complexity time="O(index) per operation" space="O(n)">
+**Time.** Each operation walks `index` nodes from the dummy, then does O(1) of pointer work: **O(index)**. So
+`addAtHead` and deleting the head are **O(1)**, and the worst case, the far end, is O(n). Nothing ever shifts.
+
+**Space.** One node per value, each with a value and a `next` pointer: **O(n)**.
+</Complexity>
+
+Adding at the tail is still O(n), because it walks to the end. Keeping a `tail` pointer as well would make it O(1),
+at the cost of updating `tail` whenever the last node changes. A doubly linked list (each node also points back)
+would let `get` walk from whichever end is closer.
+
+## Comparing the approaches
+
+Both, running the same operations:
+
+<Compare client:visible />
+
+| Approach | get | add/delete at the front | add at the end | |
+|---|---|---|---|---|
+| Backed by an array | O(1) | O(n): everything shifts | O(1) | fast reads, slow front edits |
+| Linked list + dummy + size | O(index) | O(1) | O(n) (O(1) with a tail pointer) | nothing ever shifts |
+
+<GrowthChart client:visible series={growth} caption="Work for n calls to addAtHead: the array shifts everything every time." />
+
+## Common mistakes
+
+- **Treating index = size as invalid in addAtIndex.** Adding at position `size` means adding at the end, which is
+  allowed. Only `index > size` is ignored. (For `get` and `deleteAtIndex`, `index = size` *is* invalid.)
+- **Forgetting to update size.** Every successful add and delete must change it, or later index checks go wrong.
+- **Walking to the node *at* the index instead of the one *before* it.** To insert or delete you rewire the previous
+  node, so walk `index` steps from the dummy, not from the first real node.
+- **Special-casing the head.** With a dummy node you don't need to. Without one, add and delete at index 0 need
+  their own branches.
+
+## Related problems
+
+- [The dummy head](/concepts/dummy-head/): the trick that makes adding and deleting at position 0 ordinary.
+- [Reverse Linked List](/dsa/reverse-linked-list/) and [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/):
+  practice rewiring pointers.
+- The same problem with a **doubly linked list** (each node also points to the previous one) lets `get` walk from
+  whichever end is nearer.
