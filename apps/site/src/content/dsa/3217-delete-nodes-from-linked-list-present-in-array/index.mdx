@@ -1,0 +1,84 @@
+---
+title: Delete Nodes From Linked List Present in Array
+leetcode: { number: 3217, url: "https://leetcode.com/problems/delete-nodes-from-linked-list-present-in-array/" }
+difficulty: Medium
+topics: [Linked list, Hash map]
+added: 2026-11-16
+summary: Delete every node of a linked list whose value appears in an array, and return the list. Goes from reading through the whole array for every node, to putting the array in a hash set first so each check is one lookup.
+insight: "Turn the array into a hash set, so 'should this node go?' is O(1). Then do the usual unlinking walk with a dummy node in front, in case the head goes too."
+best: { time: "O(n + m)", space: "O(m)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array of numbers `nums` and the head of a linked list. Delete every node whose value appears anywhere in
+`nums`, and return the head of what's left. At least one node is guaranteed to survive.
+
+For example, with `nums = [3, 8]` and the list `3 → 5 → 8 → 1 → 3`, the `3`s and the `8` go, leaving `5 → 1`. Note
+that the head itself is deleted.
+
+## The key question
+
+> **How fast can I answer "is this value in nums?" for every node?**
+
+The deleting part is the same unlinking walk as in [Remove Linked List Elements](/dsa/remove-linked-list-elements/),
+with a [dummy node](/concepts/dummy-head/) in front. What changes the cost is how each node's check is done.
+
+## Approach 1: Scan nums for every node
+
+For each node, read through `nums` to see whether its value is there.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** For each of the `n` nodes, the check reads up to `m` values of `nums`: **O(n · m)**. With 100,000 of each,
+that's 10 billion checks.
+
+**Space.** Just the dummy and `curr`: **O(1)**.
+
+**What it wastes:** it reads the same `nums` from the start again for every single node.
+</Complexity>
+
+## Approach 2: Put nums in a set first (optimal)
+
+Put every value of `nums` into a [hash set](/concepts/how-hash-maps-work/) once. Then each node's check is a single
+O(1) lookup. The walk itself is unchanged: `curr` starts on the dummy and looks at `curr.next`. If it must go, point
+`curr.next` past it and stay put; otherwise move on.
+
+<Viz client:visible approach="withSet" />
+
+<Complexity time="O(n + m)" space="O(m)">
+**Time.** Building the set is `m` adds, and the walk is `n` checks, each O(1) on average: **O(n + m)**.
+
+**Space.** The set holds up to `m` values: **O(m)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Scan nums for every node | O(n · m) | O(1) | rereads nums every time |
+| Set first | O(n + m) | O(m) | one lookup per node |
+
+<GrowthChart client:visible series={growth} caption="Checks when nothing is deleted, with n nodes and n values in nums." />
+
+## Common mistakes
+
+- **Forgetting that the head can go.** Without a dummy node, deleting the first few nodes needs a separate loop.
+- **Moving `curr` after a deletion.** The node that slides into `curr.next` hasn't been checked. In `3 → 8 → 1`
+  with `nums = [3, 8]`, moving on would keep the `8`.
+- **Converting nums to a set inside the loop.** Build it once, before the walk, or it costs O(m) per node again.
+
+## Related problems
+
+- [Remove Linked List Elements](/dsa/remove-linked-list-elements/): the same walk, deleting one value.
+- [The dummy head](/concepts/dummy-head/): why deleting the head needs no special code.
+- [Contains Duplicate](/dsa/contains-duplicate/): another "turn repeated searching into a set lookup" problem.
