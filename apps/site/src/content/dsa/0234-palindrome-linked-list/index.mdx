@@ -1,0 +1,119 @@
+---
+title: Palindrome Linked List
+leetcode: { number: 234, url: "https://leetcode.com/problems/palindrome-linked-list/" }
+difficulty: Easy
+topics: [Linked list, Two pointers]
+added: 2026-11-16
+summary: Decide whether the values in a linked list read the same forwards and backwards. Goes from walking to each node's mirror from the head, to copying the values into an array, to finding the middle and reversing the second half so it can be read backwards.
+insight: "Find the middle with a slow and a fast pointer, reverse the second half in place, then walk the first half and the reversed second half together, comparing values."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list. Return `true` if its values read the same from front to back as from
+back to front (a **palindrome**), and `false` otherwise.
+
+For example, `3 → 7 → 5 → 7 → 3` is a palindrome: the 1st and 5th values are both `3`, the 2nd and 4th both `7`, and
+the `5` in the middle pairs with itself. `3 → 7 → 7 → 4` isn't, because the first value is `3` and the last is `4`.
+
+## The key question
+
+> **How do I compare the front with the back, when a singly linked list only lets me walk forwards?**
+
+With an array you'd put one finger at each end and move them inwards. A singly linked list has no way back from
+the end, so each approach finds a different way to read the second half backwards.
+
+## Approach 1: Brute force, walk to each node's mirror
+
+Count the list to get `n`. Then for each node in the first half, walk from the head to its mirror (the node the
+same distance from the end) and compare the two values.
+
+<Viz client:visible approach="mirror" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Reaching the mirror of the i-th node takes `n − 1 − i` steps, for each of the n / 2 nodes in the first
+half. That adds up to about `3n² / 8` steps: **O(n²)**.
+
+**Space.** A few pointers and counters: **O(1)**.
+
+**What it wastes:** it walks the same long stretch from the head for every single comparison.
+</Complexity>
+
+## Approach 2: Copy into an array, two pointers
+
+Copy the values into an array, which *can* be read from both ends. Then `i` starts at the front, `j` at the back,
+and they step towards each other, comparing as they go.
+
+<Viz client:visible approach="array" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to copy, then at most n / 2 comparisons: **O(n)**.
+
+**Space.** The array holds all n values: **O(n)**.
+
+**What it wastes:** a full copy of the list, just to be able to read it backwards.
+</Complexity>
+
+## Approach 3: Reverse the second half (optimal)
+
+Make the second half readable backwards by reversing it in place. Three steps, each one a pattern from an earlier
+problem:
+
+1. **Find the middle** with [fast and slow pointers](/dsa/linked-list-cycle/): `slow` moves one node, `fast` two.
+   When `fast` can't go further, `slow` is at the start of the second half.
+2. **Reverse from `slow` to the end**, exactly as in [Reverse Linked List](/dsa/reverse-linked-list/). `prev` ends
+   up on the old last node, which is now the first node of the reversed half.
+3. **Compare**: `left` walks from the head, `right` from `prev`. Walking `right` forwards now means walking the
+   original list backwards. Stop when `right` reaches `none`.
+
+When the list has odd length, the middle node ends up in the reversed half and gets compared with itself, which
+is harmless. In the animation, the arc shows the middle node pointing to `none` after the reversal.
+
+<Viz client:visible approach="reverseHalf" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Finding the middle takes about n / 2 rounds, reversing the second half n / 2 steps, comparing n / 2
+steps: **O(n)** in total.
+
+**Space.** A handful of pointers, and no copy: **O(1)**.
+</Complexity>
+
+This approach changes the list. If the caller still needs it afterwards, reverse the second half again before
+returning (one more O(n) walk). Interviewers often ask about this.
+
+## Comparing the approaches
+
+All three on the same list, one shared clock ticking once per step:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Walk to each mirror | O(n²) | O(1) | rewalks from the head every time |
+| Copy into an array | O(n) | O(n) | simple, but copies everything |
+| Reverse the second half | O(n) | O(1) | changes the list (can be undone) |
+
+<GrowthChart client:visible series={growth} caption="Steps for palindromes of length n: the mirror walk grows like n², the other two in a straight line." />
+
+## Common mistakes
+
+- **Reversing the whole list and comparing it with the original.** After reversing in place there's no original
+  left to compare with. You'd need a copy, which is approach 2 with extra steps.
+- **Finding the wrong middle.** With `fast` starting on the head and the loop condition
+  `fast ≠ none and fast.next ≠ none`, `slow` stops on the middle node (odd length) or the first node of the second
+  half (even length). Either way, reversing from `slow` works.
+- **Stopping the compare on `left`.** The first half can be one node longer than the reversed half, so loop while
+  `right ≠ none`.
+- **Forgetting the list was changed.** If other code uses the list afterwards, reverse the second half back.
+
+## Related problems
+
+- [Reverse Linked List](/dsa/reverse-linked-list/): the reversal used in step 2.
+- [Linked List Cycle](/dsa/linked-list-cycle/): where fast and slow pointers come from.
+- [Valid Palindrome](/dsa/valid-palindrome/): the same question for a string, where two pointers from both ends
+  work directly.
