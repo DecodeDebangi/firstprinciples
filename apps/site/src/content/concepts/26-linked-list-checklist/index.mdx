@@ -1,0 +1,127 @@
+---
+title: "Linked list checklist: the bugs to look for, and lists in four languages"
+topic: Linked lists
+kind: Comparison guide
+order: 10
+summary: Most linked-list bugs are the same handful of mistakes. A checklist to run before you submit, the five inputs that catch them, and how a node is written in Python, Java, C++ and JavaScript.
+added: 2026-11-16
+---
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Before you submit: the checklist
+
+Linked-list code goes wrong in a small number of ways. Go through these with your code in front of you.
+
+1. **Is every `.next` read safe?** Before reading `x.next` or `x.val`, make sure `x` can't be `none`. Moving two
+   steps needs both `fast ≠ none` and `fast.next ≠ none`, in that order. ([Fast and slow
+   pointers](/concepts/fast-and-slow-pointers/))
+2. **Did I save `next` before overwriting it?** Once you change `curr.next`, the old next node is unreachable unless
+   something else points to it. ([Reversing a list](/concepts/reversing-a-list/))
+3. **Can the head change?** If the first node might be removed or something might go in front of it, use a
+   [dummy node](/concepts/dummy-head/) and return `dummy.next`, not `head`.
+4. **After unlinking, do I stay put?** After `curr.next ← curr.next.next`, the node that slid into `curr.next` hasn't
+   been checked yet. ([Remove Linked List Elements](/dsa/remove-linked-list-elements/))
+5. **Am I one node short or long?** To change a node, you usually need to stand on the node *before* it. Count your
+   steps on a tiny example: "walk `n − k − 1` steps" type expressions are where off-by-one errors live.
+   ([Rotate List](/dsa/rotate-list/), [Remove Nth Node From End](/dsa/remove-nth-node-from-end-of-list/))
+6. **Does the result end in `none`?** After rearranging, the new last node must point to `none`, or the list loops
+   forever. ([Odd Even Linked List](/dsa/odd-even-linked-list/), [Rotate List](/dsa/rotate-list/))
+7. **Am I comparing nodes or values?** "Is this the same node?" is `a = b` on the nodes. Two different nodes can
+   hold the same value. ([Intersection of Two Linked Lists](/dsa/intersection-of-two-linked-lists/))
+8. **Could the list loop?** If it might, a walk that waits for `none` never ends. Detect the loop first, or stop when
+   you're back where you started. ([Linked List Cycle](/dsa/linked-list-cycle/))
+9. **Did I change a list I was only asked to read?** If you reversed or rearranged it to make the job easier,
+   say so, or put it back. ([Palindrome Linked List](/dsa/palindrome-linked-list/))
+10. **How deep does the recursion go?** A recursive walk uses one stack frame per node. Fine for short lists, a crash
+    for very long ones. ([Thinking recursively](/concepts/thinking-recursively/))
+
+## The five inputs to test
+
+Run your code by hand on each of these. Between them they catch almost every item above.
+
+| Input | What it catches |
+|---|---|
+| empty list (`none`) | reading `.next` of `none`; forgetting to return `none` |
+| one node | loops that assume a second node; "the head is also the tail" |
+| two nodes | off-by-one walks; even-length middles |
+| the answer at the head (e.g. remove the first node) | the head changing; returning the old head |
+| the answer at the tail, or every node affected | the last node's `next`; an empty result |
+
+## Linked lists in four languages
+
+The pseudocode on this site works in any language. Here's how the pieces map to the four most common ones.
+
+### The node
+
+```python
+# Python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+```
+
+```java
+// Java
+class ListNode {
+    int val;
+    ListNode next;
+    ListNode(int val) { this.val = val; }
+}
+```
+
+```cpp
+// C++
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v) : val(v), next(nullptr) {}
+};
+```
+
+```js
+// JavaScript
+class ListNode {
+  constructor(val = 0, next = null) {
+    this.val = val;
+    this.next = next;
+  }
+}
+```
+
+### The same ideas, side by side
+
+| Pseudocode | Python | Java | C++ | JavaScript |
+|---|---|---|---|---|
+| `none` | `None` | `null` | `nullptr` | `null` |
+| `node.next` | `node.next` | `node.next` | `node->next` | `node.next` |
+| same node? `a = b` | `a is b` | `a == b` | `a == b` (pointers) | `a === b` |
+| same value? `a.val = b.val` | `a.val == b.val` | `a.val == b.val` | `a->val == b->val` | `a.val === b.val` |
+| `new ListNode(5)` | `ListNode(5)` | `new ListNode(5)` | `new ListNode(5)` | `new ListNode(5)` |
+| a removed node | freed automatically | freed automatically | stays in memory until you `delete` it | freed automatically |
+
+Python, Java and JavaScript free a node's memory automatically once nothing points to it (this is called **garbage
+collection**). In C++ an unlinked node created with `new` stays in memory until you `delete` it, so production C++
+code deletes nodes it removes. Interview platforms usually don't check.
+
+None of these languages' built-in lists is a linked list: Python's `list`, Java's `ArrayList`, C++'s `vector` and
+JavaScript arrays are all dynamic arrays. Java's `LinkedList` and C++'s `std::list` are real (doubly) linked lists,
+but interview problems almost always hand you their own `ListNode` instead.
+
+## Interview theory
+
+<QA q="What inputs should you test a linked-list solution on?">
+At least: the empty list, a single node, two nodes, a case where the head itself changes, and a case that touches
+the last node. Most bugs show up in one of these.
+</QA>
+
+<QA q="In Python, why compare nodes with `is` rather than `==`?">
+`is` asks whether two names refer to the very same object, which is what "same node" means. `==` can be redefined
+by a class to compare contents, so it could say two different nodes are equal.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
