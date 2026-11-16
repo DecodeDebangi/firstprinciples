@@ -1,0 +1,102 @@
+---
+title: "Reversing a list: moving nodes from one list to another"
+topic: Linked lists
+kind: Explainer
+order: 6
+summary: Reversing a linked list is one node moving at a time from the front of one list to the front of another. See that picture, the one ordering mistake that loses the rest of the list, and how the same walk reverses just part of a list.
+added: 2026-11-16
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Reversing doesn't move any values
+
+To reverse a linked list you don't swap values or build a new list. Every node stays where it is; only the `next`
+arrows turn around, so that the last node becomes the head. That makes it an O(1)-space operation, and it's one
+of the most reused moves in linked-list problems.
+
+[Reverse Linked List](/dsa/reverse-linked-list/) animates the standard code. This read is about *how to think about
+it*, so you can rebuild the code yourself and adapt it.
+
+## The picture: two lists
+
+At any moment during the walk, the nodes are split into two separate lists:
+
+- **reversed**, starting at `prev`: the nodes already turned around, newest first.
+- **still to do**, starting at `curr`: the rest of the original list, untouched.
+
+Each round takes the first node of "still to do" and puts it at the front of "reversed". When "still to do" is
+empty, "reversed" is the answer.
+
+<Viz client:visible approach="twoLists" />
+
+Each round is four lines, and each has one job:
+
+1. `nxt ← curr.next`: remember where "still to do" continues.
+2. `curr.next ← prev`: attach `curr` to the front of "reversed".
+3. `prev ← curr`: `curr` is now the head of "reversed".
+4. `curr ← nxt`: the head of "still to do" is the node you remembered.
+
+## The trap: flipping before saving
+
+Line 2 overwrites `curr.next`, and that arrow is the **only** way to reach the rest of the list. Nothing else
+points to those nodes. If you change it before saving it, they're gone:
+
+<Viz client:visible approach="wrongOrder" />
+
+The rule for any linked-list rewiring: before you overwrite a `next`, make sure something else is holding on to
+the node it pointed at.
+
+## Reversing just part of a list
+
+Many problems need only a section reversed: positions 2 to 4, the second half (as in
+[Palindrome Linked List](/dsa/palindrome-linked-list/)), or every group of k nodes. It's the same walk with two
+extra jobs:
+
+- **Stop early:** run the four lines `to − from + 1` times instead of until `none`.
+- **Stitch the ends back:** the section's old first node is now its last, so point it at whatever came after the
+  section. Then point the node *before* the section at its new first node.
+
+A [dummy node](/concepts/dummy-head/) in front means the section can start at position 1 without a special case.
+
+<Viz client:visible approach="part" />
+
+## The recursive version
+
+Reversal can also be written recursively: reverse everything after the head, then hook the head on at the end.
+
+```text
+function reverse(head)
+    if head = none or head.next = none
+        return head
+    newHead ← reverse(head.next)
+    head.next.next ← head
+    head.next ← none
+    return newHead
+```
+
+It's shorter but uses O(n) space, because each node waits on the call stack until the rest is reversed. The
+[Reverse Linked List](/dsa/reverse-linked-list/) page animates it.
+
+## Interview theory
+
+<QA q="What's the time and space cost of reversing a list in place?">
+O(n) time, since each node's arrow is changed once, and O(1) space: three pointers, whatever the length. The
+recursive version is also O(n) time but O(n) space for the call stack.
+</QA>
+
+<QA q="What do prev and curr hold at the end, and why return prev?">
+`curr` is `none`: "still to do" is empty. `prev` is the last node that was moved, which was the original tail and is
+now the head of the reversed list. Returning `head` would return the original first node, which is now the last.
+</QA>
+
+<QA q="How would you reverse a doubly linked list?">
+Walk it once and, at each node, swap its `next` and `prev` pointers. The last node visited becomes the new head.
+Still O(n) time and O(1) space.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
