@@ -1,0 +1,99 @@
+---
+title: Add Two Numbers
+leetcode: { number: 2, url: "https://leetcode.com/problems/add-two-numbers/" }
+difficulty: Medium
+topics: [Linked list, Math]
+added: 2026-11-16
+summary: Add two numbers whose digits are stored backwards in linked lists, one digit per node, and return the sum as a list in the same form. Goes from turning the lists into ordinary numbers, which breaks for long ones, to adding column by column with a carry, as on paper.
+insight: "The lists already start with the ones digit, which is where adding by hand starts. Walk both lists together, add each column plus the carry, write down the last digit, and carry the rest."
+best: { time: "O(max(m, n))", space: "O(max(m, n))" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two non-empty linked lists, `l1` and `l2`. Each one is a whole number written **backwards**, one digit per
+node: the head is the ones digit, the next node the tens, then the hundreds, and so on. Return their sum as a list
+written the same way. Apart from the number 0 itself, no number starts with a 0.
+
+For example, `6 → 4 → 9` is 946 and `8 → 7` is 78. Their sum is 1024, so the answer is `4 → 2 → 0 → 1`. The lists
+can have different lengths, and the answer can be one digit longer than both.
+
+## The key question
+
+> **How do I add two numbers one digit at a time, without ever holding the whole number?**
+
+On paper you add the ones column first, then the tens, carrying 1 whenever a column goes over 9. Here the lists
+already start at the ones digit, so they're in exactly the right order for that.
+
+## Approach 1: Turn them into numbers, add, turn back
+
+Read each list as an ordinary number: the i-th node is worth its digit times 10 to the power i, so keep a `place`
+that goes 1, 10, 100, … Add the two numbers. Then write the sum back as a list, peeling off the ones digit with
+`total % 10` and dropping it with `floor(total / 10)`.
+
+<Viz client:visible approach="viaNumbers" />
+
+<Complexity time="O(max(m, n))" space="O(max(m, n))">
+**Time.** Reading the lists takes `m + n` steps, and the sum has at most `max(m, n) + 1` digits to write back:
+**O(max(m, n))**.
+
+**Space.** The answer list has up to `max(m, n) + 1` nodes: **O(max(m, n))**.
+
+**What it wastes:** nothing in time, but it **breaks** for long numbers. The problem allows lists of 100 digits,
+and an ordinary whole number in most languages tops out around 19 digits. The total overflows and the answer is
+wrong.
+</Complexity>
+
+## Approach 2: Add digit by digit with a carry (optimal)
+
+Do what you'd do on paper. Walk both lists together, one column at a time:
+
+- Take the two digits, using `0` for a list that has run out, and add the carry from the previous column:
+  `s ← x + y + carry`.
+- Write down `s % 10`, the last digit, as a new node at the end of the answer.
+- Carry `floor(s / 10)`, which is 1 when the column went over 9 and 0 otherwise.
+
+Keep going while either list has digits left **or** there's still a carry: 946 + 78 needs a fourth column just
+for the final carried 1. A [dummy node](/concepts/dummy-head/) at the front lets every new digit be attached the
+same way, even the first.
+
+<Viz client:visible approach="carry" />
+
+<Complexity time="O(max(m, n))" space="O(max(m, n))">
+**Time.** One step per column, and there are at most `max(m, n) + 1` columns: **O(max(m, n))**.
+
+**Space.** The answer itself has up to `max(m, n) + 1` nodes. Apart from that, only `carry` and two pointers:
+**O(1)** extra.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same numbers:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Works for 100-digit numbers? |
+|---|---|---|---|
+| Numbers, add, back | O(max(m, n)) | O(1) | no, the total overflows |
+| Digit by digit with a carry | O(max(m, n)) | O(1) | yes |
+
+Both take about the same number of steps, so there's no growth chart. The difference is that the second one never
+builds a number bigger than 19, so it works however long the lists are.
+
+## Common mistakes
+
+- **Forgetting the final carry.** If the loop only runs while `l1` or `l2` has nodes, 946 + 78 comes out as
+  `4 → 2 → 0` (24) instead of `4 → 2 → 0 → 1`. Keep `carry > 0` in the loop condition.
+- **Stopping when the shorter list ends.** Treat a finished list as `0` and keep going until both are done.
+- **Reversing the lists first.** They're already in the right order for adding; the ones digit comes first.
+- **Writing `s` instead of `s % 10`.** Each node holds a single digit; anything over 9 belongs in the carry.
+
+## Related problems
+
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/): the same "walk two lists together and build a third"
+  shape, with a dummy node at the front.
+- [Plus One](/dsa/plus-one/): carrying through digits stored in an array, from the back.
+- Add Two Numbers II (LeetCode 445) stores the digits the other way round, most significant first, which makes
+  the carry much harder to handle.

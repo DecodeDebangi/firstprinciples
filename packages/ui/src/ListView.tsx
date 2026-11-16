@@ -11,14 +11,17 @@ const PTR_ROW = 18;
  * cells; pointers (prev, curr, tail…) ride a rail and slide between nodes.
  */
 export function ListView({ step }: { step: ArrayStep }) {
+  const rows = step.lists ?? [];
+  // When any row has a label, all rows share one label column, so their nodes line up (l1 above l2 above sum).
+  const labelled = rows.some((r) => r.label);
   return (
-    <div className="fp-lists">
-      {(step.lists ?? []).map((row, k) => <Row key={row.label ?? k} row={row} />)}
+    <div className={`fp-lists${labelled ? " is-labelled" : ""}`}>
+      {rows.map((row, k) => <Row key={row.label ?? k} row={row} labelled={labelled} />)}
     </div>
   );
 }
 
-function Row({ row }: { row: ListRow }) {
+function Row({ row, labelled }: { row: ListRow; labelled: boolean }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Record<string, { x: number; w: number; top: number; h: number }>>({});
   const markId = useId();
@@ -61,7 +64,7 @@ function Row({ row }: { row: ListRow }) {
 
   return (
     <div className={`fp-lrow${row.compact ? " is-compact" : ""}`}>
-      {row.label && <div className="fp-lrow__label">{row.label}</div>}
+      {labelled && <div className="fp-lrow__label">{row.label ?? ""}</div>}
       <div className={`fp-ltrack${row.skips?.length ? " has-skips" : ""}`} ref={trackRef}>
         {row.skips?.length ? (
           <svg className="fp-lskips" aria-hidden="true">
