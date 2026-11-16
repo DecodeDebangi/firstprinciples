@@ -105,8 +105,8 @@ function Row({ row, labelled }: { row: ListRow; labelled: boolean }) {
                   <span className={`fp-larrow${arrow ? ` is-${arrow}` : " is-none"}`} aria-hidden="true">
                     <svg viewBox="0 0 34 14" height="14" preserveAspectRatio="none">
                       {arrow && <line x1="3" y1="7" x2="31" y2="7" />}
-                      {(arrow === "right" || arrow === "both") && <path d="M24 2 L31 7 L24 12" />}
-                      {(arrow === "left" || arrow === "both") && <path d="M10 2 L3 7 L10 12" />}
+                      {(arrow === "right" || arrow === "both" || arrow === "double") && <path d="M24 2 L31 7 L24 12" />}
+                      {(arrow === "left" || arrow === "both" || arrow === "double") && <path d="M10 2 L3 7 L10 12" />}
                     </svg>
                   </span>
                 )}

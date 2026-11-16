@@ -1,0 +1,109 @@
+---
+title: "Doubly and circular lists, and the LRU cache"
+topic: Linked lists
+kind: Explainer
+order: 9
+summary: Give each node a pointer back as well as forward, and a node you're holding can remove itself in O(1). Join the last node to the first, and the list has no end. See both, with sentinel nodes at each end, and how they combine with a hash map into an LRU cache where every operation is O(1).
+added: 2026-11-16
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Doubly linked lists: pointing both ways
+
+In a singly linked list each node knows only the node after it. In a **doubly linked list** each node also has a
+`prev` pointer to the node before it. In the animations, a two-headed arrow between neighbours means "each points to
+the other".
+
+The extra pointer buys two things:
+
+- You can walk **backwards** from any node.
+- A node you're already holding can be **removed in O(1)**. In a singly linked list, removing a node means changing
+  the `next` of the node *before* it, and the only way to find that node is to walk from the head, which is O(n).
+  Here the node knows its own neighbours.
+
+It costs one extra pointer per node, and every insert or delete must keep **both** directions correct.
+
+## Sentinels at both ends
+
+Real code usually puts a fake node at each end: a **head sentinel** before the first real node and a **tail
+sentinel** after the last. They're the doubly linked version of [the dummy head](/concepts/dummy-head/). Now every
+real node always has a node on both sides, so inserting or removing at either end is the same code as in the
+middle. An empty list is just the two sentinels pointing at each other.
+
+<Viz client:visible approach="unlink" />
+
+Two lines, and the order doesn't matter: each line changes a different neighbour, and the node itself still holds
+both of them until you're done.
+
+## Circular lists: no end at all
+
+In a **circular** linked list the last node points back to the first instead of to `none`. There's no natural
+start, so you keep a pointer to *some* node, and a walk stops when it gets back to where it began:
+
+```text
+function printAll(start)
+    if start = none then return
+    curr ← start
+    repeat
+        print(curr.val)
+        curr ← curr.next
+    until curr = start
+```
+
+The check comes at the end of the loop, so the first node is printed before `curr = start` is ever tested.
+Waiting for `curr = none` would loop forever, the same trap as in [Linked List Cycle](/dsa/linked-list-cycle/),
+except that here the loop is on purpose. Circular lists suit anything that goes round in turns, like players in a
+game or tasks sharing a processor. A list can be both doubly linked and circular, and many libraries build their
+lists that way around a single sentinel.
+
+## The LRU cache: a hash map plus a doubly linked list
+
+A **cache** keeps a few items close at hand so they don't have to be fetched again. Its size is limited, so when
+it's full and a new item arrives, one has to go. An **LRU** (least recently used) cache throws out the item that was
+used longest ago.
+
+It needs three operations, all O(1):
+
+- **find an item by its key:** a hash map from key to node.
+- **mark an item as just used:** move its node to the front of a doubly linked list. That's an unlink plus an
+  insert after the head sentinel, both O(1) because we hold the node.
+- **throw out the least recently used:** it's always the node just before the tail sentinel. Unlink it and delete
+  its key from the map.
+
+Neither structure could do it alone. A map has no order, and a list can't find a key without walking. Together,
+every `get` and `put` is O(1).
+
+<Viz client:visible approach="lru" />
+
+## Where you'll see these
+
+- [Design Linked List](/dsa/design-linked-list/): build the operations yourself; a doubly linked version lets `get`
+  walk from whichever end is closer.
+- [Insert into a Sorted Circular Linked List](/dsa/insert-into-a-sorted-circular-linked-list/) and
+  [Rotate List](/dsa/rotate-list/): lists that are, or temporarily become, rings.
+- LRU Cache (LeetCode 146): exactly the design above, and one of the most asked design questions.
+
+## Interview theory
+
+<QA q="Why does an LRU cache use a doubly linked list and not a singly linked one?">
+Moving a used item to the front means removing it from the middle. With only `next` pointers, you'd have to walk from
+the head to find the node before it, which is O(n). With `prev` as well, the node you got from the map can unlink
+itself in O(1).
+</QA>
+
+<QA q="Why does the LRU cache's map store nodes, not values?">
+So that after finding a key you can go straight to its place in the list and move or remove it. If the map stored
+only values, you'd have to search the list for the node.
+</QA>
+
+<QA q="How do you stop walking a circular linked list?">
+Remember the node you started at and stop when you reach it again. Check at the end of each step, not the start, so
+the first node is visited. Waiting for `none` loops forever.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

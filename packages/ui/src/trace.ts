@@ -15,7 +15,8 @@ export interface ListRow {
   nodes: { id: string; val: number | string; kind?: "null" | "dummy" }[];
   /** arrows[i] sits between nodes[i] and nodes[i + 1]: "right" = i.next is i+1, "left" = (i+1).next is i. */
   /** "both" = the two nodes point at each other (a brief 2-cycle, e.g. mid-way through a recursive reversal). */
-  arrows: ("right" | "left" | "both" | null)[];
+  /** "double" = a doubly linked pair, next and prev (drawn plainly, unlike the "both" warning). */
+  arrows: ("right" | "left" | "both" | "double" | null)[];
   pointers?: Record<string, string | null>;
   tones?: Record<string, Tone>;
   /**

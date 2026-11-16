@@ -85,6 +85,7 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `for each x in nums` | Run once per value in `nums`, with `x` holding that value. |
 | `for each index i, value x in nums` | The same, but you also get each value's position `i`. |
 | `repeat k times` | Run the indented lines `k` times. |
+| `repeat` … `until x` | Run the indented lines, then check `x`; stop once it's true. The lines always run at least once. |
 | `while lo < hi` | Keep running while the condition stays true. Check it, run, check again. |
 | `break` | Leave the loop right now. |
 | `continue` | Skip the rest of this round and start the next one. |
