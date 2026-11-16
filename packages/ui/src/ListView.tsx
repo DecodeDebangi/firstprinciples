@@ -80,12 +80,12 @@ function Row({ row, labelled }: { row: ListRow; labelled: boolean }) {
               if (!a || !b) return null;
               if (from === to) { // a node pointing at itself: a small loop over its top
                 const cx = a.x + a.w / 2, y = a.top - 1;
-                return <path key={`${from}>${to}`} className={tone ? `is-${tone}` : undefined} markerEnd={`url(#${markId})`}
+                return <path key={`${from}>${to}:${tone ?? ""}`} className={tone ? `is-${tone}` : undefined} markerEnd={`url(#${markId})`}
                   d={`M ${cx + 8} ${y + 2} C ${cx + 40} ${y - 34}, ${cx - 40} ${y - 34}, ${cx - 8} ${y}`} />;
               }
               const x1 = a.x + a.w / 2, x2 = b.x + b.w * 0.35, y1 = a.top - 2, y2 = b.top - 2;
               const up = Math.min(30, 16 + Math.abs(x2 - x1) / 10);
-              return <path key={`${from}>${to}`} className={tone ? `is-${tone}` : undefined} markerEnd={`url(#${markId})`}
+              return <path key={`${from}>${to}:${tone ?? ""}`} className={tone ? `is-${tone}` : undefined} markerEnd={`url(#${markId})`}
                 d={`M ${x1} ${y1} C ${x1} ${y1 - up}, ${x2} ${y2 - up}, ${x2} ${y2 - 2}`} />;
             })}
           </svg>

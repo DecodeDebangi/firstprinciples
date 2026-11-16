@@ -1,0 +1,117 @@
+---
+title: Copy List with Random Pointer
+leetcode: { number: 138, url: "https://leetcode.com/problems/copy-list-with-random-pointer/" }
+difficulty: Medium
+topics: [Linked list, Hash map]
+added: 2026-11-16
+summary: Make a completely separate copy of a linked list whose nodes also have a random pointer to any node, or to none. Goes from finding each random target by position, to a map from each original node to its copy, to weaving the copies into the original list so the list itself acts as the map.
+insight: "The hard part is knowing which copy stands for which original. Put each copy right after its original, and the copy of any node x is just x.next, so each copy's random is x.random.next."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a linked list where each node has a value, a `next` pointer, and a **`random`** pointer that
+can point to any node in the list (itself included) or to `none`. Make a **deep copy**: brand-new nodes with the
+same values, linked the same way, where every copy's `next` and `random` point to other *copies*. No pointer in the
+copy may point into the original list, and the original must be left as it was.
+
+For example, take `7 → 3 → 9` where the `7`'s random points to the `9`, the `3`'s to the `7`, and the `9`'s to
+none. The copy has three new nodes `7 → 3 → 9` with exactly the same random pattern, among the new nodes.
+
+In the animations, the dashed arcs are random pointers. Below the player you give each node's random target as a
+position counting from 0, so `2, 0, none` is the example above.
+
+## The key question
+
+> **When I copy a node's random pointer, how do I find the *copy* of the node it points to?**
+
+Copying values and `next` pointers is easy: walk and build. A random pointer can point anywhere, including to a node
+that hasn't been copied yet. Each approach is a different way to go from an original node to its copy.
+
+## Approach 1: Copy the chain, then find each random by position
+
+First copy the plain chain. Then, for each node with a random pointer, walk from the head to find **which
+position** it points to, and walk the copy to the same position.
+
+<Viz client:visible approach="byPosition" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Copying the chain is O(n). Each random pointer then needs up to two walks of up to n nodes: **O(n²)**.
+
+**Space.** Besides the copy itself (which the problem asks for), just a few pointers: **O(1)**.
+
+**What it wastes:** it rediscovers positions by walking, over and over, when it could just remember which copy
+belongs to which original.
+</Complexity>
+
+## Approach 2: Map each original node to its copy
+
+Pass 1 makes every copy node and stores it in a hash map: `copyOf[original] = copy`. Pass 2 sets each copy's
+pointers by looking up where the original's pointers go: `copyOf[curr.next]` and `copyOf[curr.random]` (with
+`copyOf[none]` being `none`). It doesn't matter that a random points ahead: by pass 2, every copy exists.
+
+<Viz client:visible approach="withMap" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two passes, each doing O(1) map work per node: **O(n)**.
+
+**Space.** The map holds one entry per node: **O(n)** on top of the copy.
+
+**What it wastes:** a whole extra table, just to remember "this original goes with that copy".
+</Complexity>
+
+## Approach 3: Weave the copies in, then pull them out (optimal)
+
+Store the "original → copy" link in the list itself, by putting each copy right after its original:
+`7 → 7' → 3 → 3' → 9 → 9'`. Now the copy of any original node `x` is simply `x.next`.
+
+1. **Weave:** after each original, insert its copy.
+2. **Randoms:** if `curr.random` is some node `r`, the copy of `r` is `r.next`, so set
+   `curr.next.random ← curr.random.next`.
+3. **Pull apart:** walk the woven list, moving each copy into its own list and pointing each original back at its
+   real next node, so the original ends up exactly as it was.
+
+<Viz client:visible approach="weave" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Three passes over 2n nodes: **O(n)**.
+
+**Space.** No map. Apart from the copy itself, only a few pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Find each random by position | O(n²) | O(1) | rewalks the list for every random |
+| Map original → copy | O(n) | O(n) | simplest O(n) version |
+| Weave in, pull out | O(n) | O(1) | the list does the map's job |
+
+<GrowthChart client:visible series={growth} caption="Steps when every random points to the last node." />
+
+## Common mistakes
+
+- **Pointing a copy's random at an original node.** The copy must be self-contained: `copy.random ← original.random`
+  links the two lists together. Always map to the copy.
+- **Setting randoms while still making nodes.** A random can point ahead, to a node with no copy yet. Make all the
+  copies first.
+- **Forgetting `none` randoms.** In the weave approach, `curr.random.next` crashes when `curr.random` is `none`. Check
+  first.
+- **Not restoring the original.** After weaving, each original's `next` points at its copy. The pull-apart pass must
+  point it back at the next original.
+
+## Related problems
+
+- [Design Linked List](/dsa/design-linked-list/): building list operations from scratch.
+- [Odd Even Linked List](/dsa/odd-even-linked-list/): another "split one list into two interleaved chains" pass,
+  like the pull-apart step here.
+- [Two Sum](/dsa/two-sum/): the same "a hash map remembers what you've seen" idea as approach 2.

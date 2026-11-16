@@ -240,6 +240,7 @@
 .fp-lskips { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 3; }
 .fp-lskips path:not(marker path) { fill: none; stroke: var(--text-2); stroke-width: 1.8; stroke-linecap: round; }
 .fp-lskips path.is-miss { stroke: var(--tone-miss-border); stroke-dasharray: 4 4; }
+.fp-lskips path.is-aux { stroke: var(--accent); stroke-dasharray: 3 3; }
 .fp-lskips marker path { fill: var(--text-2); }
 .fp-lnodes { display: flex; align-items: center; min-height: 48px; padding-bottom: 12px; }
 .fp-lnode { flex: 0 0 auto; width: clamp(30px, 7vw, 40px); aspect-ratio: 1; border-radius: 50%; font-size: clamp(12px, 1.5vw, 15px); }

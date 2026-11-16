@@ -24,7 +24,8 @@ export interface ListRow {
    * the moments a plain row can't show, like 8 → 5 while a new node 7 already sits between them, or a node about
    * to be unlinked. Leave the matching entry in `arrows` null.
    */
-  skips?: { from: string; to: string; tone?: "miss" }[];
+  /** tone "aux": a second kind of pointer (e.g. a random pointer), drawn dashed in the accent colour. */
+  skips?: { from: string; to: string; tone?: "miss" | "aux" }[];
   /** Small rows with no lift and no empty pointer rail, for many short lists (e.g. hash-table buckets). */
   compact?: boolean;
 }
