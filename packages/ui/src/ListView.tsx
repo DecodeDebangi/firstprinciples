@@ -45,17 +45,19 @@ function Row({ row, labelled }: { row: ListRow; labelled: boolean }) {
   // same node, or long names on neighbouring nodes ("evenHead", "even"), stack instead of running together.
   const CH = 7.4; // width of one 12px mono character
   const ends: number[] = [];
+  const seen = new Set<string>(); // nodes that already have a label: a second label on one node needs no second triangle
   const ptrs = Object.entries(row.pointers ?? {})
     .filter(([, id]) => id != null && row.nodes.some((n) => n.id === id))
     .map(([name, id], k) => ({ name, id: id!, k, mid: pos[id!] ? pos[id!].x + pos[id!].w / 2 : row.nodes.findIndex((n) => n.id === id) * 1000 }))
     .sort((a, b) => a.mid - b.mid || a.k - b.k)
     .map((p) => {
       const w = Math.max(pos[p.id]?.w ?? 0, p.name.length * CH);
+      const repeat = seen.has(p.id); seen.add(p.id);
       const left = Math.max(0, p.mid - w / 2); // a wide label on the first node stays inside the row
       let r = 0;
       while (ends[r] !== undefined && ends[r] > left - 4) r++;
       ends[r] = left + w;
-      return { name: p.name, id: p.id, r, w, left };
+      return { name: p.name, id: p.id, r, w, left, under: repeat };
     });
   const rows = Math.max(1, ...ptrs.map((p) => p.r + 1));
   const name = (id: string) => { const n = row.nodes.find((x) => x.id === id); return n ? (n.kind === "null" ? "none" : String(n.val)) : id; };
@@ -113,11 +115,11 @@ function Row({ row, labelled }: { row: ListRow; labelled: boolean }) {
           })}
         </div>
         {(ptrs.length > 0 || !row.compact) && <div className="fp-ptr-layer" style={{ height: rows * PTR_ROW + 10 }} aria-hidden="true">
-          {ptrs.map(({ name, id, r, w, left }) => {
+          {ptrs.map(({ name, id, r, w, left, under }) => {
             const c = pos[id];
             if (!c) return null;
             return (
-              <span className="fp-ptr" key={name} style={{ width: w, transform: `translate(${left}px, ${r * PTR_ROW}px)`, ["--tip" as string]: `${c.x + c.w / 2 - left}px` }}>
+              <span className={`fp-ptr${under ? " is-stacked" : ""}`} key={name} style={{ width: w, transform: `translate(${left}px, ${r * PTR_ROW}px)`, ["--tip" as string]: `${c.x + c.w / 2 - left}px` }}>
                 {name}
               </span>
             );

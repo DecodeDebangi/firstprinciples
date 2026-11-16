@@ -97,6 +97,8 @@
 .fp-ptr::before { content: ""; display: block; width: 0; height: 0; margin: -9px auto 1px; border: 5px solid transparent; border-bottom: 6px solid var(--accent); }
 /* List pointers can sit off-centre (kept inside the row); --tip puts the triangle back over the node. */
 .fp-lists .fp-ptr::before { margin: -9px 0 1px calc(var(--tip, 50%) - 5px); }
+/* A label stacked under another: the top label already points at the node, and this triangle would cross it. */
+.fp-lists .fp-ptr.is-stacked::before { visibility: hidden; }
 @keyframes fp-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fp-pop { 0% { transform: scale(.6); opacity: .3; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
 @keyframes fp-flash { from { background: var(--tone-compare-bg); } to { background: transparent; } }

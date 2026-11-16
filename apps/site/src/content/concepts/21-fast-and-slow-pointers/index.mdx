@@ -1,0 +1,94 @@
+---
+title: "Fast and slow pointers: two speeds, one list"
+topic: Linked lists
+kind: Explainer
+order: 5
+summary: Send one pointer one node at a time and another two at a time. That single idea finds the middle of a list without counting it, and catches a loop without remembering any nodes. See why the fast one always lands on the slow one, and where the trick shows up.
+added: 2026-11-16
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## The idea
+
+A singly linked list can only be walked forwards, one node at a time, and you don't know how long it is until
+you reach the end. Two questions sound like they need more than that:
+
+- *Where is the middle?* You'd normally count the nodes first, then walk halfway.
+- *Does the list loop back on itself?* You'd normally remember every node you've seen.
+
+Both can be answered in one walk with no extra memory, using two pointers that start together at the head and
+move at different speeds: `slow` moves **one** node per round, `fast` moves **two**.
+
+## Finding the middle
+
+After any number of rounds, `fast` has walked exactly twice as far as `slow`. So at the moment `fast` runs out of
+list, `slow` is halfway.
+
+<Viz client:visible approach="middle" />
+
+The loop stops when `fast` can't take two more steps: either `fast` is `none` or `fast.next` is `none`. Check both,
+in that order, or reading `fast.next.next` crashes on `none`.
+
+**Odd or even length?** With 5 nodes there's one middle, the 3rd, and that's where `slow` stops. With 6 nodes
+there are two middles, the 3rd and the 4th. The version above stops on the **second** one (try `4, 9, 2, 7, 5, 1`
+below the player). If you need the first one instead, as when splitting a list into two halves, change the loop
+condition to `fast.next ≠ none and fast.next.next ≠ none`.
+
+## Catching a loop
+
+If the list loops, `fast` never reaches an end. Both pointers end up going round the loop, `fast` behind `slow`
+(it has lapped round), and each round it gains one node on `slow`.
+
+<Viz client:visible approach="loop" />
+
+### Why they always meet
+
+Once both pointers are on the loop, think only about the **gap**: how many nodes `fast` is behind `slow`.
+
+- Each round, `slow` moves 1 node forward and `fast` moves 2. So `fast` gains exactly **1** node per round, and
+  the gap shrinks by exactly 1.
+- A gap that shrinks by exactly 1 can't skip over 0. When the gap is 1, `fast`'s two steps land on the node `slow`
+  has just moved onto.
+- The gap starts smaller than the loop's length, so they meet before `slow` finishes one lap of the loop.
+
+That's why the speeds are 1 and 2. With 1 and 3, `fast` would gain 2 per round and could jump straight over
+`slow`.
+
+The whole thing takes O(n) time: `slow` reaches the loop within n steps and they meet within one more lap. And
+it takes O(1) space: two pointers, no set of visited nodes.
+
+## Where you'll see it
+
+- [Linked List Cycle](/dsa/linked-list-cycle/): exactly the loop check above.
+- [Linked List Cycle II](/dsa/linked-list-cycle-ii/): after they meet, one more walk from the head finds where the
+  loop *starts*.
+- [Palindrome Linked List](/dsa/palindrome-linked-list/): find the middle, then reverse the second half.
+- [Remove Nth Node From End of List](/dsa/remove-nth-node-from-end-of-list/): a cousin of the trick. There both
+  pointers move at the **same** speed but start a fixed distance apart, so when the front one reaches the end,
+  the back one is `n` nodes from it.
+
+## Interview theory
+
+<QA q="Why not move fast three nodes at a time? Wouldn't it be quicker?">
+It can jump over `slow`: with a speed difference of 2, a gap of 1 becomes −1 instead of 0, and the pointers can
+circle many times without ever landing together. With speeds 1 and 2 the gap shrinks by exactly 1 per round, so it
+must reach 0. The total work is O(n) either way.
+</QA>
+
+<QA q="What's the time and space cost of finding the middle this way, versus counting first?">
+Both are O(n) time and O(1) space, and both make about 1.5n pointer moves: counting walks n nodes and then n / 2
+more; fast walks n while slow walks n / 2. The real advantage is that it's one pass that never needs the length,
+which matters when the list could loop or is being read as it arrives.
+</QA>
+
+<QA q="Where does slow stop when the list has an even number of nodes?">
+With the loop condition `fast ≠ none and fast.next ≠ none`, on the second of the two middle nodes. With
+`fast.next ≠ none and fast.next.next ≠ none`, on the first. Pick based on what you do next.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
