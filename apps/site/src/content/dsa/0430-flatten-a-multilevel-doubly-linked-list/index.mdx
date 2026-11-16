@@ -1,0 +1,99 @@
+---
+title: Flatten a Multilevel Doubly Linked List
+leetcode: { number: 430, url: "https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/" }
+difficulty: Medium
+topics: [Linked list, DFS]
+added: 2026-11-16
+summary: Flatten a doubly linked list whose nodes may also have a child list, which may have children of its own, so that every child list sits right after its parent. Goes from listing the nodes in depth-first order and relinking them, to splicing each child list into place as you walk.
+insight: "Walk the main list. When a node has a child, find the child list's last node, and splice the whole child list in between the node and its old next. Its own children get handled when you reach them."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a [doubly linked list](/concepts/doubly-and-circular-lists/): each node has `next` and `prev`.
+Some nodes also have a **`child`** pointer to the head of another doubly linked list, one level down, and nodes
+in that list can have children too. Flatten everything into a single level: each child list goes **right after its
+parent and before the parent's old next**, all `child` pointers end up `none`, and every `prev` must match.
+
+For example, the main list is `4 ⇄ 2 ⇄ 7`. The `2` has the child list `6 ⇄ 1`, and the `1` has the child list `8`.
+The flat result is `4 ⇄ 2 ⇄ 6 ⇄ 1 ⇄ 8 ⇄ 7`.
+
+Below the players you type a list as values, with a child list in brackets right after its parent:
+`4 2 [6 1 [8]] 7` is the example above. The animations draw each child list as its own row.
+
+## The key question
+
+> **Where does each child list go, and can I put it there without first collecting every node?**
+
+"Right after the parent, before the parent's next, with its own children already inside" is exactly the order a
+[depth-first](/concepts/tree-traversals/) walk visits the nodes in. Turn the picture sideways and the levels look
+like a tree: each child list hangs below its parent.
+
+## Approach 1: Collect in order, then relink
+
+Walk depth first: visit a node, then visit its whole child list (recursively), then carry on along the level.
+Record the nodes in that order. Then relink them in a single chain, `next` and `prev`, and clear every `child`.
+
+<Viz client:visible approach="collect" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node is visited once and relinked once: **O(n)**.
+
+**Space.** `order` holds all n nodes, and the recursion goes one call deeper per level: **O(n)** extra.
+
+**What it wastes:** a full list of the nodes, when each child list could be spliced in on the spot.
+</Complexity>
+
+## Approach 2: Splice each child list in place (optimal)
+
+Walk the main list with `curr`. When `curr` has a child:
+
+1. Walk to the child list's last node, `tail`.
+2. Splice: `tail` points on to `curr`'s old next (and that node points back to `tail`), and `curr` points to the
+   child (which points back to `curr`).
+3. Clear `curr.child`.
+
+Then carry on from `curr.next`, which is now the first node of the old child list. If those nodes have children of
+their own, they get spliced in when `curr` reaches them, so the deeper levels end up in the right place too.
+
+<Viz client:visible approach="splice" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** `curr` visits each node once. Each tail search walks one child list once, at the moment it's spliced,
+and never again. Together: **O(n)**.
+
+**Space.** `curr`, `child` and `tail`: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Collect, then relink | O(n) | O(n) | simple; recursion deep for many levels |
+| Splice in place | O(n) | O(1) | no list, no recursion |
+
+Both visit each node a constant number of times, so there's no growth chart.
+
+## Common mistakes
+
+- **Forgetting the `prev` pointers.** It's a doubly linked list: every `next` you change needs the matching `prev`.
+  In particular, the node after the splice must point back to `tail`, not to `curr`.
+- **Leaving `child` set.** The flat list must have every `child` as `none`.
+- **Losing `curr.next`.** Use it to link `tail` before overwriting `curr.next` with the child.
+- **Reading `curr.next.prev` when `curr.next` is `none`.** If the parent was the last node, there's nothing after
+  the splice to point back.
+
+## Related problems
+
+- [Doubly and circular lists](/concepts/doubly-and-circular-lists/): what `prev` adds, and keeping both directions
+  right.
+- [Copy List with Random Pointer](/dsa/copy-list-with-random-pointer/): another list with a second kind of pointer.
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/): the multilevel picture is a tree, and both
+  problems walk it depth first.
