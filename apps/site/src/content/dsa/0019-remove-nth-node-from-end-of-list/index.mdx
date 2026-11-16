@@ -1,0 +1,95 @@
+---
+title: Remove Nth Node From End of List
+leetcode: { number: 19, url: "https://leetcode.com/problems/remove-nth-node-from-end-of-list/" }
+difficulty: Medium
+topics: [Linked list, Two pointers]
+added: 2026-11-16
+summary: Remove the node that is n places from the end of a linked list and return the list. Goes from counting the length and walking back in, to two pointers kept a fixed distance apart that find the spot in a single pass.
+insight: "Start a fast pointer n + 1 nodes ahead of a slow one, then move both together. When fast falls off the end, slow is sitting right before the node to remove."
+best: { time: "O(L)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list and a number `n`. Remove the node that is `n`th from the end (`n = 1`
+means the last node) and return the head of the changed list. `n` is always between 1 and the list's length.
+
+For example, in `7 → 3 → 9 → 4 → 2` with `n = 2`, counting back from the end goes 2 (1st), 4 (2nd). Removing the
+`4` leaves `7 → 3 → 9 → 2`. With `n = 5` you'd remove the head itself, the `7`.
+
+## The key question
+
+> **How do I find the node just *before* the nth from the end, when a singly linked list only lets me walk forwards?**
+
+To remove a node you rewire the node before it, so that's the one you need to stand on. Both approaches below
+start from a [dummy node](/concepts/dummy-head/), so that removing the head is no different from removing any
+other node.
+
+## Approach 1: Count the length, then walk
+
+You can't count back from the end, but you can count forwards. Walk the whole list once to find its length `L`.
+The nth from the end is then node `L − n + 1` from the front, so the node before it is `L − n` steps from the
+dummy. Walk there and unlink the next node.
+
+<Viz client:visible approach="twoPass" />
+
+<Complexity time="O(L)" space="O(1)">
+**Time.** The counting pass visits all `L` nodes, and the second walk takes `L − n` steps: under `2L` steps in
+total, **O(L)**.
+
+**Space.** A counter and a pointer or two: **O(1)**.
+
+**What it wastes:** it walks the front of the list twice: once to count, then again to reach the spot.
+</Complexity>
+
+## Approach 2: Two pointers n apart, one pass (optimal)
+
+Put `fast` and `slow` on the dummy, and move `fast` ahead by `n + 1` nodes. Now move both together, one node at a
+time, until `fast` is `none`. They stay `n + 1` steps apart the whole way, so when `fast` is on `none`, `slow` is
+`n + 1` steps before it: on the node right before the nth from the end. Unlink `slow.next`.
+
+Why `n + 1` and not `n`? With a gap of `n`, `slow` would stop *on* the node to remove. The extra step leaves it
+one node earlier, where it can do the rewiring.
+
+<Viz client:visible approach="gap" />
+
+<Complexity time="O(L)" space="O(1)">
+**Time.** `fast` walks from the dummy to `none`, `L + 1` steps, and `slow` follows: **O(L)**, in a single pass.
+
+**Space.** Two pointers and the dummy: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | Passes over the list |
+|---|---|---|---|
+| Count the length, then walk | O(L) | O(1) | two |
+| Two pointers n + 1 apart | O(L) | O(1) | one |
+
+Both make about the same number of pointer moves (the gap approach moves two pointers per step), so there's no
+growth chart: the lines would sit on top of each other. The one-pass version is the one interviewers ask for,
+because it never needs to know the length. That matters when the list is long, or arrives a piece at a time.
+
+## Common mistakes
+
+- **A gap of `n` instead of `n + 1`.** Then `slow` lands on the node to remove instead of the one before it, and
+  you can't unlink it from there.
+- **No dummy node.** When `n` equals the length, the node to remove is the head, which has no node before it.
+  Without a dummy, that needs its own special case; with one, `slow` simply stays on the dummy.
+- **Returning `head` instead of `dummy.next`.** If the head was removed, `head` still points at the removed node.
+- **Off by one when counting.** In approach 1, the node before the target is `L − n` steps from the *dummy*, not
+  from the head.
+
+## Related problems
+
+- [The dummy head](/concepts/dummy-head/): why removing the head needs no special case.
+- [Linked List Cycle](/dsa/linked-list-cycle/): another pair of pointers moving through one list, there at different
+  speeds, here at the same speed but a fixed distance apart.
+- [Design Linked List](/dsa/design-linked-list/): `deleteAtIndex` is the same unlink, with the index counted from the
+  front.
