@@ -70,6 +70,8 @@ export const glossary = [
     def: "Turns a key into a number, and that number decides where in the table the key is stored." },
   { id: "collision", term: "Collision", match: ["collision", "collisions"], read: "how-hash-maps-work",
     def: "Two different keys landing in the same slot of a hash table. Tables handle it, but too many make lookups slow." },
+  { id: "gcd", term: "Greatest common divisor (GCD)", match: ["greatest common divisor", "greatest common divisors", "GCD"],
+    def: "The biggest whole number that divides two numbers exactly. The GCD of 18 and 12 is 6. Euclid's algorithm finds it fast: gcd(a, b) = gcd(b, a % b), until the remainder is 0." },
   { id: "prefix-sum", term: "Prefix sum", match: ["prefix sum", "prefix sums"],
     def: "A running total: prefix[i] is the sum of everything before position i, so any range's sum takes one subtraction." },
   { id: "binary-search", term: "Binary search", match: ["binary search"], read: "binary-search-invariants",

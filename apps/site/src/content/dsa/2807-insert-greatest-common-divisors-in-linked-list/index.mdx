@@ -1,0 +1,93 @@
+---
+title: Insert Greatest Common Divisors in Linked List
+leetcode: { number: 2807, url: "https://leetcode.com/problems/insert-greatest-common-divisors-in-linked-list/" }
+difficulty: Medium
+topics: [Linked list, Math]
+added: 2026-11-16
+summary: Between every two neighbouring nodes of a linked list, insert a new node holding their greatest common divisor. Goes from finding each divisor by counting down from the smaller value, to Euclid's algorithm, which needs only a handful of steps.
+insight: "Walk the list, and for each pair insert a node in between, then jump past it. Compute each divisor with Euclid's algorithm: gcd(a, b) = gcd(b, a % b), until the remainder is 0."
+best: { time: "O(n · log m)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a linked list of positive whole numbers. Between every pair of neighbouring nodes, insert a new
+node holding their **greatest common divisor**: the biggest whole number that divides both of them exactly. Return
+the head.
+
+For example, `18 → 12 → 20` becomes `18 → 6 → 12 → 4 → 20`: the biggest number dividing both 18 and 12 is 6, and
+for 12 and 20 it's 4. A list with one node stays as it is.
+
+## The key question
+
+> **How fast can I find the greatest common divisor of two numbers?**
+
+The linked-list part is a simple insertion walk: for each pair, link a new node in between, then move past it.
+What decides the speed is the divisor calculation, done once per pair.
+
+## Approach 1: Find each GCD by counting down
+
+Start at the smaller of the two numbers, which is the biggest a divisor could be, and count down until a number
+divides both exactly. That's guaranteed to stop by 1, which divides everything.
+
+<Viz client:visible approach="countDown" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** For values up to `m`, one GCD can take up to `m` tries, as for 997 and 998 which share no divisor except
+1. With `n` nodes there are `n − 1` pairs: **O(n · m)**.
+
+**Space.** Each new node is part of the answer; apart from those, a few variables: **O(1)**.
+
+**What it wastes:** it tries hundreds of numbers that can't possibly divide both.
+</Complexity>
+
+## Approach 2: Euclid's algorithm (optimal)
+
+A number that divides both `a` and `b` also divides the remainder `a % b`, because the remainder is `a` minus a
+multiple of `b`. The reverse is true too. So the pair `(b, a % b)` has exactly the same common divisors as `(a, b)`,
+and the same greatest one, but its numbers are smaller. Keep replacing until the remainder is 0; the other number is
+the answer:
+
+`gcd(12, 20) = gcd(20, 12) = gcd(12, 8) = gcd(8, 4) = gcd(4, 0) = 4`.
+
+This is **Euclid's algorithm**, over 2,000 years old and still the standard way.
+
+<Viz client:visible approach="euclidWay" />
+
+<Complexity time="O(n · log m)" space="O(1)">
+**Time.** Every two steps of Euclid's algorithm at least halve the larger number, so a GCD takes **O(log m)**
+steps. With `n − 1` pairs: **O(n · log m)**.
+
+**Space.** A few variables besides the new nodes: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Count down from the smaller value | O(n · m) | O(1) | hundreds of tries per pair |
+| Euclid's algorithm | O(n · log m) | O(1) | a few steps per pair |
+
+<GrowthChart client:visible series={growth} caption="Steps for n nodes holding neighbouring values near 1000, which share no divisor but 1." />
+
+## Common mistakes
+
+- **Moving onto the new node.** After inserting between `curr` and its next, move `curr` to `node.next`, the old
+  next. Stepping onto the new node would insert another node next to it, forever.
+- **Linking in the wrong order.** Set `node.next ← curr.next` before `curr.next ← node`, or the rest of the list is
+  lost.
+- **Starting the count-down at the larger value.** The divisor can't be bigger than the smaller number.
+
+## Related problems
+
+- [Inserting and deleting](/concepts/inserting-and-deleting/): linking a new node in after a given one.
+- [Add Two Numbers](/dsa/add-two-numbers/): another list problem where the arithmetic is the interesting part.
+- [Plus One](/dsa/plus-one/): working with the digits of numbers.
