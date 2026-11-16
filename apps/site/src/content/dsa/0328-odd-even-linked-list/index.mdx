@@ -1,0 +1,102 @@
+---
+title: Odd Even Linked List
+leetcode: { number: 328, url: "https://leetcode.com/problems/odd-even-linked-list/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-16
+summary: Rearrange a linked list so the nodes at odd positions come first, followed by the nodes at even positions, each group in its original order. Goes from collecting the values into two lists and writing them back, to building an odd chain and an even chain in place and joining them.
+insight: "Walk the list once, keeping two chains: every other node joins the odd chain, the rest join the even chain. At the end, point the last odd node at the first even one."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list. Count positions from 1: the head is position 1, the next node position
+2, and so on. Reorder the nodes so that all the odd positions (1st, 3rd, 5th…) come first, then all the even
+positions (2nd, 4th…), keeping each group in its original order. Do it by relinking the existing nodes, using O(1)
+extra space, and return the head.
+
+For example, `4 → 8 → 1 → 6 → 3 → 9 → 5` becomes `4 → 1 → 3 → 5 → 8 → 6 → 9`: positions 1, 3, 5, 7, then 2, 4, 6.
+It's about **positions**, not values: the `4` is an even number but comes first because it was 1st, and the `9`
+is odd but goes in the second group because it was 6th.
+
+## The key question
+
+> **Can I sort every node into one of two groups as I walk past it, without storing the groups anywhere?**
+
+Both approaches walk the list once and split it into odd and even positions. The difference is where the two
+groups live while they're being built.
+
+## Approach 1: Collect the values, then write them back
+
+Walk the list, counting positions, and copy each value into one of two lists: `odds` or `evens`. Then walk the
+list a second time and overwrite the values in the new order.
+
+<Viz client:visible approach="arrays" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to collect, one pass to write back: about 2n steps, **O(n)**.
+
+**Space.** `odds` and `evens` together hold all n values: **O(n)**.
+
+**What it wastes:** a copy of every value, when the nodes could simply be relinked. It also changes the values
+instead of moving the nodes, which the problem asks you not to do (in a real program, other code might be
+holding on to those nodes).
+</Complexity>
+
+## Approach 2: Two chains in place, then join (optimal)
+
+The nodes already alternate odd, even, odd, even. So keep two pointers, `odd` and `even`, each at the end of its
+own chain, and let them leapfrog: the node after `even` is the next odd one, and the node after *that* is the next
+even one.
+
+- `odd.next ← even.next`, then `odd` moves onto it.
+- `even.next ← odd.next`, then `even` moves onto it.
+
+Stop when there's no next odd node (`even` or `even.next` is `none`). `evenHead` remembered where the even chain
+starts, so the last step is `odd.next ← evenHead`.
+
+In the animation, the top row is the odd chain and the bottom row is the even chain followed by the nodes not
+sorted yet.
+
+<Viz client:visible approach="chains" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each round moves one node into each chain, so the loop runs about n / 2 times: **O(n)**.
+
+**Space.** Four pointers (`odd`, `even`, `evenHead`, `head`), and no new nodes: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | Moves nodes? |
+|---|---|---|---|
+| Collect values, write back | O(n) | O(n) | no, rewrites values |
+| Two chains in place | O(n) | O(1) | yes |
+
+Both are O(n), so there's no growth chart. The difference that matters is memory, and that the second one moves
+the nodes themselves.
+
+## Common mistakes
+
+- **Grouping by value instead of position.** "Odd" means the 1st, 3rd, 5th node, whatever numbers they hold.
+- **Forgetting `evenHead`.** By the end, `even` is on the last even node (or `none`), so without `evenHead`
+  you can't find the start of the even chain to join it.
+- **The wrong loop condition.** The loop body reads `even.next` and `odd.next`, so it must stop when `even` or
+  `even.next` is `none`. Checking only `odd.next` can end with reading `none.next`.
+- **Leaving a loop at the end.** The last even node must point to `none`. In the code above,
+  `even.next ← odd.next` takes care of it. If you build the chains another way, set it yourself, or the joined list
+  loops back into the odd nodes.
+
+## Related problems
+
+- [Remove Linked List Elements](/dsa/remove-linked-list-elements/): another walk that rewires `next` pointers as it
+  goes.
+- [Reverse Linked List](/dsa/reverse-linked-list/): the other classic "rewire in place, O(1) space" problem.
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/): the opposite move, joining two chains into one.
