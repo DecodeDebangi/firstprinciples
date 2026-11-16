@@ -1,0 +1,93 @@
+---
+title: "Thinking recursively about lists: a head and a smaller list"
+topic: Linked lists
+kind: Explainer
+order: 7
+summary: A linked list is either empty, or one node followed by a smaller linked list. Write functions that handle the one node and trust a call on the rest. See the call stack fill up on the way down and do the work on the way back, and when that costs too much memory.
+added: 2026-11-16
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A list is a node plus a smaller list
+
+Look at `4 → 2 → 6 → 3 → none` and cover up the first node. What's left, `2 → 6 → 3 → none`, is also a linked list,
+just one node shorter. Cover up its first node and you get another list, and so on, until only `none` is left: the
+**empty list**.
+
+So every linked list is one of two things:
+
+- **empty** (`none`), or
+- **one node, followed by a smaller list** (`node.next`).
+
+A recursive function on a list follows exactly that shape. It has a **base case** for the empty list, answered
+directly. For anything else, it calls itself on `node.next` and **trusts** that call to give the right answer for
+the rest, then uses it to finish the job for its own node.
+
+## Watching the call stack
+
+Adding up a list: the sum of an empty list is 0, and the sum of anything else is this node's value plus the sum of
+the rest.
+
+<Viz client:visible approach="sum" />
+
+Two phases are worth noticing:
+
+1. **On the way down**, nothing gets added. Each call stops at `sum(node.next)` and waits on the
+   [call stack](/concepts/stacks-queues-monotonic/), until the calls reach `none`.
+2. **On the way back up**, each waiting call gets its answer and finishes, starting from the **last** node.
+
+That second point is useful. Anything you do *after* the recursive call happens in reverse order. Printing
+`node.val` after the call prints the list backwards; printing it before the call prints it forwards.
+
+## Returning a list
+
+A recursive function can also return a list: "the rest of the list, fixed". Each call reattaches its own node to
+whatever the call below returned. Here every node holding `v` is removed:
+
+<Viz client:visible approach="remove" />
+
+Compare this with [the dummy head](/concepts/dummy-head/) read: the loop version needed a dummy so that removing the
+head wasn't a special case. Here the head is just one more call deciding about its own node. The same
+"`node.next ← solve(node.next)`, then decide" shape solves merging two sorted lists, removing duplicates, and many
+more.
+
+## The cost: one stack frame per node
+
+Every call that is waiting takes up space on the call stack, and at the deepest point all n of them are waiting. So
+a recursive walk over a list uses **O(n)** extra space, where a loop uses O(1).
+
+For a few thousand nodes that's fine. For a list of a million nodes, many languages run out of stack space and
+crash with a **stack overflow**. That's why interviewers often ask for the loop version too, and why reversal is
+usually written with three pointers rather than recursively.
+
+## How to write one
+
+1. **Base case:** what's the answer for the empty list (and sometimes for a one-node list)?
+2. **Trust the call:** assume `solve(node.next)` returns the right answer for the rest. Don't trace it in your head.
+3. **Combine:** use that answer and the current node to build this call's answer.
+
+If the base case is missing or never reached, the calls never stop.
+
+## Interview theory
+
+<QA q="What's the space cost of a recursive function over a linked list of n nodes?">
+O(n): there are n + 1 calls waiting on the call stack at the deepest point, one per node plus the base case. A loop
+doing the same job usually needs O(1).
+</QA>
+
+<QA q="How do you print a linked list in reverse without changing it or using a stack?">
+Recursively: call the function on `node.next` first, then print `node.val`. The prints happen as the calls return,
+which is from the last node back to the first. (It still uses the call stack, which is O(n) space.)
+</QA>
+
+<QA q="When would you choose recursion over a loop for a list problem?">
+When it makes the code much simpler and the list is known to be short, such as merging two small sorted lists.
+For long lists, or when space matters, prefer the loop: it can't overflow the stack.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
