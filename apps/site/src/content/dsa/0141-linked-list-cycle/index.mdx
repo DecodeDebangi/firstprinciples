@@ -1,0 +1,121 @@
+---
+title: Linked List Cycle
+leetcode: { number: 141, url: "https://leetcode.com/problems/linked-list-cycle/" }
+difficulty: Easy
+topics: [Linked list, Two pointers, Hash map]
+added: 2026-11-16
+summary: Decide whether a linked list loops back on itself instead of ending. Goes from rewalking the list at every node, to remembering every node in a set, to a slow and a fast pointer that must meet if the list loops.
+insight: "Send one pointer one node at a time and another two at a time. If the list ends, the fast one finds the end; if it loops, the fast one laps around and lands on the slow one."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list. Normally, following `next` from node to node ends at `none`. But the
+last node might instead point back to an earlier node of the same list, and then following `next` goes round and
+round forever. Return `true` if the list loops like that, and `false` if it ends.
+
+For example, take `3 → 8 → 1 → 5 → 6`, where the `6` points back to the `8` instead of to `none`. Walking it
+goes 3, 8, 1, 5, 6, 8, 1, 5, 6, 8… and never stops, so the answer is `true`. If the `6` pointed to `none`, the
+answer would be `false`.
+
+In the animations, the arc over the row is the last node's `next` pointing back. Below the player you can
+change the values and where the last node links back to, or type `none` for a list that ends.
+
+## The key question
+
+> **How can I tell that I've come back to a node I've already passed, without walking forever?**
+
+Simply walking until `none` doesn't work: on a looping list, `none` never comes. Each approach finds a different
+way to notice the repeat.
+
+## Approach 1: Brute force, rewalk from the head
+
+Walk the list with `curr`, counting steps. At every node, go back to the head and walk the nodes that came before
+it. If `curr` is one of them, it's a node we've already passed, so the list loops.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** At the k-th node, the rewalk checks up to k earlier nodes. Over n nodes that's 0 + 1 + … + n, about
+n² / 2 checks: **O(n²)**. A list of 10,000 nodes takes about 50 million checks.
+
+**Space.** Just `curr`, `check` and a counter: **O(1)**.
+
+**What it wastes:** it rewalks the same early nodes again and again, because it doesn't remember where it's been.
+</Complexity>
+
+## Approach 2: A set of seen nodes
+
+Remember every node you pass in a set. Before adding a node, check whether it's already there: if it is, you've
+come back to it, and the list loops. Store the nodes themselves, not their values, because two different nodes
+can hold the same number.
+
+<Viz client:visible approach="hashSet" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node is visited once before the first repeat (or before `none`), and each set check is O(1) on
+average: **O(n)**.
+
+**Space.** The set can end up holding all n nodes: **O(n)**.
+
+**What it wastes:** memory for every node, when all we need to know is *whether* a repeat happens.
+</Complexity>
+
+## Approach 3: Fast and slow pointers (optimal)
+
+Start two pointers at the head. Each round, `slow` moves one node and `fast` moves two.
+
+- If the list ends, `fast` gets there first, and you return `false`.
+- If the list loops, both pointers end up going round the loop. Each round `fast` gains exactly one node on
+  `slow`, so the gap between them shrinks by one every round until it's zero: they land on the same node. `fast`
+  can never jump over `slow`, because when it's one node behind, its two steps land exactly on `slow`'s next spot.
+
+This is often called Floyd's algorithm, or the tortoise and the hare.
+
+<Viz client:visible approach="floyd" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** If the list ends, `fast` reaches the end in about n / 2 rounds. If it loops, `slow` reaches the loop
+within n moves, and from then on the gap closes by one node per round, so they meet before `slow` finishes one
+lap. That's at most about 2n rounds: **O(n)**.
+
+**Space.** Two pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same list, one shared clock ticking once per check:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Rewalk from the head | O(n²) | O(1) | no memory, lots of repeated walking |
+| Set of seen nodes | O(n) | O(n) | fast, but remembers every node |
+| Fast and slow pointers | O(n) | O(1) | fast and remembers nothing |
+
+<GrowthChart client:visible series={growth} caption="Checks when the last node links back to the head, as the list length n grows." />
+
+## Common mistakes
+
+- **Checking `fast.next.next` without checking `fast.next` first.** On a list that ends, `fast.next` can be
+  `none`, and reading `none.next` crashes. Check `fast ≠ none and fast.next ≠ none` before moving.
+- **Comparing values instead of nodes.** `slow.val = fast.val` can be true for two different nodes holding the same
+  number. Compare the nodes themselves (`slow = fast`).
+- **Comparing before moving.** Both pointers start on the head, so `slow = fast` is true before they've taken a
+  step. Move first, then compare.
+- **Storing values in the set.** A list like `1 → 1 → 2` has no loop, but a set of values would see the second `1`
+  and wrongly say it does.
+
+## Related problems
+
+- [Intersection of Two Linked Lists](/dsa/intersection-of-two-linked-lists/): two pointers that meet, by walking the
+  same total distance.
+- [Two pointers](/concepts/two-pointers/): the wider family of tricks with two moving positions.
+- Linked List Cycle II (LeetCode 142) asks for the node where the loop starts, using the same two pointers plus one
+  more walk.
