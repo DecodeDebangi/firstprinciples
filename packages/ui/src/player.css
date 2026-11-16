@@ -258,6 +258,7 @@
 .fp-lrow.is-compact .fp-ltrack { padding-top: 2px; }
 .fp-lrow.is-compact .fp-lnodes { min-height: 34px; padding-bottom: 2px; }
 .fp-lrow.is-compact .fp-lnode { width: 30px; font-size: 13px; }
+.fp-lrow.is-compact .fp-lnode.is-null { width: auto; font-size: 11px; }
 .fp-lrow.is-compact .fp-cell { transform: none; box-shadow: none; }
 .fp-lrow.is-compact .fp-lrow__label { padding-top: 9px; }
 .fp-lrow.is-compact + .fp-lrow.is-compact { border-top: 1px dashed var(--border); }

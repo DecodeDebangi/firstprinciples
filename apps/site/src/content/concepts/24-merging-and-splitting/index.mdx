@@ -1,0 +1,91 @@
+---
+title: "Merging and splitting: joining lists and cutting them in half"
+topic: Linked lists
+kind: Explainer
+order: 8
+summary: Two moves that only change a pointer or two. Merge two sorted lists by always taking the smaller front node, and cut a list in half at its middle. Put them together and you get merge sort, the natural way to sort a linked list.
+added: 2026-11-16
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Merging two sorted lists
+
+Given two lists that are each sorted, build one sorted list out of their nodes. Look at the front node of each,
+take the smaller one, attach it to the end of the result, and move on in the list it came from. When one list runs
+out, attach the **whole rest** of the other in one step: it's already sorted, and its nodes are already linked.
+
+```text
+function merge(a, b)
+    dummy ← new ListNode(0)
+    tail ← dummy
+    while a ≠ none and b ≠ none
+        if a.val ≤ b.val
+            tail.next ← a
+            a ← a.next
+        else
+            tail.next ← b
+            b ← b.next
+        tail ← tail.next
+    tail.next ← (a ≠ none) ? a : b  // the leftovers
+    return dummy.next
+```
+
+The [dummy node](/concepts/dummy-head/) means the first node is attached like every other one, and `tail` always
+points at the result's last node, so attaching is O(1). No new nodes are made: the result reuses the input nodes.
+That's O(m + n) time and O(1) extra space. [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/) animates it step
+by step.
+
+Using `≤` rather than `<` takes from `a` when the values are equal, so equal values keep their original order.
+A sort that keeps equal values in order is called **stable**.
+
+## Splitting a list in half
+
+To cut a list in two you need the last node of the first half, because that's the node whose `next` becomes
+`none`. [Fast and slow pointers](/concepts/fast-and-slow-pointers/) find it in one walk. Starting `fast` on
+`head.next` instead of `head` makes `slow` stop on the **first** of the two middles, so the first half is never
+the shorter one.
+
+<Viz client:visible approach="split" />
+
+Save `slow.next` before cutting: after `slow.next ← none`, it's the only way to reach the second half (the same
+rule as in [reversing a list](/concepts/reversing-a-list/)).
+
+## Put them together: merge sort
+
+Split the list in half, sort each half the same way, and merge the two sorted halves. A list of 0 or 1 nodes is
+already sorted, which is the base case.
+
+<Viz client:visible approach="mergeSort" />
+
+Why this is the sort to use on a linked list:
+
+- **It never needs to jump to a position.** Quick sort and heap sort rely on reaching any index instantly, which
+  arrays can do and linked lists can't. Merge sort only walks forwards.
+- **Merging needs no extra array.** On an array, merging needs a second array to copy into. On a list, it's just
+  relinking `next` pointers.
+- **O(n log n) time.** The list can only be halved about log₂ n times, and each level of merging touches all n
+  nodes once. The waiting recursive calls take O(log n) space on the call stack.
+
+## Interview theory
+
+<QA q="What's the time and space cost of merging two sorted lists of lengths m and n?">
+O(m + n) time, because each node is attached once. O(1) extra space, because the result reuses the existing nodes
+and only `dummy` and `tail` are added.
+</QA>
+
+<QA q="Why is merge sort preferred over quick sort for linked lists?">
+Quick sort needs to jump to positions (to pick a pivot and swap), which costs O(n) per jump on a list. Merge sort
+only walks forwards and merges by relinking, so it stays O(n log n) with no extra array.
+</QA>
+
+<QA q="When merging, what happens when one list runs out?">
+Attach the rest of the other list in one step: `tail.next ← (a ≠ none) ? a : b`. Those nodes are already sorted and
+already linked to each other, so there's no need to walk them.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
