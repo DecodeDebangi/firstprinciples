@@ -226,6 +226,8 @@
 .fp-lists { display: grid; gap: 6px; padding-top: 28px; }
 .fp-lrow { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 10px; }
 .fp-lrow__label { font: 600 12px var(--font-mono); color: var(--muted); padding-top: 14px; min-width: 3.5em; }
+/* Phones: the label goes above its row, so the nodes get the full width. */
+@media (max-width: 480px) { .fp-lrow { grid-template-columns: minmax(0, 1fr); gap: 0; } .fp-lrow__label { padding-top: 0; } }
 .fp-ltrack { position: relative; overflow-x: auto; overflow-y: hidden; padding: 16px 4px 0; }
 .fp-ltrack.has-skips { padding-top: 42px; }
 /* next links that jump past neighbours: an arc over the row. */

@@ -1,0 +1,109 @@
+---
+title: Remove Linked List Elements
+leetcode: { number: 203, url: "https://leetcode.com/problems/remove-linked-list-elements/" }
+difficulty: Easy
+topics: [Linked list]
+added: 2026-11-16
+summary: Remove every node holding a given value from a linked list and return the new head. Goes from copying the nodes you keep into a new list, to unlinking in place with a separate loop for the head, to one loop with a dummy head.
+insight: "Put a dummy node in front of the head and look one node ahead. Every node, the head included, then has a node before it to rewire, so one loop removes them all."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list and a value `val`. Remove every node whose value is `val`, and return the
+head of what's left (which might be `none`, if every node goes).
+
+For example, from `5 → 5 → 1 → 5 → 8 → 5` remove every `5`, leaving `1 → 8`. Notice that the first two nodes both
+go, so the answer's head is a node that was third in the original list.
+
+## The key question
+
+> **To remove a node I rewire the node before it. What do I do about the head, which has no node before it?**
+
+Removing nodes from the middle is the easy part. The approaches differ in how they deal with the head, which can
+be removed too, possibly several times in a row.
+
+## Approach 1: Copy what you keep into a new list
+
+Walk the list and copy each value you keep into a brand-new list. Removed values are simply never copied. A `tail`
+pointer remembers the new list's last node so the next copy can be attached after it.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass over the n nodes, O(1) work per node: **O(n)**.
+
+**Space.** Up to n new nodes, one per value kept: **O(n)**.
+
+**What it wastes:** memory for a whole second list, when the nodes we keep are already there and only need
+unlinking from the ones we don't. It also still needs a special case: the first copy has no tail to attach to.
+</Complexity>
+
+## Approach 2: Unlink in place, head first
+
+Work on the original list. `curr` looks one node ahead: if `curr.next` holds `val`, point `curr.next` past it
+(`curr.next ← curr.next.next`); otherwise move on. That works for every node except the head, so a first loop
+moves `head` forward past any `val`s at the front.
+
+After unlinking, `curr` stays where it is: the node that slid into `curr.next` hasn't been checked yet, and could
+be another `val`.
+
+<Viz client:visible approach="twoLoops" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** The two loops together visit each node once: **O(n)**.
+
+**Space.** Just `curr`: **O(1)**.
+
+**What it wastes:** no time or memory, but code: two loops doing the same job, only because the head is different.
+That extra branch is where linked-list bugs usually hide.
+</Complexity>
+
+## Approach 3: Unlink in place with a dummy head (optimal)
+
+Put a fake node, the **dummy**, in front of the head. Now the head has a node before it, like every other node,
+so the second loop of approach 2 handles everything and the first loop disappears. Return `dummy.next`, which is
+wherever the real list starts now. The read [The dummy head](/concepts/dummy-head/) covers this trick in detail.
+
+<Viz client:visible approach="dummy" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One loop, each node checked once: **O(n)**.
+
+**Space.** `curr` and one dummy node: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Copy what you keep | O(n) | O(n) | builds a second list |
+| Unlink, head first | O(n) | O(1) | two loops, head is a special case |
+| Unlink with a dummy | O(n) | O(1) | one loop, no special case |
+
+All three check each node once, so there's no growth chart: the lines would sit on top of each other. The
+difference is memory (approach 1) and how much code can go wrong (approach 2).
+
+## Common mistakes
+
+- **Moving `curr` after an unlink.** After `curr.next ← curr.next.next`, the new `curr.next` hasn't been checked.
+  In `1 → 5 → 5 → 8`, moving on would skip the second `5`.
+- **Only checking the head once.** With `5 → 5 → 1`, an `if` instead of a `while` for the head leaves the second
+  `5` in place.
+- **Returning `head` when using a dummy.** If the head was removed, `head` still points at it. Return
+  `dummy.next`.
+- **Reading `curr.next.val` when `curr.next` is `none`.** The loop condition must check `curr.next ≠ none` first.
+
+## Related problems
+
+- [The dummy head](/concepts/dummy-head/): the trick behind approach 3, with more places it helps.
+- [Remove Nth Node From End of List](/dsa/remove-nth-node-from-end-of-list/): the same unlink, once you've found
+  the right node.
+- [Design Linked List](/dsa/design-linked-list/): `deleteAtIndex` is this unlink at a chosen position.
