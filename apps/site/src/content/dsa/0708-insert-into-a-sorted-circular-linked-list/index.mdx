@@ -1,0 +1,105 @@
+---
+title: Insert into a Sorted Circular Linked List
+leetcode: { number: 708, url: "https://leetcode.com/problems/insert-into-a-sorted-circular-linked-list/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-16
+summary: Insert a value into a circular linked list that's sorted going round, keeping it sorted, when you're handed an arbitrary node rather than the smallest. Goes from first finding the largest node and then walking to the gap, to a single walk that recognises the three places a value can go.
+insight: "Walk round once looking at each pair prev → curr. The value goes where prev ≤ x ≤ curr, or at the drop from largest to smallest if it's a new largest or smallest value, or anywhere if you come all the way round."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A **circular** linked list is one whose last node points back to the first, so following `next` goes round and
+round forever. This one is sorted going round: the values rise, drop once from the largest back to the smallest,
+then rise again. You're handed a pointer to *some* node in the ring, not necessarily the smallest, and a value
+`x`. Insert a new node holding `x` so that the ring stays sorted, and return the node you were handed. If the ring
+is empty, make a ring of just the new node (pointing to itself) and return that.
+
+For example, the ring `5 → 7 → 1 → 3 → (back to 5)`, handed to you at the `5`, with `x = 4`: the new node goes
+between the `3` and the `5`, giving `5 → 7 → 1 → 3 → 4 → (back to 5)`.
+
+On LeetCode this problem is for Premium subscribers only, so the "Solve on LeetCode" button needs a subscription.
+Everything on this page works without one.
+
+## The key question
+
+> **There's no first node and no last node. How do I recognise the right gap, including when x is bigger or
+> smaller than everything?**
+
+In an ordinary sorted list you'd walk from the head until the next value is at least `x`. In a ring there's no
+head to start from, and a new largest or smallest value belongs at the one place where the order wraps around.
+
+## Approach 1: Find the largest first, then walk
+
+First walk forward while the values keep rising, to find the **largest** node: its `next` is the smallest, so
+this is where the ring "starts". Then:
+
+- If `x` is at least the largest, or at most the smallest, it goes right there, between the largest and the
+  smallest.
+- Otherwise it belongs in the middle: start at the smallest and walk, as in an ordinary sorted list, until the next
+  value is at least `x`.
+
+<Viz client:visible approach="largestFirst" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Finding the largest walks at most once round the ring, and the second walk at most once more: up to
+**2n** steps, **O(n)**.
+
+**Space.** A couple of pointers and the one new node: **O(1)**.
+
+**What it wastes:** it can walk most of the ring twice: once just to find the largest, then again to the gap.
+</Complexity>
+
+## Approach 2: One pass, three cases (optimal)
+
+Look at each neighbouring pair `prev → curr` once, starting from the node you were handed. Stop at the first pair
+where `x` belongs. There are exactly three ways that can happen:
+
+1. **It fits between them:** `prev.val ≤ x ≤ curr.val`.
+2. **It's at the drop:** `prev.val > curr.val` means you're standing at the wrap from largest to smallest. If `x`
+   is at least the largest or at most the smallest, this is its place.
+3. **You've gone all the way round** without stopping. That only happens when every value is the same, so any
+   gap is fine.
+
+Then link the node in: `prev.next ← node` and `node.next ← curr`.
+
+<Viz client:visible approach="onePass" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each of the n pairs is checked at most once: **O(n)**.
+
+**Space.** Two pointers and the new node: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same ring:
+
+<Compare client:visible />
+
+| Approach | Time | Space | Walks round |
+|---|---|---|---|
+| Find the largest, then walk | O(n) | O(1) | up to twice |
+| One pass, three cases | O(n) | O(1) | at most once |
+
+Both are O(n), so there's no growth chart. The one-pass version does at most half the walking, and needs no
+separate "find the start" step.
+
+## Common mistakes
+
+- **Assuming you were handed the smallest node.** You might be anywhere in the ring, even right before the drop.
+- **Forgetting the drop case.** Without case 2, a new largest or smallest value never finds a gap where
+  `prev.val ≤ x ≤ curr.val`, and the walk goes round forever.
+- **Looping forever when all values are equal.** With a ring like `2 → 2 → 2` and `x = 5`, neither case 1 nor case
+  2 ever matches. Stop when `prev` is back where it started.
+- **Forgetting the empty ring.** With no nodes at all, the new node must point to itself.
+
+## Related problems
+
+- [Linked List Cycle](/dsa/linked-list-cycle/): here the loop is on purpose; there you have to detect one.
+- [Remove Linked List Elements](/dsa/remove-linked-list-elements/): rewiring `next` pointers in an ordinary list.
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/): keeping a list sorted as you build it.
