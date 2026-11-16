@@ -1,0 +1,85 @@
+---
+title: Split Linked List in Parts
+leetcode: { number: 725, url: "https://leetcode.com/problems/split-linked-list-in-parts/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-16
+summary: Cut a linked list into k consecutive parts whose lengths differ by at most one, longer parts first, some possibly empty. Goes from copying node references into an array and cutting at the boundaries, to counting the list and cutting it in place as you walk.
+insight: "Count the list first. Then every part gets floor(n / k) nodes and the first n % k parts get one extra, so walk the list cutting after each part's last node."
+best: { time: "O(n + k)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a linked list and a number `k`. Cut the list into `k` consecutive parts, and return them as an
+array of `k` heads. The parts must be as equal as possible: no two lengths may differ by more than one, and longer
+parts come first. If there are more parts than nodes, some parts are empty (`none`).
+
+For example, `6 → 2 → 9 → 4 → 1 → 7` with `k = 4` gives `[6 → 2, 9 → 4, 1, 7]`: lengths 2, 2, 1, 1. With
+`k = 8`, it gives six one-node parts followed by two empty ones.
+
+## The key question
+
+> **How long is each part, and can I cut the parts off without storing the whole list?**
+
+The lengths come from simple division: with `n` nodes, every part gets `floor(n / k)`, and the remainder `n % k`
+is handed out one each to the first parts. For 6 nodes and 4 parts: `floor(6 / 4) = 1` each, and the first
+`6 % 4 = 2` parts get one more, so 2, 2, 1, 1. The approaches differ in how they reach each cut point.
+
+## Approach 1: Collect the nodes, then cut at the boundaries
+
+Copy a reference to every node into an array. That gives `n` and lets you jump straight to any position: part `i`
+starts at `nodes[start]`, and its last node `nodes[start + len − 1]` gets `next ← none`.
+
+<Viz client:visible approach="withArray" />
+
+<Complexity time="O(n + k)" space="O(n)">
+**Time.** One pass to fill the array, then `k` parts with O(1) work each: **O(n + k)**.
+
+**Space.** The array holds a reference to every node: **O(n)**, besides the `k` heads you return.
+
+**What it wastes:** a copy of the whole list, only to find a few cut points that a walk would reach anyway.
+</Complexity>
+
+## Approach 2: Count, then cut while walking (optimal)
+
+Walk once to count `n`. Then walk again from the head. For each part: record `curr` as its head, step `len − 1`
+nodes to its last node, then cut: remember the next node, set `next ← none`, and continue from the remembered node.
+Once the nodes run out, `curr` is `none`, and the remaining parts are recorded as `none`.
+
+<Viz client:visible approach="countAndCut" />
+
+<Complexity time="O(n + k)" space="O(1)">
+**Time.** Two walks of the list plus one step per part: **O(n + k)**.
+
+**Space.** A few pointers and counters: **O(1)** besides the answer.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Collect the nodes, cut at boundaries | O(n + k) | O(n) | jumps straight to each cut |
+| Count, then cut while walking | O(n + k) | O(1) | walks to each cut |
+
+Both do the same amount of work, so there's no growth chart; the difference is the array.
+
+## Common mistakes
+
+- **Putting the longer parts last.** The extra nodes go to the **first** `n % k` parts.
+- **Walking `len` steps instead of `len − 1`.** `curr` starts on the part's first node, so its last node is
+  `len − 1` steps away. One step too many cuts after the wrong node.
+- **Forgetting the empty parts.** When `k > n`, the answer still has `k` entries; the extra ones are `none`.
+- **Not cutting.** Each part's last node must point to `none`, or every part still runs on to the end of the list.
+
+## Related problems
+
+- [Split a list in half](/concepts/merging-and-splitting/): the two-part version, with fast and slow pointers.
+- [Odd Even Linked List](/dsa/odd-even-linked-list/): another way of breaking one list into several.
+- [Rotate List](/dsa/rotate-list/): count first, then cut at a computed position.
