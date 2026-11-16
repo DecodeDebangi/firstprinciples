@@ -177,7 +177,8 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
       aria-label={`Animation: ${approach.name}. Use left and right arrow keys to step, space to play.`}>
       <div className="fp-player__top">
         <div className="fp-stage">
-          {step.trees ? <TreeView step={step} /> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
+          {/* A tree can come with a list underneath (e.g. matching a list along a tree path). */}
+          {step.trees ? <>{<TreeView step={step} />}{step.lists && <ListView step={step} />}</> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
 
           {question ? (
             <div className="fp-ask" role="group" aria-label="Predict the next step">

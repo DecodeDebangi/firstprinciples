@@ -1,0 +1,112 @@
+---
+title: Linked List in Binary Tree
+leetcode: { number: 1367, url: "https://leetcode.com/problems/linked-list-in-binary-tree/" }
+difficulty: Medium
+topics: [Tree, Linked list, DFS]
+added: 2026-11-16
+summary: Decide whether a linked list's values appear, in order, along some downward path in a binary tree. Goes from writing out every root-to-leaf path and searching each one, to trying a match from every tree node and giving up at the first mismatch.
+insight: "Treat every tree node as a possible start. From a start, walk down the tree and along the list together, trying both children at each step, and stop as soon as a value differs."
+best: { time: "O(n · m)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a linked list and the root of a binary tree. Return `true` if the list's values appear along
+some **downward path** in the tree: a chain of nodes where each one is a child of the one before. The path can
+start at any node, not just the root, and doesn't have to reach a leaf.
+
+For example, take the list `3 → 4 → 8` and this tree:
+
+```text
+        5
+      /   \
+     3     3
+    /     /
+   4     4
+  /     / \
+ 2     2   8
+```
+
+The left side reads `3, 4, 2`, which fails at the last value. The right side has `3 → 4 → 8` going down, so the
+answer is `true`.
+
+Below the players you type the tree in level order (each level left to right, with `null` for a missing child),
+as on LeetCode: the tree above is `5, 3, 3, 4, null, 4, null, 2, null, 2, 8`.
+
+## The key question
+
+> **Where could the match start, and how soon can I tell that a start won't work?**
+
+The match can start at any of the `n` tree nodes. From each start, the list decides which values must follow, and
+usually the very first value rules a start out.
+
+## Approach 1: Search every root-to-leaf path
+
+Every downward path lies on some path from the root to a leaf. So write out each root-to-leaf path's values and
+check whether the list's values appear in it as a run.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(n · h · m)" space="O(n · h)">
+**Time.** A tree of height `h` has up to `n` leaves, so up to `n` paths of up to `h` values each. Searching each for
+a run of `m` values: **O(n · h · m)** in the worst case.
+
+**Space.** All the paths written out: the values near the root are copied once per leaf below them, up to
+**O(n · h)**.
+
+**What it wastes:** it copies the nodes near the root into many paths, and searches each path from scratch.
+</Complexity>
+
+## Approach 2: Try a match from every node (optimal)
+
+Visit every tree node as a possible start, with a [depth-first](/concepts/tree-traversals/) walk. From each start,
+`matchFrom` checks the list and the tree together:
+
+- the list has run out (`node = none`): everything matched, so return `true`;
+- the tree has run out, or the values differ: this branch fails;
+- otherwise, the next list node must match the left child **or** the right child.
+
+<Viz client:visible approach="tryEach" />
+
+<Complexity time="O(n · m)" space="O(h)">
+**Time.** A match that starts at some node only ever goes `m` levels below it. So a tree node can be reached only by
+matches that started at one of its ancestors at most `m` levels up, and it has at most `min(m, h)` of those. Over all
+`n` nodes that's **O(n · min(m, h))**, which is at most O(n · m). In practice most starts fail on the very first
+value.
+
+**Space.** Only the recursion: at most `h` calls for the outer walk plus `m` for matchFrom: **O(h)**, since `m`
+can't usefully exceed `h`.
+</Complexity>
+
+There's a cleverer method, based on the KMP string-matching algorithm, that never rechecks a value and runs in
+O(n + m). Interviews rarely expect it for this problem.
+
+## Comparing the approaches
+
+Both on the same list and tree:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Search every root-to-leaf path | O(n · h · m) | O(n · h) | copies paths, searches each |
+| Try a match from every node | O(n · m) | O(h) | stops at the first mismatch |
+
+## Common mistakes
+
+- **Only starting at the root.** The match can begin anywhere in the tree. The outer walk must try every node.
+- **Mixing up the two recursions.** `isSubPath` moves the *start* (the list stays at its head). `matchFrom` moves
+  the list and the tree *together*. Calling `isSubPath(head.next, …)` from inside the match lets a "path" skip
+  nodes.
+- **Requiring the path to end at a leaf.** The list can end anywhere: when `node = none`, it's a match.
+- **Checking only one child.** At each step, the next value may be in the left child or the right child; try both.
+
+## Related problems
+
+- [Same Tree](/dsa/same-tree/): the same "walk two structures together, fail at the first difference" shape.
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/): a plain depth-first walk, the outer loop
+  here.
+- [Thinking recursively about lists](/concepts/thinking-recursively/): `matchFrom` is "this node, then the rest of
+  the list".
