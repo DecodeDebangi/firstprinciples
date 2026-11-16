@@ -1,0 +1,134 @@
+---
+title: Linked List Cycle II
+leetcode: { number: 142, url: "https://leetcode.com/problems/linked-list-cycle-ii/" }
+difficulty: Medium
+topics: [Linked list, Two pointers, Hash map]
+added: 2026-11-16
+summary: Find the node where a linked list starts to loop, or return none if it ends. Goes from rewalking the list at every node, to remembering every node in a set, to fast and slow pointers followed by a second walk from the head.
+insight: "Let a fast and a slow pointer meet inside the loop. Then the head and the meeting point are the same distance from the loop's first node, so walking one pointer from each, one node at a time, brings them together exactly there."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a singly linked list whose last node might point back to an earlier node instead of to `none`,
+so that following `next` goes round and round forever. If it loops, return the node where the loop starts: the
+node the last node points back to. If the list ends, return `none`. Don't change the list.
+
+For example, take `4 → 9 → 2 → 7 → 5 → 1`, where the `1` points back to the `2`. Walking it goes 4, 9, 2, 7, 5,
+1, 2, 7, 5, 1, 2… The loop is `2 → 7 → 5 → 1`, and the answer is the node holding `2`.
+
+In the animations, the arc over the row is the last node's `next` pointing back. Below the player you can
+change the values and where the last node links back to, or type `none` for a list that ends.
+
+This is a step up from [Linked List Cycle](/dsa/linked-list-cycle/), which only asks *whether* the list loops.
+
+## The key question
+
+> **Which node is the first one I ever come back to, and can I find it without remembering every node?**
+
+The loop's start is the first node you reach twice: everything before it is visited once, and the last node's
+`next` leads you back to it. The approaches differ in how they notice that first repeat.
+
+## Approach 1: Brute force, rewalk from the head
+
+Walk the list with `curr`, counting steps. At every node, rewalk the nodes before it from the head. The first time
+`curr` matches one of them, it's the first node reached twice: the loop's start.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** At the k-th node, the rewalk checks up to k earlier nodes. Over n nodes that's about n² / 2 checks:
+**O(n²)**.
+
+**Space.** Just `curr`, `check` and a counter: **O(1)**.
+
+**What it wastes:** it walks the same early nodes again and again, because it doesn't remember where it's been.
+</Complexity>
+
+## Approach 2: A set of seen nodes
+
+Remember every node you pass. The first node that's already in the set is the loop's start. Store the nodes
+themselves, not their values: two different nodes can hold the same number.
+
+<Viz client:visible approach="hashSet" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Every node is visited once before the first repeat (or before `none`), and each set check is O(1) on
+average: **O(n)**.
+
+**Space.** The set can hold all n nodes: **O(n)**.
+
+**What it wastes:** memory for every node, just to spot one repeat.
+</Complexity>
+
+## Approach 3: Fast and slow, then walk from the head (optimal)
+
+**Part 1** is exactly [Linked List Cycle](/dsa/linked-list-cycle/): `slow` moves one node per round and `fast`
+moves two. If `fast` finds the end, there's no loop. Otherwise they meet somewhere inside the loop, though not
+necessarily at its start.
+
+**Part 2:** put a new pointer `p` on the head, leave `slow` where they met, and move both one node at a time.
+They meet exactly at the loop's first node.
+
+<Viz client:visible approach="floyd" />
+
+### Why part 2 lands on the start
+
+Use the example. The head is **2 nodes** before the loop's start (the `4` and the `9`), and the loop has **4
+nodes** (`2 → 7 → 5 → 1`).
+
+- They meet after 4 rounds, so `slow` has walked 4 nodes and `fast` has walked 8.
+- `fast`'s extra 4 nodes took it round the loop and back to the same node, so the extra must be whole laps. Here
+  it's one lap of 4. Since `fast` walks twice as far as `slow`, the extra equals `slow`'s own distance. So
+  `slow` has also walked a whole number of laps' worth: 4 nodes.
+- `slow`'s 4 nodes were 2 to reach the loop, then 2 more into it. So it's sitting **2 nodes into the loop**, and
+  2 more nodes would complete the lap and bring it back to the start.
+- That's the same 2 nodes that `p` needs to walk from the head to the start. Move them together and they arrive
+  at the same moment.
+
+In general: if the head is `a` nodes before the loop, `slow` always ends up `a` nodes short of the start, give or
+take whole laps. So `p` from the head and `slow` from the meeting point both need `a` steps.
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Part 1 takes O(n) rounds, as in Linked List Cycle. In part 2, `p` walks from the head to the loop's
+start, at most n nodes. Together: **O(n)**.
+
+**Space.** Three pointers (`slow`, `fast`, `p`): **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same list, one shared clock ticking once per check:
+
+<Compare client:visible />
+
+| Approach | Time | Space | |
+|---|---|---|---|
+| Rewalk from the head | O(n²) | O(1) | no memory, lots of repeated walking |
+| Set of seen nodes | O(n) | O(n) | simple, but remembers every node |
+| Fast and slow, then from the head | O(n) | O(1) | fast and remembers nothing |
+
+<GrowthChart client:visible series={growth} caption="Checks when the last node links back to the head, as the list length n grows." />
+
+## Common mistakes
+
+- **Returning the meeting point.** Where `slow` and `fast` meet is somewhere in the loop, not necessarily its
+  start. You still need part 2.
+- **Moving `fast` two steps in part 2.** In part 2 both pointers move one node at a time; that's what makes the
+  distances line up.
+- **Starting `p` on `head.next`.** The distances only line up if `p` starts on the head itself and `slow` stays
+  exactly where they met.
+- **Comparing values instead of nodes.** Two different nodes can hold the same number; compare the nodes
+  (`p = slow`).
+
+## Related problems
+
+- [Linked List Cycle](/dsa/linked-list-cycle/): part 1 on its own, just "does it loop?".
+- [Intersection of Two Linked Lists](/dsa/intersection-of-two-linked-lists/): another "line up the distances so
+  two pointers arrive together" trick.
+- Find the Duplicate Number (LeetCode 287) treats an array as a linked list and uses this exact method.
