@@ -1,0 +1,80 @@
+---
+title: "Values and references: when two names share one thing"
+topic: Coding basics
+kind: Explainer
+order: 5
+summary: Assigning a number copies it, but assigning a list gives the same list a second name. See the difference step by step, how it carries into functions, and why "the same node" and "a node with the same value" are different questions.
+added: 2026-11-18
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Two kinds of thing a variable can hold
+
+A variable holding a **number** (or `true`/`false`) holds the value itself. Copy it into another variable and you
+get a second, independent copy.
+
+A **list**, map, set or linked-list node can be any size, so a variable doesn't hold the object itself. It holds a
+**reference**: a note saying where the object is in memory. Copying the variable copies the note, so both
+variables now point at the **same** object. Change the object through one name and the other name sees the change.
+
+<Viz client:visible approach="assign" />
+
+The memory panel lists the objects that exist; the variables say which one each name refers to. `b ← a` doesn't
+create a list, so there's still only list #1. Only `copy(a)` makes a list #2.
+
+## Functions follow the same rule
+
+Calling a function hands each argument over the same way assignment does. A number arrives as a copy, so the function
+can't change the caller's number. A list arrives as a reference, so the function **can** change the caller's list:
+
+<Viz client:visible approach="calls" />
+
+That's how many solutions work: a helper fills in a result list that the caller passed in, or sorts the caller's
+array in place. It's also a classic bug: a function that was only supposed to read a list ends up changing it.
+If the caller's list must stay as it was, work on `copy(list)`.
+
+One more trap: assigning a **new** object to a parameter (`list ← [1, 2]` inside the function) only re-points the
+function's own name. The caller still has the old list. Changing what the list *contains* is shared; changing what
+the name *points to* isn't.
+
+## Same object, or equal values?
+
+Because variables can share objects, there are two different questions you can ask about two of them:
+
+- **Are they the same object?** Do both references point at the very same thing?
+- **Do they hold equal values?** Two separate lists can both hold `[3, 8]`.
+
+On this site `a = b` on two nodes means "the same node". It matters in linked lists, where two different nodes can
+hold the same value: in [Intersection of Two Linked Lists](/dsa/intersection-of-two-linked-lists/) and
+[Linked List Cycle](/dsa/linked-list-cycle/), comparing values would give wrong answers. Each language spells the two
+questions differently; the [linked list checklist](/concepts/linked-list-checklist/) has a table.
+
+## Strings are a special case
+
+In Python, Java and JavaScript, strings can't be changed in place (they're **immutable**). "Changing" one always
+builds a new string, so sharing a string between two names is never a problem. That's also why adding characters to
+a string one at a time in a loop can be slow; the [strings read](/concepts/strings-and-characters/) covers it.
+
+## Interview theory
+
+<QA q="A function receives a list and appends to it. Does the caller see the change?">
+Yes. The function gets a reference to the same list, so appending changes the caller's list. If it instead assigned a
+brand-new list to its parameter, only the function's own name would change.
+</QA>
+
+<QA q="What does copying a list cost?">
+O(n) time and O(n) extra memory for n values, because every value is copied into a new list. Assigning `b ← a`
+costs O(1), because only the reference is copied.
+</QA>
+
+<QA q="Why do linked-list solutions compare nodes with = rather than comparing values?">
+Two different nodes can hold the same value. "Is this the same node?" asks whether two references point at one
+object, which is what detecting a shared tail or a cycle needs.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

@@ -178,7 +178,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
       <div className="fp-player__top">
         <div className="fp-stage">
           {/* A tree can come with a list underneath (e.g. matching a list along a tree path). */}
-          {step.trees ? <>{<TreeView step={step} />}{step.lists && <ListView step={step} />}</> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
+          {step.trees ? <>{<TreeView step={step} />}{step.lists && <ListView step={step} />}</> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : step.hideStage ? null : <ArrayCells step={step} />}
 
           {question ? (
             <div className="fp-ask" role="group" aria-label="Predict the next step">
@@ -340,8 +340,9 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
         </div>
       )}
 
-      <InputForm fields={fields} initialInput={initialInput} shown={input} prepare={prepare} maxLength={maxLength}
-        onApply={(inp) => { setInput(inp); go(0); setScore({ right: 0, total: 0 }); }} />
+      {/* A fixed demonstration (no fields) has nothing to type in, so no input form. */}
+      {fields.length > 0 && <InputForm fields={fields} initialInput={initialInput} shown={input} prepare={prepare} maxLength={maxLength}
+        onApply={(inp) => { setInput(inp); go(0); setScore({ right: 0, total: 0 }); }} />}
     </div>
   );
 }

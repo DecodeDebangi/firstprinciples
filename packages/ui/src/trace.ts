@@ -109,6 +109,8 @@ export interface ArrayStep {
   vars?: Record<string, string | number | boolean | null>;
   /** A hash map / set panel. */
   map?: { title: string; entries: [string, string][]; highlight?: string };
+  /** No main view at all: for steps whose whole story is in the panels (variables, memory grid…). */
+  hideStage?: boolean;
   /** A stack panel, top (innermost) last. */
   stack?: string[];
   /** Heading for the stack panel. Defaults to "Call stack". */
