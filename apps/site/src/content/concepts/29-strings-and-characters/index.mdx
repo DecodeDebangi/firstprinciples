@@ -1,0 +1,92 @@
+---
+title: "Strings and characters"
+topic: Coding basics
+kind: Explainer
+order: 6
+summary: A string is a row of characters you can index like an array, and every character is secretly a number. Count letters with 26 counters, see why adding characters one at a time is O(n²), and learn the habits that make string problems easy.
+added: 2026-11-18
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A string is a row of characters
+
+`s = "banana"` is six characters in a row, and you read them exactly like an [array](/concepts/arrays-and-indices/):
+`s[0]` is `'b'`, `s[5]` is `'a'`, and `length(s)` is 6. Looping over a string visits its characters in order, and
+two pointers moving in from both ends work just as they do on an array, as in
+[Valid Palindrome](/dsa/valid-palindrome/).
+
+A **substring** is a run of neighbouring characters: `"nan"` is a substring of `"banana"`, from position 2 to 4.
+Taking one out (`s[2..4]`) builds a new string, so it costs time proportional to its length, not O(1).
+
+## Every character is a number
+
+Computers store each character as a number, its **code**. The lowercase letters have codes in a row: `'a'` is 97,
+`'b'` is 98, up to `'z'` at 122. (Uppercase `'A'` to `'Z'` are 65 to 90, and the digits `'0'` to `'9'` are 48 to
+57.) Two useful consequences:
+
+- **Comparing letters is comparing numbers.** `'c' < 'f'` because 99 < 102. That's what alphabetical order is.
+- **`code(c) - code('a')` turns a letter into a position** from 0 (`'a'`) to 25 (`'z'`). That lets an ordinary array
+  of 26 counters replace a hash map when the input is only lowercase letters:
+
+<Viz client:visible approach="count" />
+
+Counting like this solves a whole family of problems in one pass. Two words are anagrams (the same letters in a
+different order) exactly when their counters match: that's [Valid Anagram](/dsa/valid-anagram/).
+
+## Strings can't be changed in place
+
+In Python, Java and JavaScript, strings are [immutable](/concepts/values-and-references/): once made, they never
+change. `out ← out + 'x'` doesn't add a character to `out`. It builds a brand-new string, copying every character of
+`out` and then the new one. One line, but not O(1):
+
+<Viz client:visible approach="concat" />
+
+The fix is to collect the pieces in a list, where adding to the end really is O(1), and build the string once at the
+end with `join`:
+
+<Viz client:visible approach="join" />
+
+Both on the same word:
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Characters written to build a string of n characters." />
+
+(C++ is the exception: its `std::string` can be changed in place, so appending one character is usually O(1). Java
+has `StringBuilder` for exactly this job.)
+
+## Habits for string problems
+
+- **Check what characters can appear.** "Lowercase letters only" means 26 counters will do. Anything else (capitals,
+  spaces, digits, punctuation) means a hash map, or cleaning the string first.
+- **Decide what counts as equal.** Is `'A'` the same as `'a'`? Are spaces ignored? Problems like
+  [Valid Palindrome](/dsa/valid-palindrome/) spell it out; read it twice.
+- **Don't build strings in a loop.** Collect pieces in a list and join once.
+- **Remember the empty string.** `""` has length 0, and `s[0]` doesn't exist.
+
+## Interview theory
+
+<QA q="Why is adding one character at a time to a string slow?">
+Strings are immutable in most languages, so each `out + c` copies all of `out` into a new string. Over n characters
+that's 1 + 2 + … + n copies: O(n²). Collecting characters in a list and joining once is O(n).
+</QA>
+
+<QA q="How do you check whether two lowercase words are anagrams in O(n)?">
+Count the letters of each with an array of 26 counters, using `code(c) - code('a')` as the position, and compare the
+two arrays. Or add 1 for every letter of the first word and subtract 1 for every letter of the second: anagrams leave
+every counter at 0.
+</QA>
+
+<QA q="Is taking a substring O(1)?">
+Usually not: it builds a new string, so it costs time and memory proportional to the substring's length. Code that
+takes a substring inside a loop can quietly become O(n²).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
