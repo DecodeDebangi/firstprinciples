@@ -1,0 +1,107 @@
+---
+title: "Numbers: division, remainders and how big a number can get"
+topic: Coding basics
+kind: Explainer
+order: 4
+summary: Whole-number division, the remainder operator %, and rounding down with floor. Use them to take a number apart digit by digit and to walk round an array in a circle, and learn why numbers in most languages have a size limit.
+added: 2026-11-18
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Dividing whole numbers
+
+Most problems deal in **whole numbers** (integers): 7, 0, −3, never 3.5. Dividing two of them often doesn't give a
+whole number, so there are two separate questions you can ask:
+
+- **How many whole times does it go in?** `floor(17 / 5)` is 3: 17 / 5 is 3.4, and `floor` rounds **down** to the
+  whole number below.
+- **What's left over?** `17 % 5` is 2: five goes into 17 three times (15), with 2 left over. `%` is called the
+  **remainder** operator (or **modulo**).
+
+The two always fit together: `17 = 5 × 3 + 2`. In general, `a = b × floor(a / b) + a % b`, and the remainder is
+always between 0 and `b − 1`.
+
+A few remainders you'll see again and again:
+
+| Expression | Means |
+|---|---|
+| `x % 2 = 0` | `x` is even (`x % 2 = 1`: odd) |
+| `x % 10` | the last digit of `x` |
+| `floor(x / 10)` | `x` with its last digit removed |
+| `x % k = 0` | `x` is a multiple of `k` (`k` divides `x` exactly) |
+| `(i + 1) % n` | the next position after `i`, wrapping from `n − 1` back to 0 |
+
+## Taking a number apart
+
+There's no `x[0]` for a number. To look at its digits one by one, peel them off from the right: `x % 10` is the last
+digit, then `floor(x / 10)` drops it. Repeat until nothing is left.
+
+<Viz client:visible approach="digits" />
+
+The loop runs once per digit, and a number around a million has only 7 digits. That's why digit loops count as
+**O(log N)** for a number N: the count grows with the number of digits, not with the size of the number.
+[Add Two Numbers](/dsa/add-two-numbers/) uses exactly this, one digit at a time with a carry.
+
+## Going round in a circle
+
+Positions that should wrap around, like seats round a table, days of the week or the hours on a clock, are
+remainders. Adding 1 and taking `% n` keeps every position between 0 and `n − 1`:
+
+<Viz client:visible approach="wrap" />
+
+The shortcut at the end is worth remembering: moving `k` steps round a circle of `n` lands on position `k % n`,
+because every full lap of `n` steps changes nothing. [Rotate List](/dsa/rotate-list/) uses this to turn a rotation
+by a billion into a rotation by a few.
+
+## How big can a number get?
+
+In Java, C++ and most other languages, a whole number is stored in a fixed amount of memory, so it has a maximum:
+
+| Type | Largest value | About |
+|---|---|---|
+| 32-bit `int` | 2,147,483,647 | 2 × 10⁹ (two billion) |
+| 64-bit `long` / `long long` | 9,223,372,036,854,775,807 | 9 × 10¹⁸ |
+
+Go past the maximum and the number **overflows**: it silently wraps round to a large negative number, with no error.
+That's called **integer overflow**, and it's behind some classic bugs:
+
+- **Adding two big values.** If both are around 1.5 billion, their sum doesn't fit in an `int`. Problems that say
+  "values up to 10⁹" are hinting at this; use a 64-bit type for sums and products.
+- **The midpoint in binary search.** `(lo + hi) / 2` can overflow when `lo` and `hi` are both large.
+  `lo + floor((hi − lo) / 2)` gives the same answer and never goes above `hi`.
+- **Multiplying.** Two numbers around 100,000 multiply to 10¹⁰, already too big for an `int`.
+
+Python is the exception: its whole numbers grow as large as they need to, so they never overflow (they just get
+slower when huge). JavaScript numbers are decimals that stay exact only up to about 9 × 10¹⁵.
+
+## Careful with negative numbers
+
+`floor` always rounds **down**, so `floor(−7 / 2)` is −4, not −3. Languages disagree here: Python's `//` rounds
+down (−4), while whole-number division in Java and C++ cuts off the decimals, rounding **towards zero** (−3), as
+does JavaScript's `Math.trunc`. The remainder follows suit: `−7 % 2` is 1 in Python but −1 in Java, C++ and
+JavaScript. So `x % 2 = 1` is not a safe "is it odd?"
+test when `x` can be negative; use `x % 2 ≠ 0`.
+
+## Interview theory
+
+<QA q="How do you get the digits of a number without turning it into a string?">
+Repeat `x % 10` to read the last digit and `x ← floor(x / 10)` to drop it, until `x` is 0. The digits come out from
+right to left, and it takes one step per digit: O(log x).
+</QA>
+
+<QA q="Why write the binary search midpoint as lo + (hi − lo) / 2?">
+`lo + hi` can be bigger than the largest whole number the language can store, and overflow to a negative value.
+`hi − lo` is never bigger than `hi`, so the safe form gives the same midpoint without overflowing.
+</QA>
+
+<QA q="What does i ← (i + 1) % n do?">
+Moves `i` to the next position, and wraps from the last position (`n − 1`) back to 0. It walks round an array of
+length `n` in a circle.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
