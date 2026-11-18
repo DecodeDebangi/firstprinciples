@@ -19,7 +19,7 @@ export const roadmap: RoadmapStep[] = [
   {
     title: "Start here",
     topics: [
-      { name: "Coding basics", blurb: "Arrays, loops, functions, and how to read the code on this site.", tags: ["Basics"] },
+      { name: "Coding basics", blurb: "How to read the code, arrays, loops, numbers, strings, references, recursion, and how to read a problem.", tags: ["Basics"] },
     ],
   },
   {

@@ -1,0 +1,95 @@
+---
+title: "Reading a problem: what it asks, and what its limits tell you"
+topic: Coding basics
+kind: Explainer
+order: 8
+summary: Before writing any code, pull the problem apart into its input, output, rules and limits. The size limits alone tell you which approaches are fast enough, and the rest of the wording hints at the technique. Then a five-step routine for any new problem.
+added: 2026-11-18
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Four things in every problem
+
+Problem statements are short, and every phrase matters. Before thinking about a solution, find these four:
+
+1. **The input:** what you're given, and its type. An array of whole numbers? A string? The head of a linked list?
+2. **The output:** exactly what to return. The answer itself, or its position? `true`/`false`? A new list, or the
+   same one changed?
+3. **The rules:** anything that narrows things down. "Each input has exactly one answer." "You can't use the same
+   value twice." "Return the pairs in any order."
+4. **The limits** (often called **constraints**): how big things can get. "1 ≤ n ≤ 100,000" and "−10⁹ ≤ values ≤
+   10⁹" are easy to skip and very useful.
+
+Take [Two Sum](/dsa/two-sum/): the input is an array of numbers and a target; the output is the two **positions**
+(not the values) whose values add up to the target; the rules say there's exactly one answer and a position can't be
+used twice; the limits say the array can hold up to 10,000 numbers. Each of those changes what you'd write.
+
+## The size limit tells you the speed you need
+
+A computer does very roughly 100 million simple steps a second, and judges usually allow a second or two. So the
+largest `n` tells you, before you've written anything, which [Big-O](/concepts/big-o-in-plain-words/) is fast enough.
+Try different values of `n` below:
+
+<Viz client:visible approach="budget" />
+
+The usual reading of the limits:
+
+| If n is up to about | You can afford | Typical approaches |
+|---|---|---|
+| 10 | O(n!) | try every ordering |
+| 20 | O(2ⁿ) | try every subset ([backtracking](/concepts/backtracking/)) |
+| 500 | O(n³) | three nested loops (just about) |
+| 5,000 | O(n²) | every pair, two nested loops |
+| 100,000 to 1,000,000 | O(n log n) or O(n) | sorting, one pass with a hash map, two pointers, sliding window |
+| 10⁹ or more | O(log n) or O(1) | binary search, a formula |
+
+These are rough guides, not exact cut-offs, but they rarely mislead. If `n` can be 100,000, the brute-force O(n²)
+on this site's pages would take about 10 billion steps: that's the cue to find something better.
+
+## Other hints hiding in the wording
+
+| The statement says | It often means |
+|---|---|
+| "the array is sorted" | [binary search](/concepts/binary-search-invariants/) or [two pointers](/concepts/two-pointers/) |
+| "contiguous", "a run of", "substring" | [sliding window](/concepts/sliding-window/) or prefix sums |
+| "values up to 10⁹" | sums can [overflow](/concepts/numbers-and-remainders/) a 32-bit int |
+| "the k largest", "the k most frequent" | a [heap](/concepts/heaps/) |
+| "all combinations", "all subsets" | [backtracking](/concepts/backtracking/) |
+| "number of ways", "minimum cost" | [dynamic programming](/concepts/memoisation-vs-tabulation/) |
+| "in place", "O(1) extra space" | change the input itself; no copies |
+
+## Edge cases come from the limits too
+
+The limits also say which awkward inputs are allowed. If `n` can be 1, try a single value. If values can be negative
+or zero, try them. If the string can be empty, try `""`. Lists with every value the same, and answers at the very
+first or very last position, catch a lot of bugs as well.
+
+## A routine for a new problem
+
+1. **Restate it** in your own words, with the input, output, rules and limits.
+2. **Work two or three small examples by hand**, including an awkward one. You'll often spot the idea while doing it.
+3. **Write the brute force** (the obvious, slow approach) and work out its cost.
+4. **Compare with the budget.** If it's too slow, ask what it wastes: repeated work, rechecking pairs, scanning for
+   something you could have remembered. That's exactly how every problem page on this site goes from brute force
+   to optimal.
+5. **Test** the edge cases from the limits before submitting.
+
+## Interview theory
+
+<QA q="n can be up to 100,000. Will an O(n²) solution pass?">
+Probably not: 100,000² is 10 billion steps, about a hundred times more than fits in a second. Aim for O(n log n) or
+O(n).
+</QA>
+
+<QA q="Why ask clarifying questions in an interview before coding?">
+The input, output, rules and limits decide the approach. Asking "can the array be empty?", "can values be negative?"
+or "how large can n get?" shows you're checking the things that change the answer, and saves you from solving the
+wrong problem.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

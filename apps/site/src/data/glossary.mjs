@@ -32,6 +32,8 @@ export const glossary = [
     def: "A word made from exactly the same letters as another, the same number of times, in any order: \"listen\" and \"silent\"." },
   { id: "stack-overflow", term: "Stack overflow", match: ["stack overflow"], read: "recursion",
     def: "A crash when too many function calls are waiting at once and the call stack runs out of room, usually from recursion that goes too deep or never reaches its base case." },
+  { id: "constraints", term: "Constraints", match: ["constraints"], read: "reading-a-problem",
+    def: "The limits a problem states, like 1 ≤ n ≤ 100,000 or values up to 10⁹. They tell you which approaches are fast enough and which edge cases can happen." },
   { id: "array", term: "Array", match: ["array", "arrays"], read: "arrays-and-indices",
     def: "A list of values kept in a row, each at a numbered position. Any position can be read instantly." },
   { id: "index", term: "Index", match: ["index", "indices", "indexes"], read: "arrays-and-indices",
