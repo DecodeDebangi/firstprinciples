@@ -1,0 +1,104 @@
+---
+title: "Recursion: functions that call themselves"
+topic: Coding basics
+kind: Explainer
+order: 7
+summary: A recursive function solves a problem by calling itself on a smaller version of it, until it reaches a case small enough to answer directly. Watch the call stack fill and empty, see a call tree repeat the same work, and fix it by remembering answers.
+added: 2026-11-18
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## The same question, on something smaller
+
+Some problems contain a smaller copy of themselves. `4 × 3 × 2 × 1` is `4 ×` (`3 × 2 × 1`). The sum of a list is its
+first value plus the sum of the rest. The height of a tree is one more than the height of its taller subtree.
+
+A **recursive** function uses that. It answers the question by calling **itself** on the smaller copy, and trusts that
+call to come back with the right answer. Every recursive function has two parts:
+
+- a **base case**: an input small enough to answer directly, without another call;
+- a **recursive case**: break the input into a smaller one, call yourself on it, and use the answer.
+
+Each call must get closer to the base case, or the calls never stop.
+
+## The call stack
+
+When a function calls another function, the first one pauses until the second returns. The paused calls wait on the
+**call stack**: a pile with the newest call on top. Recursion piles up calls of the same function, each with its own
+`n`:
+
+<Viz client:visible approach="factorial" />
+
+Two phases, the same in every recursion:
+
+1. **Going down:** each call stops at its recursive call and waits. Nothing is multiplied yet.
+2. **Coming back up:** the base case returns, then each waiting call finishes in turn, newest first.
+
+At the deepest point, every call is waiting at once. So a recursion that goes `n` levels deep uses **O(n)** space for
+the stack, even if it creates no lists. Go deep enough (tens of thousands of levels in many languages) and you get a
+**stack overflow**: the program crashes because the stack is full.
+
+## When one call makes two
+
+Some recursive functions call themselves twice. The Fibonacci numbers are each the sum of the previous two:
+`fib(n) = fib(n − 1) + fib(n − 2)`. Each call branches into two, so the calls form a **tree**:
+
+<Viz client:visible approach="fibPlain" />
+
+The red node is the problem: `fib(2)` is worked out in one branch, then completely worked out **again** in another,
+with every call below it. As `n` grows, the repeats multiply, and the number of calls nearly doubles with each extra
+`n`: **O(2ⁿ)**. `fib(40)` takes over 300 million calls.
+
+## Remembering answers
+
+The fix is to remember each answer the first time it's worked out, in a map called a **memo**, and look it up instead
+of recomputing it. This is **memoisation**:
+
+<Viz client:visible approach="fibMemo" />
+
+Each value from 0 to `n` is now worked out once: **O(n)** calls. Side by side:
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Calls to work out fib(n): plain recursion against recursion with a memo." />
+
+Memoisation is the first step into [dynamic programming](/concepts/memoisation-vs-tabulation/), and the tree picture
+is the one behind [backtracking](/concepts/backtracking/).
+
+## Recursion or a loop?
+
+Anything recursion can do, a loop can do too, sometimes with an explicit stack. Recursion is the natural choice when
+the data itself is recursive, like [trees](/concepts/tree-traversals/) and nested lists, because the code then
+mirrors the shape of the data. A loop is better when the recursion would only go in a straight line (like factorial,
+or walking a linked list), because it avoids the O(n) stack and can't overflow.
+
+## How to write one
+
+1. **Base case first:** what's the smallest input, and its answer?
+2. **Trust the call:** assume `solve(smaller)` returns the right answer. Don't try to follow every call in your head.
+3. **Combine:** use that answer to build the answer for the current input.
+4. **Check it shrinks:** every call must move towards the base case.
+
+## Interview theory
+
+<QA q="What's the space cost of recursion?">
+One stack frame per call that's waiting, so the space is the maximum depth of the recursion: O(n) for factorial or a
+walk down a list, O(h) for a tree of height h, even if no other memory is used.
+</QA>
+
+<QA q="Why is plain recursive Fibonacci slow, and how do you fix it?">
+Each call makes two more, and the same values are recomputed in many branches, so the number of calls grows like
+O(2ⁿ). Storing each result in a memo the first time means every value is computed once: O(n).
+</QA>
+
+<QA q="What happens if a recursive function has no base case?">
+It keeps calling itself until the call stack runs out of space and the program crashes with a stack overflow.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
