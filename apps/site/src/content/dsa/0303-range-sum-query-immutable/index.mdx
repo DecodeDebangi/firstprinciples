@@ -1,0 +1,87 @@
+---
+title: Range Sum Query – Immutable
+leetcode: { number: 303, url: "https://leetcode.com/problems/range-sum-query-immutable/" }
+difficulty: Easy
+topics: [Prefix sum, Array]
+added: 2026-11-18
+summary: Build a small class that's given an array once and then answers many questions of the form "what do positions l to r add up to?". Goes from adding up the range on every call, to building prefix sums once so every call is a single subtraction.
+insight: "The array never changes, so do all the adding once in the constructor: prefix[k] is the sum of the first k values. Then any range l..r is prefix[r + 1] − prefix[l]."
+best: { time: "O(1) per query", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Write a class `NumArray`. Its constructor receives an array of whole numbers `nums`, which will never change. After
+that, `sumRange(l, r)` will be called many times (up to 10,000), each time asking for the sum of `nums[l]` through
+`nums[r]`, both included.
+
+For example, with `nums = [−2, 5, 1, −4, 6, 3]`: `sumRange(0, 2)` is −2 + 5 + 1 = 4, `sumRange(2, 5)` is
+1 − 4 + 6 + 3 = 6, and `sumRange(1, 1)` is just 5.
+
+## The key question
+
+> **The array never changes and the questions keep coming. What can I work out once, up front, to make every question cheap?**
+
+Doing a little work in the constructor so that every later call is fast is called **precomputing**. Here, the thing
+worth precomputing is the [prefix sums](/concepts/prefix-sums/).
+
+## Approach 1: Add up the range on every call
+
+Store the array, and on each call loop from `l` to `r` adding values.
+
+<Viz client:visible approach="loop" />
+
+<Complexity time="O(n) per query" space="O(1)">
+**Time.** The constructor is O(1). Each call adds up to `n` values: **O(n)** per query, **O(n · q)** for `q` queries.
+
+**Space.** Only a reference to the array: **O(1)** extra.
+
+**What it wastes:** every call re-adds values that earlier calls already added, even though the array never changes.
+</Complexity>
+
+## Approach 2: Prefix sums built once (optimal)
+
+In the constructor, build `prefix`, one slot longer than `nums`, where `prefix[k]` is the sum of the first `k`
+values. Then `sumRange(l, r)` is everything up to `r` minus everything before `l`:
+`prefix[r + 1] − prefix[l]`.
+
+<Viz client:visible approach="prefix" />
+
+<Complexity time="O(1) per query" space="O(n)">
+**Time.** The constructor makes one pass: **O(n)**, once. Each call is one subtraction: **O(1)**. For `q` queries,
+**O(n + q)**.
+
+**Space.** The prefix array has `n + 1` slots: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both, on the same array and calls:
+
+<Compare client:visible />
+
+| Approach | Constructor | Each query | Extra space |
+|---|---|---|---|
+| Add up the range each time | O(1) | O(n) | O(1) |
+| Prefix sums built once | O(n) | O(1) | O(n) |
+
+<GrowthChart client:visible series={growth} caption="Work for n values and n queries over the whole array." />
+
+## Common mistakes
+
+- **`prefix[r] − prefix[l]`.** That leaves out `nums[r]`. The sum up to and including `r` is `prefix[r + 1]`.
+- **Building the prefix array inside `sumRange`.** That's O(n) per call again; build it once in the constructor.
+- **Forgetting the leading 0.** Without `prefix[0] = 0`, ranges starting at 0 need a special case.
+- **Using this when the array can change.** If values change between queries, every later prefix value is wrong.
+  That's a different problem (Range Sum Query – Mutable), with different tools.
+
+## Related problems
+
+- [Prefix sums](/concepts/prefix-sums/): the read behind this problem.
+- [Running Sum of 1d Array](/dsa/running-sum-of-1d-array/): building the running totals themselves.
+- [Find Pivot Index](/dsa/find-pivot-index/) and [Product of Array Except Self](/dsa/product-of-array-except-self/):
+  more problems answered from running totals.

@@ -1,0 +1,84 @@
+---
+title: Running Sum of 1d Array
+leetcode: { number: 1480, url: "https://leetcode.com/problems/running-sum-of-1d-array/" }
+difficulty: Easy
+topics: [Prefix sum, Array]
+added: 2026-11-18
+summary: Replace each position of an array with the sum of everything up to and including it. Goes from re-adding the start of the array for every position, to carrying one running total along.
+insight: "Each running sum is the previous one plus one more value, so carry a single total through the array and write it down at every step."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array of whole numbers `nums`. Return an array of the same length whose value at position `i` is the sum
+of `nums[0]` through `nums[i]`: its **running sum**.
+
+For example, `[3, 1, 4, 1, 5]` gives `[3, 4, 8, 9, 14]`: 3, then 3 + 1, then 3 + 1 + 4, and so on. The last value is
+always the total of the whole array.
+
+## The key question
+
+> **Can each running sum reuse the one before it, instead of starting again?**
+
+These are the [prefix sums](/concepts/prefix-sums/) of the array, without the leading 0. The difference between the
+two approaches is whether each sum is built from scratch.
+
+## Approach 1: Re-add from the start for every position
+
+For each position `i`, loop over `nums[0..i]` and add them up.
+
+<Viz client:visible approach="fromScratch" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Position `i` takes `i + 1` additions, so all `n` positions take 1 + 2 + … + n = n(n + 1) / 2: **O(n²)**.
+
+**Space.** Apart from the answer itself, just `total`: **O(1)**.
+
+**What it wastes:** answer[i] re-adds exactly the values that answer[i − 1] already added up.
+</Complexity>
+
+## Approach 2: Keep one running total (optimal)
+
+Carry a single `total` along the array: add `nums[i]` to it, and that's `answer[i]`. Every sum is the previous sum
+plus one value.
+
+<Viz client:visible approach="running" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One addition per position: **O(n)**.
+
+**Space.** Just `total`, besides the answer: **O(1)**. If you're allowed to change the input, you can even write each
+total straight back into `nums` and return it.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Re-add from the start | O(n²) | O(1) | repeats every earlier addition |
+| One running total | O(n) | O(1) | one addition per position |
+
+<GrowthChart client:visible series={growth} caption="Additions for an array of n values." />
+
+## Common mistakes
+
+- **Resetting the total inside the loop.** `total ← 0` belongs before the loop, not inside it, or every answer is just
+  `nums[i]`.
+- **Writing the total before adding.** Add `nums[i]` first; `answer[i]` includes position `i` itself.
+- **Overflow.** With many large values the total can exceed a 32-bit integer; see
+  [Numbers](/concepts/numbers-and-remainders/).
+
+## Related problems
+
+- [Prefix sums](/concepts/prefix-sums/): the same running totals, used to answer any range in O(1).
+- [Range Sum Query – Immutable](/dsa/range-sum-query-immutable/): running sums put to work.
+- [Find Pivot Index](/dsa/find-pivot-index/): a running total from the left, compared with what's left on the right.
