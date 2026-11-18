@@ -1,0 +1,90 @@
+---
+title: "Prefix sums: add once, answer any range"
+topic: Arrays & hashing
+kind: Explainer
+order: 2
+summary: Keep a running total of an array, and the sum of any stretch of it becomes one subtraction. See the prefix array being built, race it against adding each range with a loop, and meet the hash-map trick that finds subarrays with a given sum.
+added: 2026-11-18
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A running total
+
+A **prefix** of an array is a stretch that starts at the beginning: the first value, the first two, the first three,
+and so on. The **prefix sums** are their totals. For `[4, −1, 3, 6, 2]` they're 4, 3, 6, 12, 14.
+
+It's convenient to store them in an array that's one longer than the original, with a 0 at the front:
+`prefix[k]` is the sum of the first `k` values. So `prefix[0] = 0` (no values), `prefix[1] = 4`, and
+`prefix[5] = 14` (all five). Each entry is the previous one plus one more value, so building it takes one pass:
+
+<Viz client:visible approach="build" />
+
+## Any range in one subtraction
+
+The sum of positions `l` to `r` is everything up to `r`, minus everything before `l`:
+
+```text
+sum of a[l..r] = prefix[r + 1] - prefix[l]
+```
+
+For `1..3` in the example: `prefix[4] − prefix[1] = 12 − 4 = 8`, and indeed `−1 + 3 + 6 = 8`. The `+ 1` on `r` is
+there because `prefix[r + 1]` is the sum of the first `r + 1` values, which are exactly positions 0 to `r`.
+
+One range doesn't show the benefit. Many ranges do. Adding each range with a loop:
+
+<Viz client:visible approach="loopEach" />
+
+The same ranges with the prefix array:
+
+<Viz client:visible approach="withPrefix" />
+
+Both, side by side:
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="n values and n queries, each over the whole array." />
+
+The loop costs up to `n` steps per query, so `q` queries take **O(n · q)**. The prefix array costs **O(n)** once, then
+**O(1)** per query: **O(n + q)**. That trade (do some work up front so every later question is cheap) is called
+**precomputing**, and it's behind many fast solutions.
+
+## The same idea, from both sides
+
+The prefix array also gives "everything to the left of `i`" (`prefix[i]`) and "everything to the right of `i`"
+(`total − prefix[i + 1]`) in O(1). That's exactly [Find Pivot Index](/dsa/find-pivot-index/). Swap addition for
+multiplication and you get [Product of Array Except Self](/dsa/product-of-array-except-self/), which uses a running
+product from the left and one from the right.
+
+## A preview: subarrays that add up to k
+
+Some problems ask how many stretches add up to a target `k`. A stretch `l..r` adds up to `k` exactly when
+`prefix[r + 1] − prefix[l] = k`, that is, when an *earlier* prefix sum equals `prefix[r + 1] − k`. So walk once,
+keeping a running total, and use a [hash map](/concepts/how-hash-maps-work/) to count how many times each earlier
+total has appeared. Each step asks one O(1) question: "how many earlier totals were exactly `k` less than this one?"
+That turns an O(n²) search over every pair of ends into O(n). The hashing patterns read covers it in full.
+
+## Interview theory
+
+<QA q="What does prefix[k] mean, and why is the array one longer than the input?">
+`prefix[k]` is the sum of the first `k` values, so `prefix[0] = 0` and `prefix[n]` is the total. The extra slot
+means the sum of `l..r` is always `prefix[r + 1] − prefix[l]`, even when `l = 0`, with no special case.
+</QA>
+
+<QA q="When are prefix sums worth it?">
+When you'll ask about many ranges of an array that doesn't change. Building costs O(n) once and each range then costs
+O(1). If the array changes between questions, the prefix array would need rebuilding, and other structures fit
+better.
+</QA>
+
+<QA q="Do prefix sums work with negative numbers?">
+Yes. Subtraction doesn't care about signs, so `prefix[r + 1] − prefix[l]` is right for any whole numbers. (Sliding
+windows, by contrast, often break with negatives.)
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

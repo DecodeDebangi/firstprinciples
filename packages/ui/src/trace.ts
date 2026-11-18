@@ -137,7 +137,9 @@ export class Tracer {
     this.ops += n;
   }
   step(s: Omit<ArrayStep, "ops">) {
-    if (this.record) this.steps.push({ ...s, ops: this.ops });
+    // A deep copy, so arrays or maps the algorithm keeps changing (tones, notes, grid rows…) can't alter steps
+    // already recorded. Only when recording: the growth chart's silent runs skip the cost.
+    if (this.record) this.steps.push({ ...structuredClone(s), ops: this.ops });
   }
 }
 

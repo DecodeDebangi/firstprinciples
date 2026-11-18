@@ -90,7 +90,7 @@ export const glossary = [
     def: "Two different keys landing in the same slot of a hash table. Tables handle it, but too many make lookups slow." },
   { id: "gcd", term: "Greatest common divisor (GCD)", match: ["greatest common divisor", "greatest common divisors", "GCD"],
     def: "The biggest whole number that divides two numbers exactly. The GCD of 18 and 12 is 6. Euclid's algorithm finds it fast: gcd(a, b) = gcd(b, a % b), until the remainder is 0." },
-  { id: "prefix-sum", term: "Prefix sum", match: ["prefix sum", "prefix sums"],
+  { id: "prefix-sum", term: "Prefix sum", match: ["prefix sum", "prefix sums"], read: "prefix-sums",
     def: "A running total: prefix[i] is the sum of everything before position i, so any range's sum takes one subtraction." },
   { id: "binary-search", term: "Binary search", match: ["binary search"], read: "binary-search-invariants",
     def: "Finding a value in a sorted list by checking the middle and discarding the half it can't be in. O(log n)." },

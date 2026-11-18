@@ -24,7 +24,7 @@ const row = (live: N[], extra: Partial<ListRow> = {}): ListRow => ({ nodes: [...
 const idOr = (n?: N) => n?.id ?? "end";
 
 /** The shared walk: curr starts on the dummy and looks one node ahead. `inSet` decides; `side` draws the extra panel. */
-function walk(t: T, values: number[], decide: (v: number) => boolean, lines: { check: number; unlink: number; move: number; ret: number }, side: (hl?: number) => object, opsPerCheck: number, askOnce: boolean) {
+function walk(t: T, values: number[], decide: (v: number) => boolean, lines: { check: number; unlink: number; move: number; ret: number }, side: (hl?: number) => object, opsPerCheck: number, askOnce: boolean, endNote: string) {
   const live: N[] = [DUMMY, ...values.map((v, i) => ({ id: `n${i}`, val: v }))];
   let c = 0, asked = !askOnce;
   while (c < live.length - 1) {
@@ -47,7 +47,7 @@ function walk(t: T, values: number[], decide: (v: number) => boolean, lines: { c
   const real = live.slice(1);
   t.step({ ...side(), line: lines.ret, array: [], vars: {}, done: "found",
     lists: [row(live, { pointers: { dummy: "dummy", "dummy.next": idOr(real[0]) }, tones: Object.fromEntries(real.map((x) => [x.id, "settled" as Tone])) })],
-    message: `Return dummy.next: ${real.map((x) => x.val).join(" → ")} → none.` });
+    message: `Return dummy.next: ${real.map((x) => x.val).join(" → ")} → none.${endNote}` });
 }
 
 const scan: Approach<P> = {
@@ -71,9 +71,7 @@ const scan: Approach<P> = {
     const side = (hl?: number) => ({ grid: { title: `nums (scanned in full for every node)`, rows: [nums], tones: hl === undefined ? {} : Object.fromEntries(nums.map((x, j) => [`0,${j}`, (x === hl ? "found" : "compare") as Tone])) } });
     t.step({ ...side(), line: 4, array: [], vars: {}, lists: [row([DUMMY, ...values.map((v, i) => ({ id: `n${i}`, val: v }))], { pointers: { dummy: "dummy", curr: "dummy" } })],
       message: "Delete every node whose value appears in nums. A dummy in front means deleting the head is no special case. The simple check: for each node, read through all of nums." });
-    walk(t, values, (v) => nums.includes(v), { check: 8, unlink: 10, move: 12, ret: 13 }, side, nums.length, false);
-    const last = t.steps[t.steps.length - 1]; // not recorded while the growth chart measures
-    if (last) last.message += ` Every node read all ${nums.length} values of nums: O(n · m) time.`;
+    walk(t, values, (v) => nums.includes(v), { check: 8, unlink: 10, move: 12, ret: 13 }, side, nums.length, false, ` Every node read all ${nums.length} values of nums: O(n · m) time.`);
   },
 };
 
@@ -100,9 +98,7 @@ const withSet: Approach<P> = {
     t.op(nums.length);
     t.step({ ...side(), line: 4, array: [], vars: {}, lists: [row([DUMMY, ...values.map((v, i) => ({ id: `n${i}`, val: v }))])],
       message: `First put nums into a set: ${nums.length} quick adds${set.length < nums.length ? " (repeats are stored once)" : ""}. Now "should this value go?" is one O(1) lookup instead of a scan.` });
-    walk(t, values, (v) => set.includes(v), { check: 9, unlink: 10, move: 12, ret: 13 }, side, 1, true);
-    const last = t.steps[t.steps.length - 1];
-    if (last) last.message += " Building the set is O(m) and the walk is O(n), with O(1) per check: O(n + m) time, O(m) space for the set.";
+    walk(t, values, (v) => set.includes(v), { check: 9, unlink: 10, move: 12, ret: 13 }, side, 1, true, " Building the set is O(m) and the walk is O(n), with O(1) per check: O(n + m) time, O(m) space for the set.");
   },
 };
 
