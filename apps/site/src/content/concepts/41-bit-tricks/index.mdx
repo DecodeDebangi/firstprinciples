@@ -1,0 +1,81 @@
+---
+title: "Bit tricks: x & (x − 1), XOR and masks"
+topic: Bit manipulation
+kind: Explainer
+order: 2
+summary: A handful of bit tricks solve a surprising number of problems in O(1) space. Remove the lowest 1 with x & (x − 1) to count bits or spot powers of two, cancel pairs with XOR to find the odd one out, and use the bits of a number as a set of yes/no choices.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+These build on [Binary: how numbers are stored as bits](/concepts/binary-and-bits/). The animations use 8 bits; the
+same steps work on 32 or 64.
+
+## x & (x − 1) removes the lowest 1
+
+Subtracting 1 from a number borrows from its lowest 1 bit: that bit becomes 0, and every 0 to its right becomes 1.
+`12 = 1100`, and `11 = 1011`. ANDing the two keeps the higher bits, which didn't change, and wipes out the rest:
+`1100 & 1011 = 1000`. So `x & (x − 1)` is `x` with its lowest 1 removed.
+
+Repeat it until `x` is 0, and you've counted the 1 bits, in one step per 1 rather than one per bit:
+
+<Viz client:visible approach="drop" />
+
+Two more uses:
+
+- **Power of two?** A power of two has exactly one 1 bit (`8 = 1000`), so `x > 0 and x & (x − 1) = 0`. That's [Power
+  of Two](/dsa/power-of-two/).
+- **Counting bits for every number up to n.** `i` has one more 1 than `i & (i − 1)`, which is smaller, so a table can
+  be filled from left to right. Or use `i >> 1`, which drops the last bit: `bits[i] = bits[i >> 1] + (i & 1)`. That's
+  [Counting Bits](/dsa/counting-bits/).
+
+The related `x & −x` keeps **only** the lowest 1: `12 & −12 = 4`.
+
+## XOR cancels pairs
+
+[XOR](/concepts/binary-and-bits/) has three properties that make it special:
+
+- `x xor x = 0`: anything cancels itself.
+- `x xor 0 = x`: XORing with 0 changes nothing.
+- The order doesn't matter: `a xor b xor a = b`.
+
+So XOR a whole list together and every value that appears an even number of times disappears.
+
+<Viz client:visible approach="xorAll" />
+
+That's [Single Number](/dsa/single-number/). [Missing Number](/dsa/missing-number/) uses the same idea: XOR all the
+values with all the numbers they should be, and only the missing one has no partner. And the XOR of two numbers has a
+1 exactly where they differ, so counting its 1s measures how different they are: [Hamming
+Distance](/dsa/hamming-distance/).
+
+## A number as a set of choices
+
+With `n` items, an `n`-bit number can say which ones are chosen: bit `i` is 1 when item `i` is in. So the numbers from
+0 to `2^n − 1` describe every possible subset, which is an easy way to loop over all of them, and `mask | (1 << i)`
+adds item `i`, as in [Backtracking](/concepts/backtracking/)'s subsets, without recursion. With up to about 20 items,
+a set of choices fits in one integer, which is why "small n" in [the constraints](/concepts/reading-a-problem/) often
+hints at bits.
+
+## Interview theory
+
+<QA q="What does x & (x − 1) do, and what is it used for?">
+It removes the lowest 1 bit of x. Repeating it counts the 1 bits in one step per 1, and x & (x − 1) = 0 (with x > 0)
+means x is a power of two.
+</QA>
+
+<QA q="How do you find the one value without a pair, in O(1) space?">
+XOR all the values together. Pairs cancel because x xor x = 0, the order doesn't matter, and x xor 0 = x, so what's left
+is the unpaired value.
+</QA>
+
+<QA q="How can a number represent a subset?">
+Use bit i for item i: 1 means it's in. With n items the masks 0 to 2^n − 1 are every subset, and `(mask >> i) & 1` says
+whether item i is included.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
