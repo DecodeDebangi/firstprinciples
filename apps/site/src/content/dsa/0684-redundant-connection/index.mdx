@@ -1,0 +1,87 @@
+---
+title: Redundant Connection
+leetcode: { number: 684, url: "https://leetcode.com/problems/redundant-connection/" }
+difficulty: Medium
+topics: [Union-find, Graph]
+added: 2026-11-21
+summary: A tree had one extra edge added, which created a loop. Given the edges in order, find the one to remove - the last edge that joins two nodes already connected. Goes from searching the graph before adding each edge, to union-find, where a failed union is the answer.
+insight: "Add the edges in order. The edge that closes the loop is the first one whose two ends are already connected, and union-find spots that in almost O(1): both ends have the same root."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A [tree](/concepts/tree-traversals/) with nodes `1` to `n` had one extra edge added between two of its nodes, so now
+there are `n` edges and exactly one loop. You get the edges in order. Return an edge whose removal leaves a tree; if
+several would work, return the one that appears **last** in the list.
+
+For example, with edges `1-3, 3-4, 2-4, 1-5, 5-2, 4-6`, the loop is 1–3–4–2–5–1. Of the loop's edges, `5-2` comes last,
+so the answer is `[5, 2]`.
+
+## The key question
+
+> **When I add an edge, how do I know whether its two ends were already connected?**
+
+The edges added before the loop is closed form a forest; the edge that closes it is the first one whose ends are
+already in the same group. That's the cycle check from [Union-find](/concepts/union-find/). Adding the edges in order,
+that first loop-closing edge is also the last of the loop's edges in the list.
+
+## Approach 1: Search before adding each edge
+
+Add the edges one by one. Before adding `u–v`, search the graph built so far from `u`; if `v` can be reached, this edge
+closes the loop.
+
+<Viz client:visible approach="search" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each search can visit every node and edge added so far, O(n), and there are `n` edges: **O(n²)**.
+
+**Space.** The adjacency lists and the search: **O(n)**.
+
+**What it wastes:** each search rediscovers groups that the previous searches already found. Keeping the groups up to
+date as edges arrive answers "connected?" without searching.
+</Complexity>
+
+## Approach 2: Union-find (optimal)
+
+Call `union(u, v)` for each edge in order. It returns false when `u` and `v` already have the same root, which means
+they were already connected: that edge is the answer.
+
+<Viz client:visible approach="unionFind" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** `n` unions, each almost O(1) with union by size and path compression: about **O(n)**.
+
+**Space.** The parent and size arrays: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same edges:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Search before each edge | O(n²) | O(n) | a full search per edge |
+| Union-find | O(n) | O(n) | one union per edge |
+
+<GrowthChart client:visible series={growth} caption="Steps for a path 1–2–…–n plus the edge that closes it." />
+
+## Common mistakes
+
+- **Returning the first edge of the loop.** The question asks for the one that appears last; processing in order and
+  stopping at the first failed union gives exactly that.
+- **Off-by-one node labels.** Nodes are numbered from 1, so arrays need `n + 1` slots, or subtract 1.
+- **Using it on directed graphs.** With directions, a node can also end up with two parents; that's a different
+  problem (Redundant Connection II).
+
+## Related problems
+
+- [Union-find](/concepts/union-find/): spotting a cycle with find.
+- [Course Schedule](/dsa/course-schedule/): finding cycles in a directed graph.
+- [Number of Provinces](/dsa/number-of-provinces/): counting groups with union-find.
