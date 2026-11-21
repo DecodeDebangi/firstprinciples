@@ -6,7 +6,8 @@ export interface InputField {
   key: string;
   label: string;
   /** "tree" = a level-order list where `null` marks a missing child, as LeetCode writes trees. */
-  kind: "numbers" | "number" | "text" | "tree";
+  /** "text" drops all whitespace; "raw" keeps the text exactly as typed, spaces included. */
+  kind: "numbers" | "number" | "text" | "raw" | "tree";
   hint?: string;
 }
 
@@ -20,7 +21,11 @@ export function parseDraft(fields: InputField[], draft: Record<string, string>, 
   const raw: InputValues = {};
   for (const f of fields) {
     const text = (draft[f.key] ?? "").trim();
-    if (f.kind === "text") {
+    if (f.kind === "raw") {
+      const exact = draft[f.key] ?? "";
+      if (exact.length > maxLength) return { error: `${f.label} can be at most ${maxLength} characters so the animation fits.` };
+      raw[f.key] = exact;
+    } else if (f.kind === "text") {
       const compact = text.replace(/\s+/g, "");
       if (compact.length > maxLength) return { error: `${f.label} can be at most ${maxLength} characters so the animation fits.` };
       raw[f.key] = compact;

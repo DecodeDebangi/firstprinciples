@@ -1,0 +1,78 @@
+---
+title: "Reading text apart: words, spaces and numbers"
+topic: Strings
+kind: Explainer
+order: 4
+summary: Plenty of string problems are really about reading text carefully - splitting it into words when spaces repeat, building a new string without copying it over and over, turning digits into a number, and following rules about what's allowed. See splitting and number-reading done by hand, one character at a time.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Text is just characters
+
+To a program, `"  hi  mom "` is ten characters, spaces included, and `"-4096"` is five characters, not a number. Many
+problems ask you to read such text the way a person would: find the words, read the number, ignore what doesn't
+matter. Built-ins like `split` and `parseInt` do this in real code, but interviews often ask you to do it by hand,
+because the details (repeated spaces, signs, numbers too large to store) are where bugs hide.
+
+## Splitting into words
+
+Walk the text with one index, alternating between two small loops: skip a run of spaces, then walk over a run of
+non-spaces, which is one word. Spaces at the start, at the end, or several in a row never become words. Spaces are
+drawn as `␣` here so you can see them.
+
+<Viz client:visible approach="split" />
+
+Each character is looked at once: **O(n)**. A language's built-in `split(" ")` often behaves differently: splitting on
+one space turns `"a  b"` into three parts, with an empty one in the middle. Know which yours does.
+
+## Building a string without quadratic copying
+
+Strings are [immutable](/concepts/strings-and-characters/) in Python, Java and JavaScript: `s += word` builds a
+brand-new string and copies everything so far. Doing that once per word copies `1 + 2 + … + n` characters in the worst
+case: O(n²). Instead, collect the pieces in a list and **join** them once at the end, which copies each character once:
+O(n). Java's `StringBuilder` and C++'s mutable `std::string` do the same job. [Reverse Words in a
+String](/dsa/reverse-words-in-a-string/) is a good place to practise both splitting and joining.
+
+## Reading a number
+
+Each digit character becomes its value with `code(c) - code('0')`, since the digits are stored in order: `'0'` is 48,
+`'1'` is 49, and so on. Reading left to right, every new digit shifts what you have one place left and fills the
+units: `result ← result · 10 + d`.
+
+<Viz client:visible approach="parse" />
+
+Real parsing has rules to follow, and [String to Integer (atoi)](/dsa/string-to-integer-atoi/) asks for all of them:
+skip leading spaces, read one optional sign, stop at the first non-digit, and clamp the result if it doesn't fit in a
+32-bit integer. To avoid [overflow](/concepts/numbers-and-remainders/), check **before** multiplying whether
+`result · 10 + d` would pass the limit.
+
+## When text nests: a stack
+
+Brackets, tags and expressions like `3[ab]` contain other text inside them. Reading them left to right, a
+[stack](/concepts/stacks-queues-monotonic/) remembers what's still open: push when something opens, pop when it
+closes. [Valid Parentheses](/dsa/valid-parentheses/) is the simplest case.
+
+## Interview theory
+
+<QA q="How do you split text into words when spaces can repeat?">
+Walk once: skip a run of spaces, then take a run of non-spaces as one word, and repeat. Empty runs are never added, so
+leading, trailing and repeated spaces disappear. O(n).
+</QA>
+
+<QA q="Why is adding to a string in a loop slow, and what do you do instead?">
+If strings can't be changed, each `+=` copies the whole string so far, which adds up to O(n²). Collect the pieces in a
+list and join them once, or use a string builder: O(n).
+</QA>
+
+<QA q="How do you turn the characters of a number into its value?">
+For each digit, d = code(c) - code('0'), and result = result · 10 + d. Handle a sign first, and check for overflow
+before each multiplication if the number type has a limit.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
