@@ -28,6 +28,8 @@ export const glossary = [
     def: "Can't be changed after it's made. Strings are immutable in Python, Java and JavaScript: 'changing' one builds a new string." },
   { id: "substring", term: "Substring", match: ["substring", "substrings"], read: "strings-and-characters",
     def: "A run of neighbouring characters inside a string: \"nan\" is a substring of \"banana\". Skipping characters doesn't count." },
+  { id: "subsequence", term: "Subsequence", match: ["subsequence", "subsequences"], read: "dp-on-two-strings",
+    def: "Some of a string's letters, kept in their original order, with any others skipped: \"ct\" is a subsequence of \"cart\". Unlike a substring, the letters needn't be neighbours." },
   { id: "anagram", term: "Anagram", match: ["anagram", "anagrams"], read: "strings-and-characters",
     def: "A word made from exactly the same letters as another, the same number of times, in any order: \"listen\" and \"silent\"." },
   { id: "palindrome", term: "Palindrome", match: ["palindrome", "palindromes", "palindromic"], read: "palindromes",

@@ -1,0 +1,82 @@
+---
+title: "DP on a grid: filling a two-dimensional table"
+topic: Dynamic programming
+kind: Explainer
+order: 2
+summary: When a subproblem needs two numbers to describe it - a row and a column, or a position in each of two strings - the table of answers becomes a grid. Watch plain recursion repeat the same cells, then fill the table once, cell by cell, in an order that always has the needed neighbours ready.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## From a row of answers to a grid
+
+[Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/) built one answer per step: `dp[i]` from `dp[i − 1]` and
+`dp[i − 2]`. Some problems need **two** numbers to describe a smaller version of themselves: "the best path to row `r`,
+column `c`", or "the answer for the first `i` letters of one word and the first `j` of another". Then the table of
+answers is a grid, `dp[r][c]`, and each cell is built from cells next to it.
+
+The running example: a robot starts at the top-left cell of an `m × n` grid and may only move **right** or **down**.
+How many different routes reach the bottom-right cell?
+
+## Plain recursion repeats itself
+
+The last move into cell `(r, c)` came either from above, `(r − 1, c)`, or from the left, `(r, c − 1)`. So the routes to
+`(r, c)` are the routes to the cell above plus the routes to the cell on the left. Cells in the top row or the left
+column have exactly one route: a straight line. Written as recursion:
+
+<Viz client:visible approach="recursion" />
+
+It's correct, but many routes pass through the same cell, and each call works that cell out from scratch. The calls
+grow exponentially with the size of the grid.
+
+## Filling the table once
+
+There are only `m · n` different questions, one per cell. Answer each once, in an order where the cell above and the
+cell to the left are always ready: row by row, left to right.
+
+<Viz client:visible approach="table" />
+
+**O(m · n)** time and space: one addition per cell. The same table also gives the answer for every smaller grid, for
+free.
+
+## Four decisions for any grid DP
+
+1. **What does a cell mean?** Here, `dp[r][c]` = number of routes to `(r, c)`. Write it down in words first.
+2. **Where does a cell's answer come from?** The moves that can end there: above and left. That gives the rule
+   `dp[r][c] = dp[r − 1][c] + dp[r][c − 1]`.
+3. **What are the edges?** The first row and the first column, which have no cell above or no cell to the left.
+4. **What order?** Whatever makes the cells a rule needs come first.
+
+Change step 2 and you get other problems: take the **smaller** neighbour plus the cell's own cost and it's [Minimum
+Path Sum](/dsa/minimum-path-sum/); the counting version is [Unique Paths](/dsa/unique-paths/). [DP on two
+strings](/concepts/dp-on-two-strings/) uses the same kind of table with a word along each side.
+
+## Keeping just one row
+
+Row `r` only reads row `r − 1`. So instead of the whole grid, keep a single row and update it from left to right:
+`row[c] = row[c] + row[c − 1]`. Before the update, `row[c]` still holds the value from the row above; `row[c − 1]` has
+just been updated for this row. That cuts the space to **O(n)**, with the same time.
+
+## Interview theory
+
+<QA q="How do you know a problem needs a 2D table?">
+When a smaller version of the problem needs two numbers to describe it, such as a row and a column, or how much of each
+of two strings has been used. Each pair of values gets a cell.
+</QA>
+
+<QA q="How do you decide the order of filling?">
+Look at which cells the rule reads. If dp[r][c] uses the cell above and the cell to the left, filling row by row, left to
+right, always has them ready.
+</QA>
+
+<QA q="How can a 2D DP use less memory?">
+If each row only depends on the previous row (and earlier cells of its own row), keep one or two rows instead of the whole
+grid: O(n) instead of O(m · n).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
