@@ -1,0 +1,84 @@
+---
+title: Number of Operations to Make Network Connected
+leetcode: { number: 1319, url: "https://leetcode.com/problems/number-of-operations-to-make-network-connected/" }
+difficulty: Medium
+topics: [Union-find, Graph, DFS]
+added: 2026-11-21
+summary: Computers are joined by cables, and you may unplug any cable and use it elsewhere. Find the fewest moves to connect every computer, or -1 if there aren't enough cables. The answer is the number of separate groups minus one, counted either with a search or with union-find.
+insight: "n computers need at least n − 1 cables. If there are that many, spare cables always exist, and each move joins two groups, so the answer is the number of groups minus one."
+best: { time: "O(n + m)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` computers, numbered 0 to `n − 1`, and a list of cables, each joining two computers. In one move you can
+unplug any cable and plug it in between two other computers. Return the fewest moves that leave every computer
+connected to every other, directly or through others, or -1 if that's impossible.
+
+For example, 7 computers with cables `0-1, 0-2, 1-2, 3-4, 3-5, 4-5` form three groups: `{0, 1, 2}`, `{3, 4, 5}` and
+`{6}`. Moving the spare cable `1-2` and the spare cable `4-5` can join all three, so the answer is 2.
+
+Below, `m` is the number of cables.
+
+## The key question
+
+> **What does the answer depend on, besides how many separate groups there are?**
+
+Only on whether there are enough cables. Connecting `n` computers needs at least `n − 1` cables; with fewer, return -1.
+With enough, every group that has a loop has a spare cable, and there are always enough spares to join `g` groups with
+`g − 1` moves. So the problem is counting groups: [Union-find](/concepts/union-find/) or a [graph search](/concepts/graphs/).
+
+## Approach 1: Count groups with depth-first search
+
+Check the cable count first. Then start a search from every computer not yet reached; each start is a new group.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n + m)" space="O(n + m)">
+**Time.** Every computer and cable is visited once: **O(n + m)**.
+
+**Space.** The adjacency lists and the visited marks: **O(n + m)**.
+
+**What it wastes:** it builds the whole adjacency list first. Union-find can count the groups straight from the list of
+cables, with less memory.
+</Complexity>
+
+## Approach 2: Count groups with union-find
+
+Start with `n` groups. For each cable, `union` its two ends; when it joins two different groups, there's one fewer
+group. Cables whose ends were already joined are the spares.
+
+<Viz client:visible approach="unionFind" />
+
+<Complexity time="O(n + m)" space="O(n)">
+**Time.** One almost-O(1) union per cable: **O(n + m)**.
+
+**Space.** The parent and size arrays: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same network:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Depth-first search | O(n + m) | O(n + m) | needs the adjacency lists |
+| Union-find | O(n + m) | O(n) | works straight from the cable list |
+
+Both are O(n + m), so there's no growth chart.
+
+## Common mistakes
+
+- **Counting spare cables to decide.** The total is what matters: with at least `n − 1` cables, spares are guaranteed.
+- **Returning the number of groups.** Joining `g` groups takes `g − 1` moves.
+- **Forgetting computers with no cables.** Each is a group of its own.
+
+## Related problems
+
+- [Number of Provinces](/dsa/number-of-provinces/): counting groups.
+- [Redundant Connection](/dsa/redundant-connection/): the edge that closes a loop, which is a spare cable here.
+- [Union-find](/concepts/union-find/): union returning whether it joined two groups.
