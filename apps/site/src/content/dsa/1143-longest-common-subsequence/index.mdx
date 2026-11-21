@@ -1,0 +1,87 @@
+---
+title: Longest Common Subsequence
+leetcode: { number: 1143, url: "https://leetcode.com/problems/longest-common-subsequence/" }
+difficulty: Medium
+topics: [Dynamic programming, String]
+added: 2026-11-21
+summary: Find the length of the longest string whose letters appear, in order, in both of two words (skipping letters is allowed). Goes from trying every subsequence of one word, to a table where each cell answers the question for the first few letters of each word.
+insight: "Compare the last letters of the two beginnings. If they match, they extend the best answer for the shorter beginnings by one; if not, one of them must be left out, so take the better of the two options."
+best: { time: "O(m · n)", space: "O(min(m, n))" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two words `a` and `b`. A **subsequence** of a word keeps some of its letters in their original order, skipping
+any others: `cat` is a subsequence of `chart`. Return the length of the longest subsequence the two words have in
+common, or 0 if they share no letters.
+
+For example, `cart` and `chat` have the common subsequence `cat`, so the answer is 3.
+
+Below, `m` and `n` are the lengths of `a` and `b`.
+
+## The key question
+
+> **How can the answer for two words be built from answers for shorter beginnings of them?**
+
+See [DP on two strings](/concepts/dp-on-two-strings/), which builds this exact table step by step.
+
+## Approach 1: Try every subsequence of a
+
+Every letter of `a` is either kept or skipped, so `a` has `2^m` subsequences. Check each against `b` and keep the longest
+that fits.
+
+<Viz client:visible approach="everySub" />
+
+<Complexity time="O(2^m · n)" space="O(m)">
+**Time.** `2^m` subsequences, each checked against `b` in O(n): **O(2^m · n)**.
+
+**Space.** One subsequence at a time: **O(m)**.
+
+**What it wastes:** subsequences that share a beginning are checked from scratch every time. The answers depend only on
+how much of each word has been used, which is just `(m + 1)(n + 1)` different situations.
+</Complexity>
+
+## Approach 2: Fill a table (optimal)
+
+`dp[i][j]` is the answer for the first `i` letters of `a` and the first `j` of `b`. Row 0 and column 0 are 0 (no
+letters). If the last letters match, `dp[i][j] = dp[i − 1][j − 1] + 1`; otherwise `dp[i][j]` is the larger of the cell
+above and the cell to the left.
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** One constant-time rule per cell: **O(m · n)**.
+
+**Space.** The table, **O(m · n)**. Each row only reads the row above, so two rows are enough for the length:
+**O(min(m, n))**, by putting the shorter word along the top.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same words:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Every subsequence of a | O(2^m · n) | O(m) | exponential |
+| Fill a table | O(m · n) | O(m · n), or O(min(m, n)) | each pair of beginnings once |
+
+<GrowthChart client:visible series={growth} caption="Steps for two words of n letters with nothing in common." />
+
+## Common mistakes
+
+- **Confusing subsequence with substring.** The common letters needn't be next to each other in either word.
+- **Taking dp[i − 1][j − 1] when the letters differ.** Then both letters are dropped, which can lose a match: use the
+  better of above and left.
+- **Off-by-one on the letters.** Row `i` stands for the first `i` letters, so its last letter is `a[i − 1]`.
+
+## Related problems
+
+- [DP on two strings](/concepts/dp-on-two-strings/): the table, and how to read the subsequence back.
+- [Edit Distance](/dsa/edit-distance/): the same table with a different rule.
+- [Longest Common Prefix](/dsa/longest-common-prefix/): where the shared letters must be next to each other at the start.
