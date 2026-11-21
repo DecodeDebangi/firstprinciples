@@ -127,7 +127,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
 
   // A sound for each step the reader moves to (not for the step shown when the page opens).
   useEffect(() => {
-    if (shownIdx.current !== null && shownIdx.current !== idx && sound) playCue(cueFor(step));
+    if (shownIdx.current !== null && shownIdx.current !== idx && sound) playCue(cueFor(step, idx > 0 ? steps[idx - 1] : undefined));
     shownIdx.current = idx;
   }, [idx]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -156,6 +156,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
     if (asking === null || !question) return;
     if (option !== null) {
       const ok = option === question.answer;
+      if (sound) playCue(ok ? "right" : "wrong"); // the step's own cue right after is skipped, so this one is heard
       setScore((s) => ({ right: s.right + (ok ? 1 : 0), total: s.total + 1 }));
       setFeedback({ ok, answer: question.options[question.answer] });
     } else {
