@@ -1,0 +1,80 @@
+---
+title: Single Number
+leetcode: { number: 136, url: "https://leetcode.com/problems/single-number/" }
+difficulty: Easy
+topics: [Bit manipulation, Hash map]
+added: 2026-11-21
+summary: Every value in a list appears twice except one. Find that one, using O(1) extra memory. Goes from counting each value in a map, to XORing all the values together so every pair cancels out.
+insight: "x xor x is 0, x xor 0 is x, and XOR can be done in any order. So XORing the whole list cancels every pair, and what's left is the value that appears once."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a non-empty list of whole numbers in which every value appears exactly twice, except one value that appears
+once. Return that value, in O(n) time and O(1) extra space.
+
+For example, in `[7, 3, 5, 3, 7]` the answer is 5.
+
+## The key question
+
+> **How do I make each pair disappear, without remembering which values I've seen?**
+
+Remembering is easy with a [hash map](/concepts/hashing-patterns/), but that's O(n) memory. See [Bit
+tricks](/concepts/bit-tricks/) for an operation that makes pairs cancel by themselves.
+
+## Approach 1: Count each value
+
+Count every value in a map, then return the one with a count of 1.
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two passes with O(1) map operations: **O(n)**.
+
+**Space.** One entry per different value, about `n / 2`: **O(n)**.
+
+**What it wastes:** the map remembers every value just to see which one is missing its partner. An operation that
+cancels a value when it meets it again needs no memory at all.
+</Complexity>
+
+## Approach 2: XOR everything (optimal)
+
+XOR has three rules that fit perfectly: `x xor x = 0`, `x xor 0 = x`, and the order doesn't matter. So XOR all the
+values together. Whatever the order, each pair meets and cancels, and only the single value survives.
+
+<Viz client:visible approach="xor" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, one XOR per value: **O(n)**.
+
+**Space.** One number: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Count each value | O(n) | O(n) | a map of every value |
+| XOR everything | O(n) | O(1) | pairs cancel themselves |
+
+Both are O(n), so there's no growth chart; the difference is the memory.
+
+## Common mistakes
+
+- **Adding instead of XORing.** Sums don't cancel: `7 + 7` is 14, not 0.
+- **Expecting XOR to work when values appear three times.** Three copies XOR to the value itself. That variant needs
+  counting each bit position modulo 3.
+- **Sorting first.** It works (the single value breaks the pattern of pairs) but costs O(n log n).
+
+## Related problems
+
+- [Bit tricks](/concepts/bit-tricks/): XOR cancelling pairs.
+- [Missing Number](/dsa/missing-number/): the same cancelling, with the numbers that should be there.
+- [Contains Duplicate](/dsa/contains-duplicate/): the "have I seen it?" set this replaces.
