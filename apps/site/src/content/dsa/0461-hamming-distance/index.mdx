@@ -1,0 +1,80 @@
+---
+title: Hamming Distance
+leetcode: { number: 461, url: "https://leetcode.com/problems/hamming-distance/" }
+difficulty: Easy
+topics: [Bit manipulation]
+added: 2026-11-21
+summary: Count the places where two numbers' bits differ. Goes from comparing their last bits and shifting both, to XORing them - which leaves a 1 exactly where they differ - and counting those 1s.
+insight: "x xor y has a 1 in exactly the places where x and y differ. So the distance is the number of 1s in x xor y, which z & (z − 1) counts one difference at a time."
+best: { time: "O(1)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two non-negative whole numbers `x` and `y`. Return their **Hamming distance**: the number of bit positions
+where one has a 0 and the other has a 1.
+
+For example, `37 = 100101` and `22 = 010110` differ in the places worth 32, 16, 2 and 1, so the distance is 4.
+
+## The key question
+
+> **Is there one operation that marks every place where two numbers differ?**
+
+See [Binary](/concepts/binary-and-bits/) for XOR, and [Bit tricks](/concepts/bit-tricks/) for counting 1s quickly.
+
+## Approach 1: Compare the last bits, shift, repeat
+
+Compare `x & 1` with `y & 1`, count a difference, then shift both right. Stop when both are 0.
+
+<Viz client:visible approach="bitByBit" />
+
+<Complexity time="O(b)" space="O(1)">
+**Time.** One loop per bit up to the larger number's highest 1. With 32-bit numbers that's at most 32 loops: **O(b)**
+for `b` bits, which is O(1) for a fixed size.
+
+**Space.** A few numbers: **O(1)**.
+
+**What it wastes:** a separate comparison for every place, including all the places that match. XOR compares every
+place at once.
+</Complexity>
+
+## Approach 2: XOR, then count the 1s (optimal)
+
+`z = x xor y` has a 1 exactly where `x` and `y` differ. So the distance is the number of 1s in `z`, which is
+[Number of 1 Bits](/dsa/number-of-1-bits/): remove the lowest 1 with `z & (z − 1)` until nothing is left.
+
+<Viz client:visible approach="xorCount" />
+
+<Complexity time="O(1)" space="O(1)">
+**Time.** One XOR, then one loop per difference, at most 32: **O(1)** for fixed-size numbers, and never more loops
+than approach 1.
+
+**Space.** **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same numbers:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Compare bit by bit | O(b) | O(1) | one loop per bit |
+| XOR, then count | O(k), k differences | O(1) | one loop per difference |
+
+Both are at most 32 loops for 32-bit numbers, so there's no growth chart.
+
+## Common mistakes
+
+- **Stopping when only one number reaches 0.** The other may still have 1s; those places differ from the 0s of the
+  shorter one.
+- **Comparing decimal digits.** The distance is about bits: 1 and 2 differ in two places (`01` and `10`).
+
+## Related problems
+
+- [Number of 1 Bits](/dsa/number-of-1-bits/): the counting step.
+- [Single Number](/dsa/single-number/): another XOR trick.
+- [Bit tricks](/concepts/bit-tricks/): XOR and x & (x − 1).
