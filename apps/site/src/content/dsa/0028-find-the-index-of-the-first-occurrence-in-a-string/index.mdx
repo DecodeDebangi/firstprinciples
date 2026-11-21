@@ -1,0 +1,92 @@
+---
+title: Find the Index of the First Occurrence in a String
+leetcode: { number: 28, url: "https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/" }
+difficulty: Easy
+topics: [String matching, String, Two pointers]
+added: 2026-11-21
+summary: Find where a word first appears inside a text, or -1 if it doesn't. Goes from lining the word up under every start and comparing letter by letter, to a rolling hash that compares one number per window and updates it in O(1) as the window slides.
+insight: "Turn each window of the text into a number (a hash) that can be updated in O(1) when the window slides one place. Only windows whose number equals the word's need their letters checked."
+best: { time: "O(n + m)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two strings, a text and a word `p`. Return the position in the text where `p` first appears, or -1 if it
+doesn't appear at all.
+
+For example, in the text `abcabcabd` the word `cabd` first appears at position 5. The word `abd` appears at position 6,
+and `abe` doesn't appear, so that's -1.
+
+Below, `n` is the length of the text and `m` the length of the word.
+
+## The key question
+
+> **After a near-miss, how do I avoid comparing the same letters all over again?**
+
+See [Finding a word inside a text](/concepts/finding-a-word/), which walks through both approaches on other examples.
+
+## Approach 1: Try every start
+
+For each start `i` from 0 to `n − m`, compare `p` with the text from `i`, letter by letter, until a mismatch or the end
+of the word.
+
+<Viz client:visible approach="naive" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** `n − m + 1` starts, each costing up to `m` comparisons. In a text like `aaaa…a` with the word `aa…ab`, every
+start matches almost all of the word before failing: **O(n · m)**.
+
+**Space.** Two indices: **O(1)**.
+
+**What it wastes:** comparing a whole window letter by letter just to rule it out. One number per window, updated as the
+window slides, can rule most windows out in a single comparison.
+</Complexity>
+
+## Approach 2: Rolling hash, Rabin–Karp (optimal on average)
+
+Turn the word into a number, its hash: letter values as digits in base `B`, modulo `M`. Do the same for the first window
+of the text, then slide: remove the leftmost letter's share, shift, add the next letter, all in O(1). Only when a
+window's hash equals the word's are the letters compared, because two different strings can share a hash.
+
+<Viz client:visible approach="rolling" />
+
+<Complexity time="O(n + m)" space="O(1)">
+**Time.** O(m) to hash the word and the first window, then O(1) per slide: **O(n + m)**, plus `m` comparisons for each
+window whose hash matches. With a large `M`, false matches are rare, so that's the average. An unlucky text can still
+force O(n · m).
+
+**Space.** A few numbers: **O(1)**.
+</Complexity>
+
+KMP guarantees O(n + m) even in the worst case: after a mismatch, a table built from the word says how much of it is
+still matched, so the text is never read twice. It's longer to write, and rarely expected for this problem.
+
+## Comparing the approaches
+
+Both on the same text:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Try every start | O(n · m) | O(1) | compares letters at every start |
+| Rolling hash | O(n + m) on average | O(1) | one number comparison per window |
+
+<GrowthChart client:visible series={growth} caption="Comparisons for a text of n a's and a word of n / 2 − 1 a's followed by a b." />
+
+## Common mistakes
+
+- **Running the start past `n − m`.** A window starting later is shorter than the word and reads past the end.
+- **Trusting equal hashes.** A collision gives equal hashes for different strings; check the letters.
+- **Negative remainders.** Subtracting the leftmost letter's share can go below 0. In many languages `%` then gives a
+  negative result, so add `M` before taking the remainder.
+
+## Related problems
+
+- [Finding a word inside a text](/concepts/finding-a-word/): both approaches, step by step.
+- [Find All Anagrams in a String](/dsa/find-all-anagrams-in-a-string/): a sliding window of letter counts.
+- [Longest Common Prefix](/dsa/longest-common-prefix/): another letter-by-letter comparison of strings.

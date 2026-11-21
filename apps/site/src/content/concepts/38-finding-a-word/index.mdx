@@ -1,0 +1,85 @@
+---
+title: "Finding a word inside a text"
+topic: Strings
+kind: Explainer
+order: 3
+summary: How to find where a short word first appears in a longer text. Start with the obvious search, trying every start, and see why it can cost O(n · m). Then the rolling hash (Rabin–Karp) turns each window into a number that updates in O(1) as it slides, checking letters only when the numbers match.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## The question
+
+Given a text of length `n` and a word `p` of length `m`, where does `p` first appear in the text? Every language has a
+built-in for this (`find`, `indexOf`), and in real code you should use it. Knowing what it costs, and the ideas behind
+faster searches, is what interviews ask about.
+
+A **window** here means `m` neighbouring characters of the text: the text has `n − m + 1` of them, one per start.
+
+## Try every start
+
+Line the word up under each start `i` and compare character by character. Stop at the first mismatch and try `i + 1`.
+
+<Viz client:visible approach="naive" />
+
+Usually a mismatch comes early and this is fast. But in texts like the example, with long near-misses, each start can
+cost up to `m` comparisons before failing: **O(n · m)** in the worst case. Worse, when it moves to the next start it
+forgets everything it just read, even though it knows those characters.
+
+## The rolling hash (Rabin–Karp)
+
+Idea: compare one **number** per window instead of `m` characters. A **hash** turns a string into a number such that
+equal strings always get equal numbers (see [How hash maps work](/concepts/how-hash-maps-work/)). Here:
+
+- Give each letter a value: `a = 1`, `b = 2`, … `z = 26`.
+- Read a word's values as the digits of a number in base `B = 31`: `"cat"` is `3 · 31² + 1 · 31 + 20`.
+- Keep only the remainder after dividing by `M = 101`, so the numbers stay small. `"cat"` hashes to 5.
+
+The trick is that sliding the window one place right updates its hash in **O(1)**, however long the word: subtract the
+leftmost letter's share (its value times `B^(m−1)`, called `top` below), multiply by `B` to shift every digit up one
+place, and add the new letter. In the code, `%` always gives a result from 0 to `M − 1`, so a negative difference
+wraps round: −7 becomes 94.
+
+Two different strings can share a hash; that's called a **collision**, and with only 101 possible hashes they happen.
+So equal hashes mean "maybe": check the letters to be sure. Different hashes mean "certainly not", which is what saves
+the time. The example has a collision on purpose: `fit` also hashes to 5.
+
+<Viz client:visible approach="rolling" />
+
+Each window costs O(1), so the search is about **O(n + m)**, plus `m` comparisons for each hash match checked. With a
+large `M` (real versions use numbers around a billion) collisions are rare and that extra cost is small on average,
+though an unlucky text can still force O(n · m).
+
+## Other searches, briefly
+
+- **KMP** (Knuth–Morris–Pratt) never re-reads the text: after a mismatch it uses a table, built from the word alone, of
+  how much of the word is still matched. Guaranteed O(n + m).
+- **Counting windows.** If the order of the letters doesn't matter (find every rearrangement of `p`), slide a window of
+  letter counts instead, as in [Find All Anagrams in a String](/dsa/find-all-anagrams-in-a-string/). See [Counting
+  characters](/concepts/counting-characters/).
+
+[Find the Index of the First Occurrence in a String](/dsa/find-the-index-of-the-first-occurrence-in-a-string/) is this
+read's problem.
+
+## Interview theory
+
+<QA q="What's the worst case of the simple search, and when does it happen?">
+O(n · m): every start matches almost the whole word before failing, as with the text "aaaa…a" and the word "aa…ab".
+</QA>
+
+<QA q="How does a rolling hash update in O(1)?">
+Remove the leftmost character's contribution (its value times B^(m−1)), multiply by B to shift the rest, and add the new
+character. All of it modulo M. No other character is touched.
+</QA>
+
+<QA q="Why does Rabin–Karp still compare letters when the hashes match?">
+Different strings can share a hash (a collision). Equal hashes only say the strings might be equal; checking the letters
+confirms it. Unequal hashes, though, prove the strings differ.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

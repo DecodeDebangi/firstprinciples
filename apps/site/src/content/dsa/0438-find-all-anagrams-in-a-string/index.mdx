@@ -1,0 +1,89 @@
+---
+title: Find All Anagrams in a String
+leetcode: { number: 438, url: "https://leetcode.com/problems/find-all-anagrams-in-a-string/" }
+difficulty: Medium
+topics: [Sliding window, String, Hash map]
+added: 2026-11-21
+summary: Find every position in a string where some rearrangement of a shorter word starts. Goes from counting the letters of every window from scratch, to sliding one window of letter counts along the string with two updates per step.
+insight: "A window is a rearrangement of p exactly when it has p's letter counts. Neighbouring windows differ by one letter leaving and one arriving, so keep the counts and update just those two."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two strings of lowercase letters, `s` and a shorter `p`. Return every position in `s` where a window of
+`length(p)` letters is an [anagram](/dsa/valid-anagram/) of `p`: the same letters, the same number of times, in any
+order. The positions can be returned in any order.
+
+For example, with `s = baxabcab` and `p = abc`, the windows starting at 3 (`abc`), 4 (`bca`) and 5 (`cab`) all qualify,
+so the answer is `[3, 4, 5]`.
+
+Below, `n` is the length of `s` and `m` the length of `p`.
+
+## The key question
+
+> **When the window moves one place, what actually changes?**
+
+Comparing letter counts tells you whether a window is an anagram (see [Counting
+characters](/concepts/counting-characters/)). The question is how cheaply each window's counts can be found.
+
+## Approach 1: Count every window from scratch
+
+For each start `i`, count the letters of `s[i..i+m-1]` and compare the 26 counts with `p`'s.
+
+<Viz client:visible approach="recount" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** `n − m + 1` windows, each counted in `m` steps and compared in 26: **O(n · m)**.
+
+**Space.** Two sets of 26 counts: **O(1)**.
+
+**What it wastes:** the next window shares `m − 1` letters with this one, yet they're all counted again.
+</Complexity>
+
+## Approach 2: Slide the counts (optimal)
+
+Count the first window once. Then, to move one place right, subtract one for the letter leaving on the left and add one
+for the letter arriving on the right. This is a fixed-size [sliding window](/concepts/sliding-window/).
+
+<Viz client:visible approach="sliding" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Two updates and one comparison of 26 counts per window: O(26 · n), which is **O(n)**.
+
+**Space.** Two sets of 26 counts: **O(1)**, besides the answer.
+</Complexity>
+
+The 26-count comparison can be avoided too: keep a number `matches` saying how many of the 26 letters currently have
+equal counts, and adjust it only for the two letters that change. A window qualifies when `matches = 26`.
+
+## Comparing the approaches
+
+Both on the same strings:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Count every window | O(n · m) | O(1) | recounts shared letters |
+| Slide the counts | O(n) | O(1) | two updates per step |
+
+<GrowthChart client:visible series={growth} caption="Steps for a string of n letters and a word half as long." />
+
+## Common mistakes
+
+- **Sorting every window.** It works, but costs O(m log m) per window.
+- **Updating in the wrong order.** Check the current window before sliding, or the first window is never checked.
+- **Comparing only the letters of p.** A letter that's in the window but not in p also makes it fail; compare every
+  count.
+
+## Related problems
+
+- [Valid Anagram](/dsa/valid-anagram/): comparing two strings' counts once.
+- [Finding a word inside a text](/concepts/finding-a-word/): searching when the order does matter.
+- [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/): a sliding
+  window whose size changes.
