@@ -1,0 +1,87 @@
+---
+title: "Binary: how numbers are stored as bits"
+topic: Bit manipulation
+kind: Explainer
+order: 1
+summary: Every whole number is stored as a row of bits, 0s and 1s, where each place is worth twice the one to its right. Convert a number to binary step by step, then meet the operators that work on all the bits at once - AND, OR, XOR and shifts - and the moves for reading, setting and clearing one bit.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Places worth 1, 2, 4, 8 …
+
+In ordinary (decimal) numbers each place is worth ten times the one to its right: units, tens, hundreds. **Binary**
+uses only two digits, 0 and 1, called **bits**, and each place is worth **twice** the one to its right: 1, 2, 4, 8,
+16, and so on. So `1101` means `8 + 4 + 0 + 1 = 13`.
+
+Computers store every whole number this way, in a fixed number of bits: usually 32 or 64. The animations here use 8
+bits, enough for 0 to 255, so they fit on the screen. Bits are counted from the right, starting at 0: **bit k** is
+the place worth `2^k`.
+
+## Converting a number to binary
+
+The last bit of `x` says whether it's odd: it's `x % 2`. Halving `x` (rounding down) moves every bit one place right,
+so the next bit becomes the last. Repeat until nothing is left.
+
+<Viz client:visible approach="toBinary" />
+
+A number up to `n` has about `log₂ n` bits, so the loop runs **O(log n)** times. That's also why a 32-bit integer can
+hold numbers up to about 4 billion: `2^32` is 4,294,967,296.
+
+## Working on all the bits at once
+
+Bitwise operators combine two numbers place by place, as if each place were a separate yes/no question:
+
+| Operator | Written | Result bit is 1 when | `12 op 10` |
+|---|---|---|---|
+| AND | `a & b` | both bits are 1 | `1100 & 1010 = 1000` (8) |
+| OR | `a \| b` | either bit is 1 | `1110` (14) |
+| XOR | `a xor b` | exactly one bit is 1 | `0110` (6) |
+| NOT | `~a` | the bit is 0 (every bit flips) | |
+
+Most languages write XOR as `^`, but this site uses `^` for powers, so the code panels say `xor`. Try each operation:
+
+<Viz client:visible approach="combine" />
+
+The computer does all 32 or 64 places in one step, so every bitwise operation is **O(1)**.
+
+**Shifts** slide all the bits along. `x << k` moves them `k` places left, filling with 0s, which multiplies by `2^k`.
+`x >> k` moves them right, dropping the last `k` bits, which divides by `2^k` and rounds down. `13 >> 1` is 6.
+
+## Reading, setting and clearing one bit
+
+These four lines come up again and again. A **mask** is a number with 1s only in the places you care about; `1 << k`
+is the mask for bit `k` alone.
+
+| Goal | Code | Why it works |
+|---|---|---|
+| Read bit k | `(x >> k) & 1` | shift bit k to the end, then keep only it |
+| Set bit k to 1 | `x \| (1 << k)` | OR with 1 forces it on, OR with 0 changes nothing |
+| Clear bit k | `x & ~(1 << k)` | AND with 0 forces it off, AND with 1 changes nothing |
+| Flip bit k | `x xor (1 << k)` | XOR with 1 flips it, XOR with 0 changes nothing |
+
+Negative numbers are stored with a scheme called **two's complement**: `−x` is `~x + 1`. You rarely need the details,
+but it's why `x & −x` picks out the lowest 1 bit, one of the tricks in [Bit tricks](/concepts/bit-tricks/).
+
+## Interview theory
+
+<QA q="How do you check whether a number is odd using bits?">
+Look at its last bit: `x & 1` is 1 for odd numbers and 0 for even ones, because every other place is worth an even
+amount.
+</QA>
+
+<QA q="What do x << 1 and x >> 1 do?">
+`x << 1` doubles `x`, moving every bit to a place worth twice as much. `x >> 1` halves it, rounding down, by dropping
+the last bit.
+</QA>
+
+<QA q="How do you test whether bit k of x is set?">
+`(x >> k) & 1` is 1 if it's set, or equivalently `x & (1 << k)` is not 0.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

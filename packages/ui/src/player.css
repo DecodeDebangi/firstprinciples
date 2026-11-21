@@ -127,6 +127,9 @@
 .fp-panel--wide { flex-basis: 100%; }
 .fp-grid { display: grid; gap: 4px; justify-items: center; overflow-x: auto; padding: 2px; }
 .fp-grid__row { display: flex; gap: 4px; }
+.fp-grid.has-rowlabels { justify-content: center; justify-items: stretch; }
+.fp-grid.has-rowlabels .fp-grid__row { display: contents; }
+.fp-grid.has-rowlabels .fp-gcell.is-rowlabel { justify-content: end; padding-right: 6px; white-space: nowrap; }
 .fp-gcell {
   min-width: 30px; height: 28px; padding: 0 4px;
   display: grid; place-items: center;

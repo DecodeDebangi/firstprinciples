@@ -258,7 +258,9 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
                 {step.grid.rows.length === 0 ? (
                   <div className="fp-empty">empty</div>
                 ) : (
-                  <div className={`fp-grid${step.grid.dense ? " is-dense" : ""}`} role="img"
+                  <div className={`fp-grid${step.grid.dense ? " is-dense" : ""}${step.grid.rowLabels ? " has-rowlabels" : ""}`} role="img"
+                    // With row labels, one CSS grid keeps every column lined up, however wide each label is.
+                    style={step.grid.rowLabels ? { gridTemplateColumns: `auto repeat(${Math.max(...step.grid.rows.map((r) => r.length), step.grid.colLabels?.length ?? 0)}, auto)` } : undefined}
                     aria-label={`${step.grid.title}: ${step.grid.rows.map((r) => r.join(" ")).join(" / ")}`}>
                     {step.grid.colLabels && (
                       <div className="fp-grid__row" aria-hidden="true">
@@ -273,6 +275,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
                           const tone = step.grid!.tones?.[`${r},${c}`];
                           return <span key={c} className={`fp-gcell${tone ? ` fp-cell--${tone}` : ""}`}>{v}</span>;
                         })}
+                        {step.grid!.rowLabels && Array.from({ length: Math.max(0, Math.max(...step.grid!.rows.map((x) => x.length)) - row.length) }, (_, k) => <span key={`pad${k}`} className="fp-gcell" />)}
                       </div>
                     ))}
                   </div>

@@ -60,6 +60,7 @@ export const roadmap: RoadmapStep[] = [
       { name: "Graphs", blurb: "Explore connections with BFS and DFS.", tags: ["Graph", "BFS", "DFS"] },
       { name: "Dynamic programming", blurb: "Build each answer from smaller answers.", tags: ["Dynamic programming"] },
       { name: "Greedy & intervals", blurb: "Take the best local choice, safely.", tags: ["Greedy", "Intervals"] },
+      { name: "Bit manipulation", blurb: "Work directly with the 0s and 1s inside a number.", tags: ["Bit manipulation"] },
     ],
   },
 ];

@@ -205,6 +205,21 @@ for i ← 1 to n
 return dp[n]`,
     payoff: "Overlapping subproblems are solved once each, turning exponential recursion into polynomial time.",
   },
+  "Bit manipulation": {
+    idea: "Every whole number is stored as bits, 0s and 1s. Operators like AND, OR, XOR and shifts work on all the bits at once, so questions about parity, powers of two, pairs and missing values often have an O(1)-space answer.",
+    signals: [
+      "Every value appears twice except one",
+      "Powers of two, or counting the 1s in a number",
+      "Constant extra space is required where a set would be easy",
+      "Small sets of choices that fit in one number's bits",
+    ],
+    template: `count ← 0
+while x > 0
+    x ← x & (x - 1)  // drop lowest 1
+    count += 1
+return count`,
+    payoff: "Bit operations take O(1) each and need no extra memory, so a set or map can often be replaced by one number.",
+  },
   "Greedy & intervals": {
     idea: "Make the locally best choice at each step when you can show it never rules out the best overall answer.",
     signals: ["Maximise or minimise with one pass", "Intervals to merge, schedule or count", "A running best that can be reset safely"],
