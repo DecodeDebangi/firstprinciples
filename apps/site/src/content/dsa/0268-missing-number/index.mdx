@@ -1,0 +1,97 @@
+---
+title: Missing Number
+leetcode: { number: 268, url: "https://leetcode.com/problems/missing-number/" }
+difficulty: Easy
+topics: [Bit manipulation, Math, Hash map]
+added: 2026-11-21
+summary: A list holds n different numbers from 0 to n, so exactly one is missing. Find it. Goes from remembering the numbers in a set, to subtracting the actual total from the expected one, to XORing every position with every value so that everything present cancels out.
+insight: "Every number from 0 to n should appear once. XOR the full range with the list's values: each number that's there appears twice and cancels, and only the missing one is left. The sum works too, but can overflow."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` of `n` different numbers, all between 0 and `n`. Since there are `n + 1` numbers in that range
+and only `n` in the list, exactly one is missing. Return it, in O(1) extra space.
+
+For example, `[4, 0, 1, 5, 2]` has `n = 5`, and 3 is the number from 0 to 5 that isn't there.
+
+## The key question
+
+> **How do I compare the list with the full range 0 to n without storing either?**
+
+See [Bit tricks](/concepts/bit-tricks/) for how XOR cancels pairs.
+
+## Approach 1: Put them in a set, then check 0 to n
+
+Add every value to a [hash set](/concepts/how-hash-maps-work/), then try 0, 1, 2, … until one isn't there.
+
+<Viz client:visible approach="set" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Building the set and checking up to `n + 1` candidates, O(1) each: **O(n)**.
+
+**Space.** The set: **O(n)**.
+
+**What it wastes:** it stores every value just to find one absence. A single number that summarises the list can be
+compared with a single number that summarises the full range.
+</Complexity>
+
+## Approach 2: Expected sum minus actual sum
+
+The numbers 0 to `n` add up to `n(n + 1) / 2`. Subtract the list's total, and the difference is the missing number.
+
+<Viz client:visible approach="sum" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass: **O(n)**.
+
+**Space.** Two numbers: **O(1)**.
+
+**What it wastes:** nothing in time or space, but `n(n + 1) / 2` grows fast. With fixed-size integers and a large `n`, it
+can [overflow](/concepts/numbers-and-remainders/). XOR never produces anything bigger than its inputs.
+</Complexity>
+
+## Approach 3: XOR the positions with the values (optimal)
+
+XOR every position `0 … n − 1`, the number `n`, and every value together. Each number that's in the list appears twice,
+once as a position (or as `n`) and once as a value, so it cancels. The missing number appears only once, so it's what
+remains.
+
+<Viz client:visible approach="xor" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, two XORs per value: **O(n)**.
+
+**Space.** One number: **O(1)**, with no risk of overflow.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Set, then check | O(n) | O(n) | stores every value |
+| Expected minus actual sum | O(n) | O(1) | can overflow for large n |
+| XOR positions and values | O(n) | O(1) | can't overflow |
+
+All three are O(n), so there's no growth chart; the difference is memory and overflow.
+
+## Common mistakes
+
+- **Forgetting n itself.** The positions run from 0 to `n − 1`, so `n` must be added separately: here `acc` starts at
+  `n`.
+- **Sorting first.** Then the first position where `nums[i] ≠ i` is the answer, but sorting costs O(n log n).
+- **Assuming 0 is never missing.** It can be: `[1, 2]` is missing 0.
+
+## Related problems
+
+- [Single Number](/dsa/single-number/): XOR cancelling pairs inside one list.
+- [Find All Numbers Disappeared in an Array](/dsa/find-all-numbers-disappeared-in-an-array/): several missing numbers,
+  found by marking positions.
+- [Bit tricks](/concepts/bit-tricks/): the XOR rules.
