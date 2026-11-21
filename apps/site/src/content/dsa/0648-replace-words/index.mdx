@@ -1,0 +1,91 @@
+---
+title: Replace Words
+leetcode: { number: 648, url: "https://leetcode.com/problems/replace-words/" }
+difficulty: Medium
+topics: [Trie, String, Hash map]
+added: 2026-11-21
+summary: Given a list of short roots, replace every word in a sentence that starts with a root by the shortest such root. Goes from testing every root against every word, to walking each word down a trie of the roots and stopping at the first end mark.
+insight: "Put the roots in a trie. Walking a word down it from the root, the first node marked as the end of a root is the shortest root the word starts with; if the path breaks first, no root fits."
+best: { time: "O(T)", space: "O(R · L)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of **roots** (short words) and a sentence of words separated by single spaces. Replace each word that
+starts with one or more roots by the **shortest** of those roots. Words that start with no root stay as they are.
+Return the new sentence.
+
+For example, with roots `re`, `run` and `sun`, the sentence `rerun the sunny runway` becomes `re the sun run`. `rerun`
+starts with `re`; `the` starts with no root; `runway` starts with `run`.
+
+Below, `W` is the number of words, `R` the number of roots, `L` the longest length, and `T` the total number of
+letters in the roots and the sentence.
+
+## The key question
+
+> **How do I find the shortest root a word starts with, without testing every root?**
+
+That's a prefix question, which is what a [trie](/concepts/tries/) answers.
+
+## Approach 1: Check every root against every word
+
+For each word, test whether it starts with each root, and keep the shortest that fits.
+
+<Viz client:visible approach="checkRoots" />
+
+<Complexity time="O(W · R · L)" space="O(1)">
+**Time.** `W` words, each tested against `R` roots, each test up to `L` letters: **O(W · R · L)**.
+
+**Space.** Nothing besides the answer: **O(1)** extra.
+
+**What it wastes:** roots that don't even share the word's first letter are tested anyway, and roots that share a
+beginning are compared from scratch each time.
+</Complexity>
+
+## Approach 2: Walk each word down a trie of roots (optimal)
+
+Insert the roots into a trie. For each word, follow its letters from the root. As soon as a node is marked as the end
+of a root, that's the shortest root the word starts with: stop and use it. If the word's next letter has no child, or
+the word runs out first, no root fits.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(T)" space="O(R · L)">
+**Time.** Building the trie reads every root letter once, and each word walks at most its own length: **O(T)**, total
+letters, however many roots there are.
+
+**Space.** The trie: at most one node per root letter, **O(R · L)**.
+</Complexity>
+
+A hash set of roots also works: for each word, check its prefixes of length 1, 2, 3 … in the set and stop at the first
+hit. That's O(L²) per word, since each prefix has to be built and hashed.
+
+## Comparing the approaches
+
+Both on the same roots and sentence:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every root | O(W · R · L) | O(1) | tests roots that can't fit |
+| Trie of roots | O(T) | O(R · L) | one step per letter walked |
+
+<GrowthChart client:visible series={growth} caption="Steps for R four-letter roots and a sentence of 10 words, by R." />
+
+## Common mistakes
+
+- **Keeping the first root that fits instead of the shortest.** With roots `run` and `r`, `runway` becomes `r`.
+- **Walking past an end mark.** In the trie, stop at the first one: it's the shortest root.
+- **Replacing with the root when the word runs out first.** If the path reaches the end of the word without an end mark,
+  the word stays as it is.
+
+## Related problems
+
+- [Tries](/concepts/tries/): building and walking a trie.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/): the trie itself.
+- [Reading text apart](/concepts/reading-text-apart/): splitting and joining the sentence.
