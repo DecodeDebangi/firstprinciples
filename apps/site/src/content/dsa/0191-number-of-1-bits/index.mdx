@@ -1,0 +1,84 @@
+---
+title: Number of 1 Bits
+leetcode: { number: 191, url: "https://leetcode.com/problems/number-of-1-bits/" }
+difficulty: Easy
+topics: [Bit manipulation]
+added: 2026-11-21
+summary: Count how many bits of a number are 1. Goes from checking the last bit and shifting, once per bit, to removing the lowest 1 with n & (n − 1), once per 1.
+insight: "n & (n − 1) is n with its lowest 1 bit removed. Repeat until n is 0, and the number of steps is the number of 1s, however many 0s there are."
+best: { time: "O(k)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a positive whole number `n`. Return how many 1s there are in its binary form (this is also called its
+**Hamming weight**).
+
+For example, `104` is `1101000` in binary, which has three 1s, so the answer is 3. The animations show 8 bits; the real
+problem allows up to 32.
+
+## The key question
+
+> **Can I visit only the 1 bits, and skip the 0s?**
+
+See [Binary](/concepts/binary-and-bits/) for reading bits with `&` and `>>`, and [Bit tricks](/concepts/bit-tricks/)
+for removing the lowest 1.
+
+## Approach 1: Check the last bit, shift, repeat
+
+`n & 1` is the last bit. Add it to the count, then shift `n` right by one so the next bit takes its place. Stop when
+`n` is 0.
+
+<Viz client:visible approach="shift" />
+
+<Complexity time="O(b)" space="O(1)">
+**Time.** One loop per bit up to the highest 1. With `b` bits that's **O(b)**, at most 32.
+
+**Space.** Two numbers: **O(1)**.
+
+**What it wastes:** a loop for every 0 bit, which adds nothing to the count. A number like `10000000…` has one 1 but
+needs the full walk.
+</Complexity>
+
+## Approach 2: Drop the lowest 1, repeat (optimal)
+
+`n & (n − 1)` removes the lowest 1 bit of `n` and leaves the rest alone. Do it until `n` is 0, counting the steps.
+
+<Viz client:visible approach="drop" />
+
+<Complexity time="O(k)" space="O(1)">
+**Time.** One loop per 1 bit. With `k` ones that's **O(k)**, never more than approach 1.
+
+**Space.** Two numbers: **O(1)**.
+</Complexity>
+
+Many languages and processors also have a built-in "population count" that does it in one instruction.
+
+## Comparing the approaches
+
+Both on the same number:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check the last bit, shift | O(b), b bits | O(1) | one loop per bit |
+| Drop the lowest 1 | O(k), k ones | O(1) | one loop per 1 |
+
+<GrowthChart client:visible series={growth} caption="Loops for a number whose only 1 is in its top bit, by number of bits." />
+
+## Common mistakes
+
+- **Using a signed shift on a negative number.** In Java, `>>` copies the sign bit in from the left, so a negative
+  number never reaches 0. Use `>>>`, or the `n & (n − 1)` loop, which stops either way.
+- **Counting with `n % 10`.** That reads decimal digits, not bits.
+
+## Related problems
+
+- [Bit tricks](/concepts/bit-tricks/): x & (x − 1) and more.
+- [Counting Bits](/dsa/counting-bits/): the count for every number from 0 to n.
+- [Hamming Distance](/dsa/hamming-distance/): counting the 1s of an XOR.
