@@ -1,0 +1,85 @@
+---
+title: Reverse Words in a String
+leetcode: { number: 151, url: "https://leetcode.com/problems/reverse-words-in-a-string/" }
+difficulty: Medium
+topics: [String, Two pointers]
+added: 2026-11-21
+summary: Reverse the order of the words in a string, with exactly one space between them and none at the ends, however messy the spacing was. Goes from splitting into a list of words, reversing it and joining, to doing it inside the character list itself - reverse everything, then reverse each word back.
+insight: "Reversing the whole string puts the words in the right order but spells each one backwards. Reversing each word again fixes the spelling, and copying with a write pointer squeezes out the extra spaces."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` of words separated by spaces. There may be several spaces between words, and spaces at the start
+or end. Return the words in reverse order, separated by exactly one space, with no spaces at either end.
+
+For example, `" hi  you "` becomes `"you hi"`.
+
+## The key question
+
+> **How do I reverse the word order but keep each word's spelling, and tidy the spaces at the same time?**
+
+See [Reading text apart](/concepts/reading-text-apart/) for splitting text into words by hand.
+
+## Approach 1: Split, reverse the list, join
+
+Split into words, skipping every run of spaces, so the messy spacing disappears. Reverse the list by swapping from both
+ends, then join with one space between.
+
+<Viz client:visible approach="splitJoin" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Splitting reads each character once, reversing the list is O(number of words), and joining writes each
+character once: **O(n)**.
+
+**Space.** The list of words and the new string: **O(n)**.
+
+**What it wastes:** a second copy of all the text. If the string is a list of characters you're allowed to change
+(as in C++, or LeetCode's follow-up), the words can be reordered where they are.
+</Complexity>
+
+## Approach 2: Reverse everything, then each word (optimal space)
+
+Reverse the whole list of characters: `" hi  you "` becomes `" uoy  ih "`. The words are now in the right order, but
+each is spelled backwards. Then walk with a read pointer `r` and a write pointer `w` (as in [Rewriting an array in
+place](/concepts/rewriting-arrays-in-place/)): skip spaces, write one space before every word except the first, copy
+the word to `w`, and reverse it back. The answer is the first `w` characters.
+
+<Viz client:visible approach="inPlace" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Every character is reversed twice and copied at most once: **O(n)**.
+
+**Space.** A few indices: **O(1)** extra, if the characters can be changed in place. In languages whose strings can't
+be changed, you'd first copy into a list, which is O(n).
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Split, reverse, join | O(n) | O(n) | simple, uses a list of words |
+| Reverse all, then each word | O(n) | O(1) | in place, on a list of characters |
+
+Both are O(n), so there's no growth chart; the difference is the memory.
+
+## Common mistakes
+
+- **Splitting on a single space.** In many languages, `split(" ")` turns two spaces into an empty word, which then adds
+  extra spaces to the answer.
+- **Building the answer with `+=` in a loop.** With unchangeable strings, that copies everything each time: O(n²).
+  Collect the words and join once.
+- **Forgetting to trim.** Spaces at the ends of the input must not survive into the answer.
+
+## Related problems
+
+- [Reading text apart](/concepts/reading-text-apart/): splitting and joining.
+- [Reverse String](/dsa/reverse-string/): the two-pointer reversal used here twice.
+- [Rotate Array](/dsa/rotate-array/): another problem solved by reversing the whole, then the parts.
