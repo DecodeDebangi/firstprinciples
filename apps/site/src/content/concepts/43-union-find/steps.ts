@@ -47,7 +47,8 @@ export const pathText = (uf: UnionFind, path: number[]) => path.map((p) => uf.la
  * union(a, b) drawn as steps: the two finds, then the link. Returns false when they were already together.
  * Shared with the union-find problems.
  */
-export function unionSteps(uf: UnionFind, a: number, b: number, t: T, lines: { find: number; same: number; link: number }, extra: () => Record<string, unknown> = () => ({}), ask = false) {
+export function unionSteps(uf: UnionFind, a: number, b: number, t: T, lines: { find: number; same: number; link: number }, extra: () => Record<string, unknown> = () => ({}), ask = false, names: [string, string] = ["a", "b"]) {
+  const [A, B] = names;
   t.op();
   const fa = uf.find(a, t), fb = uf.find(b, t);
   const pathTones: Record<number, Tone> = {};
@@ -56,10 +57,10 @@ export function unionSteps(uf: UnionFind, a: number, b: number, t: T, lines: { f
   pathTones[fa.root] = "active"; pathTones[fb.root] = "active";
   const compressed = uf.compress && (fa.path.length > 2 || fb.path.length > 2);
   const L = (i: number) => uf.label(i);
-  t.step({ ...extra(), line: lines.find, array: [], trees: uf.view(pathTones), grid: uf.panel([...fa.path, ...fb.path]), vars: { a: L(a), b: L(b), "find(a)": L(fa.root), "find(b)": L(fb.root) },
+  t.step({ ...extra(), line: lines.find, array: [], trees: uf.view(pathTones), grid: uf.panel([...fa.path, ...fb.path]), vars: { [A]: L(a), [B]: L(b), [`find(${A})`]: L(fa.root), [`find(${B})`]: L(fb.root) },
     message: `find(${L(a)}): ${pathText(uf, fa.path)}${fa.path.length === 1 ? " (its own root)" : ""}. find(${L(b)}): ${pathText(uf, fb.path)}${fb.path.length === 1 ? " (its own root)" : ""}.${compressed ? " Path compression points every item passed straight at its root, so the next find is one step." : ""}` });
   if (fa.root === fb.root) {
-    t.step({ ...extra(), line: lines.same, array: [], trees: uf.view({ [fa.root]: "found" }), grid: uf.panel(), vars: { a: L(a), b: L(b), root: L(fa.root) },
+    t.step({ ...extra(), line: lines.same, array: [], trees: uf.view({ [fa.root]: "found" }), grid: uf.panel(), vars: { [A]: L(a), [B]: L(b), root: L(fa.root) },
       message: `Both have root ${L(fa.root)}: ${L(a)} and ${L(b)} are already in the same group. Nothing to join.` });
     return false;
   }
@@ -67,7 +68,7 @@ export function unionSteps(uf: UnionFind, a: number, b: number, t: T, lines: { f
   if (uf.bySize && uf.size[ra] < uf.size[rb]) [ra, rb] = [rb, ra];
   const q = ask ? { ask: { q: uf.bySize ? `Root ${L(fa.root)}'s group has ${uf.size[fa.root]} item${uf.size[fa.root] > 1 ? "s" : ""} and root ${L(fb.root)}'s has ${uf.size[fb.root]}. Which root goes under the other?` : `The roots are ${L(fa.root)} and ${L(fb.root)}. What does union do?`, options: uf.bySize ? [`${L(rb)} goes under ${L(ra)}`, `${L(ra)} goes under ${L(rb)}`] : [`Point root ${L(fa.root)} at root ${L(fb.root)}`, `Point ${L(a)} at ${L(b)}`, "Copy every item into one list"], answer: 0 } } : {};
   if (uf.bySize) { uf.parent[rb] = ra; uf.size[ra] += uf.size[rb]; } else { uf.parent[fa.root] = fb.root; ra = fb.root; rb = fa.root; }
-  t.step({ ...extra(), ...q, line: lines.link, array: [], trees: uf.view({ [rb]: "found", [ra]: "settled" }), grid: uf.panel([rb]), vars: { a: L(a), b: L(b), groups: uf.groups() },
+  t.step({ ...extra(), ...q, line: lines.link, array: [], trees: uf.view({ [rb]: "found", [ra]: "settled" }), grid: uf.panel([rb]), vars: { [A]: L(a), [B]: L(b), groups: uf.groups() },
     message: uf.bySize
       ? `Different roots, so join the groups: the smaller tree's root ${L(rb)} now points at ${L(ra)}, whose group has ${uf.size[ra]} items. Hanging small under big keeps the trees shallow.`
       : `Different roots, so join the groups: root ${L(rb)} now points at root ${L(ra)}. Only one entry of parent changes, however big the groups are.` });

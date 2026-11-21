@@ -1,0 +1,86 @@
+---
+title: Number of Provinces
+leetcode: { number: 547, url: "https://leetcode.com/problems/number-of-provinces/" }
+difficulty: Medium
+topics: [Union-find, Graph, DFS]
+added: 2026-11-21
+summary: Count the groups of cities that are connected, directly or through other cities. Goes from a depth-first search started from every city not yet reached, to union-find, which starts with every city alone and merges groups pair by pair.
+insight: "Each connected pair either joins two different groups, cutting the count by one, or links two cities already in the same group. Union-find tells which, in almost O(1)."
+best: { time: "O(n²)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` cities, numbered 0 to `n − 1`, and an `n × n` grid `isConnected`, where `isConnected[i][j] = 1` means
+cities `i` and `j` are directly connected (both ways). A **province** is a group of cities connected directly or
+through each other, with nothing outside it connected. Return how many provinces there are.
+
+For example, with 6 cities and connections 0–1, 1–2 and 3–4, there are 3 provinces: `{0, 1, 2}`, `{3, 4}` and `{5}`.
+(The box below takes the connected pairs instead of the whole grid.)
+
+## The key question
+
+> **How do I count groups without exploring the same city twice?**
+
+Each group is a connected component of a [graph](/concepts/graphs/). See [Union-find](/concepts/union-find/) for
+building the groups pair by pair.
+
+## Approach 1: Depth-first search from each unvisited city
+
+Go through the cities. When one hasn't been reached yet, it starts a new province: count it, then visit everything
+reachable from it with a [DFS](/concepts/graphs/), marking each city visited.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each city is visited once and scans its row of `n` entries: **O(n²)**, the size of the grid.
+
+**Space.** The visited list and the recursion's [call stack](/concepts/recursion/): **O(n)**.
+
+**What it wastes:** nothing, for a fixed grid. But if connections arrived one at a time, each new one would need a fresh
+search to update the count.
+</Complexity>
+
+## Approach 2: Union-find
+
+Start with `n` provinces, one per city. For each connected pair, call `union`; when it joins two different groups,
+there's one province fewer.
+
+<Viz client:visible approach="unionFind" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Reading the grid is O(n²), and each union is almost O(1) with union by size and path compression: **O(n²)**.
+
+**Space.** The parent and size arrays: **O(n)**.
+</Complexity>
+
+Both are O(n²) here because the input is a whole grid. Union-find pulls ahead when the input is a list of links, or when
+they arrive one at a time and the count is needed after each.
+
+## Comparing the approaches
+
+Both on the same cities:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| DFS from each unvisited city | O(n²) | O(n) | one search per province |
+| Union-find | O(n²) | O(n) | updates the count link by link |
+
+Both are O(n²), so there's no growth chart.
+
+## Common mistakes
+
+- **Counting connections instead of groups.** Two links inside the same province don't make a second province.
+- **Forgetting cities with no connections.** Each is a province on its own.
+- **Reading only half the grid wrongly.** The grid is symmetric; scanning `j > i` is enough, but both halves must agree.
+
+## Related problems
+
+- [Union-find](/concepts/union-find/): find, union and the two improvements.
+- [Number of Islands](/dsa/number-of-islands/): counting groups on a grid with a search.
+- [Number of Operations to Make Network Connected](/dsa/number-of-operations-to-make-network-connected/): counting groups,
+  then joining them.
