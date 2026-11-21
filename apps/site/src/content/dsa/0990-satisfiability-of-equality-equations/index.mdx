@@ -1,0 +1,82 @@
+---
+title: Satisfiability of Equality Equations
+leetcode: { number: 990, url: "https://leetcode.com/problems/satisfiability-of-equality-equations/" }
+difficulty: Medium
+topics: [Union-find, Graph, String]
+added: 2026-11-21
+summary: Given equations like a==b and b!=c between single-letter variables, decide whether numbers can be assigned so that all of them hold. Goes from searching a graph of the == equations for every !=, to union-find - join every == first, then check that no != connects two letters in the same group.
+insight: "Equality spreads: a==b and b==c force a==c. Union all the == pairs into groups first; the equations are impossible exactly when some x!=y has x and y in the same group."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of equations between single lowercase letters, each either `x==y` or `x!=y`. Decide whether you can
+give every letter a whole number so that all the equations are true at once.
+
+For example, `a==b, c==d, b!=c, d==a` is impossible: the `==` equations make `a`, `b`, `c` and `d` all equal (`a==b`,
+`d==a`, `c==d`), so `b!=c` can't hold. Without the last equation it would be possible.
+
+## The key question
+
+> **Which letters are forced to be equal, and does any != contradict that?**
+
+Equality chains: if `a==b` and `b==c`, then `a==c`. So the `==` equations split the letters into groups that must be
+equal, exactly the groups that [Union-find](/concepts/union-find/) builds.
+
+## Approach 1: Search the graph for each !=
+
+Draw an edge for every `==`. For each `x!=y`, search from `x`: if `y` can be reached, they're forced equal, and the
+equations are impossible.
+
+<Viz client:visible approach="search" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each `!=` runs a search over up to all the `==` edges: O(n) each, **O(n²)** for `n` equations.
+
+**Space.** The graph over at most 26 letters: **O(1)**, besides the input.
+
+**What it wastes:** every search rediscovers the same groups.
+</Complexity>
+
+## Approach 2: Union-find (optimal)
+
+First pass: `union(x, y)` for every `x==y`. Second pass: for every `x!=y`, if `find(x) = find(y)`, they're in one group
+and must be equal, so return false.
+
+<Viz client:visible approach="unionFind" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One union per `==` and two finds per `!=`, each almost O(1): **O(n)**.
+
+**Space.** Parent and size arrays for at most 26 letters: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same equations:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Search for each != | O(n²) | O(1) | a search per inequality |
+| Union-find | O(n) | O(1) | groups built once |
+
+<GrowthChart client:visible series={growth} caption="Steps for a chain of n == equations followed by n != checks." />
+
+## Common mistakes
+
+- **Checking the != equations as they come.** A later `==` can still join two letters, so do all the `==` first.
+- **Forgetting `a!=a`.** A letter is always in its own group, so it's immediately impossible.
+- **Thinking != spreads.** `a!=b` and `b!=c` don't force anything about `a` and `c`.
+
+## Related problems
+
+- [Union-find](/concepts/union-find/): groups that must be equal.
+- [Redundant Connection](/dsa/redundant-connection/): checking whether two ends are already joined.
+- [Number of Provinces](/dsa/number-of-provinces/): counting the groups.
