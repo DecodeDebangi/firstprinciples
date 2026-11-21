@@ -1,0 +1,88 @@
+---
+title: Edit Distance
+leetcode: { number: 72, url: "https://leetcode.com/problems/edit-distance/" }
+difficulty: Medium
+topics: [Dynamic programming, String]
+added: 2026-11-21
+summary: Find the fewest single-letter edits - insert, delete or replace - that turn one word into another. Goes from plain recursion that tries all three edits at every mismatch, to a table where each cell is the answer for the first few letters of each word.
+insight: "Look at the last letters of the two beginnings. If they match, no edit is needed for them. If not, the last edit was a replace, a delete or an insert, each leading to a smaller cell: take the cheapest and add one."
+best: { time: "O(m · n)", space: "O(min(m, n))" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two words `a` and `b`. In one edit you can insert a letter, delete a letter, or replace one letter with
+another. Return the fewest edits that turn `a` into `b`.
+
+For example, `cat` becomes `cut` in 1 edit (replace `a` with `u`), and `kitten` becomes `sitting` in 3 (replace `k`
+with `s`, replace `e` with `i`, insert `g`).
+
+Below, `m` and `n` are the lengths of `a` and `b`.
+
+## The key question
+
+> **What could the very last edit have been, and what's left to solve after it?**
+
+See [DP on two strings](/concepts/dp-on-two-strings/): the same table as the longest common subsequence, with a
+different rule.
+
+## Approach 1: Plain recursion
+
+`ed(i, j)` is the fewest edits from the first `i` letters of `a` to the first `j` of `b`. If one side is empty, it's
+`i + j` deletes or inserts. If the last letters match, they need nothing: `ed(i − 1, j − 1)`. Otherwise try all three
+edits: replace (`ed(i − 1, j − 1)`), delete `a`'s letter (`ed(i − 1, j)`) or insert `b`'s letter (`ed(i, j − 1)`), and
+add one to the cheapest.
+
+<Viz client:visible approach="recursion" />
+
+<Complexity time="O(3^(m+n))" space="O(m + n)">
+**Time.** Each mismatch branches three ways: exponential, up to about **O(3^(m+n))**.
+
+**Space.** The [call stack](/concepts/recursion/), at most `m + n` deep: **O(m + n)**.
+
+**What it wastes:** there are only `(m + 1)(n + 1)` different pairs `(i, j)`, solved again and again.
+</Complexity>
+
+## Approach 2: Fill a table (optimal)
+
+Store `ed(i, j)` in `dp[i][j]`, filled row by row. Row 0 and column 0 are `i + j`. For the rest: on a match, copy the
+diagonal; otherwise one plus the smallest of diagonal (replace), above (delete) and left (insert).
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** One constant-time rule per cell: **O(m · n)**.
+
+**Space.** The table: **O(m · n)**. Each row only reads the row above, so two rows give the number in
+**O(min(m, n))** space.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same words:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Plain recursion | O(3^(m+n)) | O(m + n) | re-solves the same pairs |
+| Fill a table | O(m · n) | O(m · n), or O(min(m, n)) | each pair once |
+
+<GrowthChart client:visible series={growth} caption="Calls or cells for two words of n letters with no letters in common." />
+
+## Common mistakes
+
+- **Starting row 0 and column 0 at 0.** Turning `i` letters into nothing takes `i` deletes.
+- **Adding 1 on a match.** Matching letters need no edit; copy the diagonal.
+- **Mixing up which neighbour is which edit.** Above (one fewer letter of `a`) is a delete; left (one fewer of `b`) is
+  an insert. The count is the same either way, but it matters when you rebuild the list of edits.
+
+## Related problems
+
+- [DP on two strings](/concepts/dp-on-two-strings/): the shared table.
+- [Longest Common Subsequence](/dsa/longest-common-subsequence/): the same table, maximising matches.
+- [Minimum Path Sum](/dsa/minimum-path-sum/): another cheapest-cost table.
