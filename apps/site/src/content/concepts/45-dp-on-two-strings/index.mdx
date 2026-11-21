@@ -1,0 +1,83 @@
+---
+title: "DP on two strings: a word along each side"
+topic: Dynamic programming
+kind: Explainer
+order: 3
+summary: Comparing two strings - their longest common subsequence, or how many edits turn one into the other - is a grid DP with one word down the side and the other along the top. Each cell answers the question for the first few letters of each, from three neighbours. Fill the longest common subsequence table, then read the answer back from it.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Prefixes make the subproblems
+
+Many questions about two strings `a` and `b` get easier if you ask them about **beginnings**: "what's the answer for the
+first `i` letters of `a` and the first `j` letters of `b`?" That needs two numbers, so the answers form a grid, as in
+[DP on a grid](/concepts/dp-on-a-grid/): `a` runs down the side, `b` along the top, and cell `dp[i][j]` holds the answer
+for those two beginnings.
+
+Row 0 and column 0 stand for "no letters yet". Their answers are known straight away, and they start the table off.
+Each other cell looks at the two **last** letters, `a[i − 1]` and `b[j − 1]`, and decides from three neighbours:
+diagonally up-left (both letters used up), above (one fewer letter of `a`) and left (one fewer letter of `b`).
+
+## Longest common subsequence
+
+A **subsequence** keeps letters in their order but may skip some: `cat` is a subsequence of `chart`. The longest
+common subsequence of two words is the longest string that's a subsequence of both. For `cart` and `chat` it's `cat`.
+
+The rule for each cell:
+
+- **The last letters match.** Use them as the last letter of the common subsequence: `dp[i][j] = dp[i − 1][j − 1] + 1`.
+- **They differ.** They can't both be used, so at least one is left out. Take the better of the two choices:
+  `dp[i][j] = max(dp[i − 1][j], dp[i][j − 1])`.
+
+<Viz client:visible approach="lcs" />
+
+**O(m · n)** time and space for words of lengths `m` and `n`. The bottom-right cell is the answer, and walking back from
+it, diagonally on a match and otherwise towards the larger neighbour, spells out one longest common subsequence.
+
+That's [Longest Common Subsequence](/dsa/longest-common-subsequence/).
+
+## Edit distance: the same table, a different rule
+
+How many single-letter edits (insert, delete or replace) turn `a` into `b`? Same table, same three neighbours:
+
+- If the last letters match, no edit is needed for them: `dp[i][j] = dp[i − 1][j − 1]`.
+- Otherwise, one edit plus the cheapest of: replacing (diagonal), deleting `a`'s letter (above), or inserting `b`'s
+  letter (left).
+- Row 0 and column 0 are no longer 0: turning `i` letters into nothing takes `i` deletions.
+
+That's [Edit Distance](/dsa/edit-distance/).
+
+## The pattern
+
+1. Say in words what `dp[i][j]` means for the first `i` and `j` letters.
+2. Fill the edges: one of the strings is empty.
+3. Look at the last two letters: what happens when they match, and when they don't?
+4. Fill row by row, so the diagonal, above and left cells are ready.
+
+As with grids, each row only reads the row above, so two rows are enough when only the final number is needed: O(n)
+space.
+
+## Interview theory
+
+<QA q="What's the difference between a subsequence and a substring?">
+A substring is a run of neighbouring letters. A subsequence keeps the order but may skip letters: "ct" is a subsequence
+of "cart" but not a substring.
+</QA>
+
+<QA q="What is the longest common subsequence rule?">
+If the last letters match, dp[i][j] = dp[i − 1][j − 1] + 1; otherwise dp[i][j] = max(dp[i − 1][j], dp[i][j − 1]). Row
+and column 0 are 0. O(m · n).
+</QA>
+
+<QA q="How do you get the subsequence itself, not just its length?">
+Walk back from the bottom-right cell: on a match, take the letter and move diagonally; otherwise move towards the larger
+of the cell above and the cell to the left. Reverse the letters collected.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
