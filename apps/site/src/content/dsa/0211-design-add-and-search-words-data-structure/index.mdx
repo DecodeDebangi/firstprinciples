@@ -1,0 +1,90 @@
+---
+title: Design Add and Search Words Data Structure
+leetcode: { number: 211, url: "https://leetcode.com/problems/design-add-and-search-words-data-structure/" }
+difficulty: Medium
+topics: [Trie, Backtracking, String]
+added: 2026-11-21
+summary: Store words, then search for them with patterns where a dot matches any one letter. Goes from comparing the pattern with every stored word, to walking a trie - following one child for a letter, and trying every child for a dot, backing up when a branch fails.
+insight: "In a trie, a real letter leads to at most one child, so it costs one step. A dot could be any letter, so try each child in turn and give up on a branch as soon as a letter doesn't fit."
+best: { time: "O(L) without dots", space: "O(N · L)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Build a word store with two operations:
+
+- `addWord(word)` stores a word.
+- `search(pattern)` says whether any stored word matches the pattern. The pattern can contain `.`, which matches any
+  single letter; every other letter must match exactly, and the lengths must be equal.
+
+For example, with `bad`, `bed`, `bid`, `mad` and `pat` stored, `.a.` matches `bad` (and `mad`, and `pat`), `b..`
+matches `bad`, and `..e` matches nothing.
+
+Below, `L` is the length of the pattern and `N` the number of stored words.
+
+## The key question
+
+> **How do I skip whole groups of words that can't match, even when some letters are wildcards?**
+
+See [Tries](/concepts/tries/) for storing and walking words, and [Backtracking](/concepts/backtracking/) for trying a
+choice and undoing it.
+
+## Approach 1: Check every stored word
+
+Compare the pattern with each word of the same length, letter by letter, treating `.` as a match for anything.
+
+<Viz client:visible approach="list" />
+
+<Complexity time="O(N · L)" space="O(N · L)">
+**Time.** Every search may compare against all `N` words, up to `L` letters each: **O(N · L)**.
+
+**Space.** The stored words: **O(N · L)**.
+
+**What it wastes:** words that differ in their first letter are each rejected separately. A trie rejects them all at
+once, since they live in a branch the search never enters.
+</Complexity>
+
+## Approach 2: A trie, trying every child at a dot
+
+Store the words in a trie. To search, walk it with a recursive function `dfs(node, i)`: for a real letter, follow that
+child if it exists; for a `.`, try every child, and return true as soon as one branch succeeds. At the end of the
+pattern, the node must be marked as the end of a word.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(L) without dots" space="O(N · L)">
+**Time.** With no dots, one step per letter: **O(L)**. Each dot can multiply the branches tried by up to 26, so a
+pattern full of dots can visit the whole trie, O(N · L), no worse than approach 1. Branches stop as soon as a letter
+doesn't fit, so real searches stay far below that.
+
+**Space.** The trie, **O(N · L)** nodes at most, plus the recursion's [call stack](/concepts/recursion/), O(L).
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same words and pattern:
+
+<Compare client:visible />
+
+| Approach | search without dots | search with dots | Space |
+|---|---|---|---|
+| Check every word | O(N · L) | O(N · L) | O(N · L) |
+| Trie with backtracking | O(L) | up to O(N · L) | O(N · L) |
+
+<GrowthChart client:visible series={growth} caption="Steps for one search with no dots that matches none of n stored five-letter words." />
+
+## Common mistakes
+
+- **Treating `.` as "any number of letters".** It matches exactly one letter.
+- **Stopping at the first child for a dot.** If that branch fails, the next child may still match.
+- **Forgetting the end mark.** `ba.` must not match a stored `bake`.
+
+## Related problems
+
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/): the same trie without wildcards.
+- [Tries](/concepts/tries/): building and searching.
+- [Backtracking](/concepts/backtracking/): trying each choice and undoing it.
