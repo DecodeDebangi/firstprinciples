@@ -79,15 +79,32 @@ function Graph({ g }: { g: GraphData }) {
 /** A 2D board of cells (a map, a maze, a game grid) as the main view. Tones are keyed "r,c". */
 export function BoardView({ step }: { step: ArrayStep }) {
   const b = step.board!;
-  return (
-    <div className="fp-board" role="img" aria-label={`Board: ${b.rows.map((r) => r.join(" ")).join(" / ")}`}>
-      {b.rows.map((row, r) => (
-        <div className="fp-board__row" key={r}>
-          {row.map((v, c) => {
-            const tone = b.tones?.[`${r},${c}`];
-            return <span key={c} className={`fp-gcell fp-bcell${tone ? ` fp-cell--${tone}` : ""}`}>{v}</span>;
-          })}
+  const cols = b.rows[0]?.length ?? 0;
+  const cls = `fp-board${b.labels ? " is-labelled" : ""}${b.dense ? " is-dense" : ""}`;
+  const cell = (v: number | string, r: number, c: number) => {
+    const tone = b.tones?.[`${r},${c}`];
+    return <span key={c} className={`fp-gcell fp-bcell${tone ? ` fp-cell--${tone}` : ""}`}>{v}</span>;
+  };
+  const label = `Board: ${b.rows.map((r) => r.join(" ")).join(" / ")}`;
+  if (b.labels) {
+    // One CSS grid, so the number headers stay lined up with their columns whatever the cell widths.
+    return (
+      <div className={cls} role="img" aria-label={label}>
+        <div className="fp-board__grid" style={{ gridTemplateColumns: `auto repeat(${cols}, auto)` }}>
+          <span className="fp-board__lab" />
+          {Array.from({ length: cols }, (_, c) => <span key={`c${c}`} className="fp-board__lab">{c}</span>)}
+          {b.rows.map((row, r) => [
+            <span key={`r${r}`} className="fp-board__lab fp-board__lab--row">{r}</span>,
+            ...row.map((v, c) => cell(v, r, c)),
+          ])}
         </div>
+      </div>
+    );
+  }
+  return (
+    <div className={cls} role="img" aria-label={label}>
+      {b.rows.map((row, r) => (
+        <div className="fp-board__row" key={r}>{row.map((v, c) => cell(v, r, c))}</div>
       ))}
     </div>
   );

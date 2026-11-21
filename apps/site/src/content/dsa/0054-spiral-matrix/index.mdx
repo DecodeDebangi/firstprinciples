@@ -1,0 +1,89 @@
+---
+title: Spiral Matrix
+leetcode: { number: 54, url: "https://leetcode.com/problems/spiral-matrix/" }
+difficulty: Medium
+topics: [Matrix, Array]
+added: 2026-11-21
+summary: List every value of a grid in spiral order - along the top, down the right, back along the bottom, up the left, then the same again further in. Goes from walking and turning with a grid of visited cells, to four shrinking borders that need no extra memory.
+insight: "Keep four numbers for the edges of the part not read yet. Read the top row, the right column, the bottom row and the left column, moving each edge inwards as you go, until the edges cross."
+best: { time: "O(m · n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid with `m` rows and `n` columns. Return all its values in **spiral order**: start at the top left, go
+right along the top row, down the right-hand column, left along the bottom row and up the left-hand column, then
+carry on the same way around the next ring inwards until every value is listed once.
+
+For example, the grid with rows `8 1 6 3`, `4 9 2 7` and `5 0 6 1` gives `8, 1, 6, 3, 7, 1, 6, 0, 5, 4, 9, 2`.
+
+## The key question
+
+> **How do I know when to turn, and which cells are still left to read?**
+
+The grid doesn't have to be square, so the inner rings can end as a single row or a single column. Both approaches
+must avoid reading a cell twice. See [Grids](/concepts/grids/) for `grid[r][c]` and moving in directions.
+
+## Approach 1: Walk and turn, marking visited cells
+
+Move one cell at a time, starting heading right. Before each move, look at the next cell: if it's off the grid or
+already visited, turn right (right, then down, then left, then up, then right again). A second grid of true/false
+values, `seen`, remembers which cells were visited.
+
+<Viz client:visible approach="seen" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** Each of the `m · n` cells is visited once, with a constant amount of checking: **O(m · n)**.
+
+**Space.** The `seen` grid has a true/false value for every cell: **O(m · n)**, on top of the answer.
+
+**What it wastes:** a whole grid of marks. The cells not yet read always form a rectangle, so four numbers describe
+them.
+</Complexity>
+
+## Approach 2: Shrinking borders (optimal)
+
+Keep `top`, `bottom`, `left` and `right`: the edges of the rectangle not yet read. Read its top row and move `top`
+down; read its right column and move `right` left; then its bottom row, and its left column. Repeat while
+`top ≤ bottom` and `left ≤ right`.
+
+Two checks in the middle matter. After the top row and the right column, the rectangle may have no rows left
+(`top > bottom`), or no columns left (`left > right`). Without the checks, a single leftover row or column would be
+read twice, once in each direction.
+
+<Viz client:visible approach="borders" />
+
+<Complexity time="O(m · n)" space="O(1)">
+**Time.** Every cell is read exactly once: **O(m · n)**.
+
+**Space.** Four numbers besides the answer: **O(1)** extra space.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Walk and turn, marking visited | O(m · n) | O(m · n) | a true/false mark per cell |
+| Shrinking borders | O(m · n) | O(1) | four numbers |
+
+Both read each cell once, so there's no growth chart; the difference is the memory.
+
+## Common mistakes
+
+- **Dropping the checks before the bottom row and the left column.** A grid like `1 2 3` (one row) would come out as
+  `1, 2, 3, 2, 1`.
+- **Mixing up rows and columns.** The right column is `grid[r][right]`, with `r` changing; the bottom row is
+  `grid[bottom][c]`, with `c` changing.
+- **Assuming the grid is square.** Test with 1 × n, m × 1 and 2 × 3 grids, where the rings end differently.
+
+## Related problems
+
+- [Grids](/concepts/grids/): rows, columns, directions and bounds.
+- [Rotate Image](/dsa/rotate-image/): another problem about a grid's rings.
+- [Set Matrix Zeroes](/dsa/set-matrix-zeroes/): working on whole rows and columns.

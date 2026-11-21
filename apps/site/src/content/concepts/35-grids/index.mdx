@@ -1,0 +1,97 @@
+---
+title: "Grids: rows, columns and neighbours"
+topic: Arrays & hashing
+kind: Explainer
+order: 5
+summary: A grid (also called a matrix) is a list of rows. Learn to read grid[r][c], walk every cell, find a cell's neighbours without stepping off the edge, give each cell one number, and flip a square grid across its diagonal - the moves behind rotating, spiralling and checking boards.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A list of rows
+
+A **grid** stores values in rows and columns, like a spreadsheet or a game board. Problems often call it a
+**matrix**. In code it's a list of rows, and each row is a list of values. So `grid[r]` is row `r`, and
+`grid[r][c]` is the value in column `c` of that row: **row first, then column**.
+
+Rows are numbered from 0 at the top, columns from 0 at the left. A grid with `m` rows and `n` columns has `m · n`
+cells; `m` is `length(grid)` and `n` is `length(grid[0])`, the length of any row. When every row is as long as the
+grid is tall (`m = n`), the grid is **square**.
+
+## Walking every cell
+
+Two loops, one inside the other: the outer one picks a row, the inner one moves along it. That visits the cells in
+reading order, left to right and top to bottom.
+
+<Viz client:visible approach="walk" />
+
+Every cell is visited once: **O(m · n)**. For a square `n × n` grid that's O(n²), and it's the least any algorithm
+that needs to look at every cell can do.
+
+## One number per cell
+
+Counting cells in reading order gives each one a single number: the cell at row `r`, column `c` is number
+`r · n + c`, because `r` full rows of `n` cells come before it. Going back, `r = floor(i / n)` and `c = i % n` (see
+[Numbers and remainders](/concepts/numbers-and-remainders/)). This lets you treat a grid as one long list, for example to
+store a cell in a set as one number instead of a pair.
+
+## Neighbours, and staying on the board
+
+Many grid problems move from a cell to the cells next to it. Rather than writing four nearly identical blocks, list
+the moves as **directions**, pairs `(dr, dc)` that say how much to add to the row and the column: up is `(−1, 0)`,
+down `(1, 0)`, left `(0, −1)` and right `(0, 1)`. Add the four diagonals for eight directions.
+
+A cell on the edge has fewer neighbours, so check every new position **before** reading it: `0 ≤ nr < m` and
+`0 ≤ nc < n`.
+
+<Viz client:visible approach="neighbours" />
+
+This is how [Number of Islands](/dsa/number-of-islands/) spreads from one piece of land to the next.
+
+## Flipping across the diagonal
+
+The **diagonal** of a square grid is the cells where `r = c`, from the top left to the bottom right. **Transposing**
+swaps rows with columns: the value at `(r, c)` moves to `(c, r)`. In place, each cell above the diagonal swaps with
+its mirror below it. The inner loop starts at `c = r + 1` so that each pair swaps exactly once; swapping twice would
+undo it.
+
+<Viz client:visible approach="transpose" />
+
+Transpose, then reverse each row, and the grid has turned a quarter clockwise. That's [Rotate
+Image](/dsa/rotate-image/).
+
+## Three more moves
+
+- **Shrinking borders.** Keep four numbers, `top`, `bottom`, `left` and `right`, for the edges of the part not yet
+  handled. Walk the outer ring, then move every edge inwards. That's how [Spiral Matrix](/dsa/spiral-matrix/) reads a
+  grid in a spiral.
+- **Boxes.** A 9 × 9 board split into 3 × 3 boxes: the cell `(r, c)` is in box number
+  `floor(r / 3) · 3 + floor(c / 3)`, from 0 to 8, counted in reading order. [Valid Sudoku](/dsa/valid-sudoku/) uses it.
+- **The grid as its own notebook.** To remember a fact per row or per column without extra memory, store it in the
+  grid itself, for example in the first row and first column, as with arrays in [Rewriting an array in
+  place](/concepts/rewriting-arrays-in-place/). That's the trick in [Set Matrix Zeroes](/dsa/set-matrix-zeroes/).
+
+## Interview theory
+
+<QA q="What does grid[r][c] mean, and which index comes first?">
+Row `r`, then column `c`. The grid is a list of rows, so the first index picks the row and the second picks the value
+within it. Mixing them up is the most common grid bug, and on a grid that isn't square it reads the wrong cell or
+runs off the end.
+</QA>
+
+<QA q="How do you find a cell's neighbours safely?">
+Loop over a list of direction pairs, add each to the cell's row and column, and keep the new position only if
+`0 ≤ nr < m` and `0 ≤ nc < n`. Check before reading, never after.
+</QA>
+
+<QA q="How do you turn a cell into one number and back?">
+In reading order, `(r, c)` is number `r · n + c`, where `n` is the number of columns. From a number `i`, the row is
+`floor(i / n)` and the column is `i % n`.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

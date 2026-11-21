@@ -385,6 +385,11 @@
 .fp-board { display: grid; gap: 5px; justify-items: center; padding: 10px 0 18px; overflow-x: auto; }
 .fp-board__row { display: flex; gap: 5px; }
 .fp-gcell.fp-bcell { min-width: 36px; height: 36px; font-size: 14px; }
+.fp-board__grid { display: grid; gap: 5px; align-items: center; justify-items: stretch; }
+.fp-board__lab { font: 500 12px var(--font-mono); color: var(--muted); text-align: center; }
+.fp-board__lab--row { padding-right: 4px; }
+.fp-board.is-dense .fp-gcell.fp-bcell { min-width: 30px; height: 30px; font-size: 13px; }
+.fp-board.is-dense .fp-board__grid, .fp-board.is-dense .fp-board__row { gap: 3px; }
 .fp-gcell.fp-cell--side-a { background: var(--tone-active-bg); border-color: color-mix(in srgb, var(--tone-active-border) 35%, transparent); }
 .fp-gcell.fp-cell--side-b { background: var(--tone-compare-bg); border-color: color-mix(in srgb, var(--tone-compare-border) 35%, transparent); }
 .fp-gcell.fp-cell--visited { color: var(--text-2); }

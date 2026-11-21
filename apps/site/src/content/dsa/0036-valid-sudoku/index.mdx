@@ -1,0 +1,94 @@
+---
+title: Valid Sudoku
+leetcode: { number: 36, url: "https://leetcode.com/problems/valid-sudoku/" }
+difficulty: Medium
+topics: [Matrix, Hash map]
+added: 2026-11-21
+summary: Check whether a partly filled 9 × 9 Sudoku board breaks the rules - no digit twice in a row, a column or a 3 × 3 box. Goes from searching each digit's row, column and box, to one pass that remembers the digits seen in a set for every row, column and box.
+insight: "Give each 3 × 3 box a number, floor(r / 3) · 3 + floor(c / 3). Then one pass with 27 sets (one per row, column and box) catches any repeat with three lookups per digit."
+best: { time: "O(n²)", space: "O(n²)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a 9 × 9 board. Some cells hold a digit from 1 to 9; the rest are empty, written `.`. Decide whether the
+digits so far break the rules: **no digit may appear twice in the same row, the same column, or the same 3 × 3 box**
+(the board is split into nine boxes of 3 × 3 cells). You don't have to check whether the puzzle can be solved, only
+the digits already there.
+
+For example, a board with a 5 at row 6, column 8 and another 5 at row 8, column 7 is invalid. They're in different
+rows and different columns, but both are in the bottom-right box.
+
+## The key question
+
+> **How do I know which digits are already in a cell's row, column and box, without searching them every time?**
+
+Rows and columns are easy to name. Boxes need a number too: as in [Grids](/concepts/grids/), the cell `(r, c)` is in
+box `floor(r / 3) · 3 + floor(c / 3)`, numbered 0 to 8 in reading order.
+
+Below, `n` is the side of the board (9 here). Because the board is always 9 × 9, every approach is technically
+O(1); the bounds in terms of `n` show how the work would grow on a bigger board.
+
+## Approach 1: Scan each digit's row, column and box
+
+For each digit, look at the other 8 cells of its row, the other 8 of its column and the other 8 of its box. The box
+starts at row `r - r % 3` and column `c - c % 3`: rounding down to a multiple of 3 finds its top left corner.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n³)" space="O(1)">
+**Time.** Up to `n²` digits, each compared with about `3n` other cells: **O(n³)**. On a 9 × 9 board that's at most
+81 · 24 = 1,944 comparisons.
+
+**Space.** A few indices: **O(1)**.
+
+**What it wastes:** the same row is searched again for every digit in it. A set per row, column and box would remember
+what's been seen and answer in one lookup.
+</Complexity>
+
+## Approach 2: One pass with a set per row, column and box (optimal)
+
+Keep 27 [hash sets](/concepts/how-hash-maps-work/): `rows[r]`, `cols[c]` and `boxes[b]` hold the digits seen so far
+in each. For each digit, check its three sets; if it's in any of them, that's a repeat. Otherwise add it to all three.
+It's the "have I seen it?" move from [Hashing patterns](/concepts/hashing-patterns/), three times over.
+
+<Viz client:visible approach="sets" />
+
+<Complexity time="O(n²)" space="O(n²)">
+**Time.** One visit per cell, with three O(1) lookups and three additions for each digit: **O(n²)**, at most 81 · 6
+set operations on a 9 × 9 board.
+
+**Space.** `3n` sets, each holding up to `n` digits: **O(n²)**, at most 243 digits.
+</Complexity>
+
+Because each digit is between 1 and 9, each set can also be a list of 9 true/false values, one per digit. The idea is
+the same.
+
+## Comparing the approaches
+
+Both on the same board:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Scan row, column and box | O(n³) | O(1) | up to 24 comparisons per digit |
+| A set per row, column and box | O(n²) | O(n²) | three lookups per digit |
+
+The board never grows past 9 × 9, so there's no growth chart: the difference is about 24 comparisons per digit
+against 3 lookups.
+
+## Common mistakes
+
+- **The wrong box number.** `floor(r / 3) + floor(c / 3)` gives the same number to different boxes: the box right of
+  the top-left one and the box below it would both be 1. Multiplying one part by 3 keeps all nine apart.
+- **Counting empty cells.** Skip `.` before checking; otherwise every empty cell looks like a repeat of the first.
+- **Checking whether the puzzle can be solved.** The problem only asks whether the digits already there break a rule.
+
+## Related problems
+
+- [Grids](/concepts/grids/): rows, columns and the box formula.
+- [Hashing patterns](/concepts/hashing-patterns/): the "have I seen it?" move.
+- [Contains Duplicate](/dsa/contains-duplicate/): the same check on a single list.

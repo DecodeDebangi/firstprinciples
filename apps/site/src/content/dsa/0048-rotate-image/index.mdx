@@ -1,0 +1,90 @@
+---
+title: Rotate Image
+leetcode: { number: 48, url: "https://leetcode.com/problems/rotate-image/" }
+difficulty: Medium
+topics: [Matrix, Array, Math]
+added: 2026-11-21
+summary: Turn a square grid a quarter turn clockwise, in place. Goes from writing every value to its new place in a copy, to two simple in-place moves - flip across the diagonal, then reverse each row.
+insight: "A clockwise quarter turn is the same as flipping the grid across its diagonal (rows become columns) and then reversing each row. Both are swaps, so no second grid is needed."
+best: { time: "O(n²)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a square grid of numbers, `n` rows by `n` columns, standing for an image. Turn it 90 degrees clockwise,
+changing the grid itself, without making a second grid.
+
+For example, the grid with rows `1 2 3 4`, `5 6 7 8`, `9 10 11 12` and `13 14 15 16` becomes `13 9 5 1`,
+`14 10 6 2`, `15 11 7 3` and `16 12 8 4`. The old left-hand column, read from the bottom up, is the new top row.
+
+## The key question
+
+> **Where does the value at row r, column c end up, and can I move everything there without overwriting values I still need?**
+
+Turning clockwise, the top row becomes the right-hand column: the value at `(r, c)` goes to `(c, n − 1 − r)`. See
+[Grids](/concepts/grids/) for reading `grid[r][c]`.
+
+## Approach 1: Copy, then write each value to its new place
+
+Writing `(r, c)` straight to `(c, n − 1 − r)` would overwrite a value that hasn't moved yet. So copy the grid first,
+then read from the copy and write into the grid.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n²)" space="O(n²)">
+**Time.** One write per cell, `n²` cells, plus `n²` to make the copy: **O(n²)**.
+
+**Space.** The copy is a second `n × n` grid: **O(n²)**.
+
+**What it wastes:** a whole second grid, which the problem forbids. Swaps exchange two values without losing either,
+so the right sequence of swaps needs no copy.
+</Complexity>
+
+## Approach 2: Transpose, then reverse each row (optimal)
+
+**Transposing** swaps each value with its mirror across the diagonal, so `(r, c)` goes to `(c, r)`: rows become
+columns. Reversing each row then moves `(c, r)` to `(c, n − 1 − r)`, which is exactly where the clockwise turn puts
+it. Both steps are swaps, each done in place (see [Grids](/concepts/grids/) and [Rewriting an array in
+place](/concepts/rewriting-arrays-in-place/)).
+
+<Viz client:visible approach="transposeReverse" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** The transpose swaps each pair above the diagonal once: `n(n − 1) / 2` swaps. Reversing `n` rows takes
+`n / 2` swaps each: `n² / 2`. Together about `n²`: **O(n²)**. No algorithm can do better, since every value has to
+move.
+
+**Space.** A few indices: **O(1)**.
+</Complexity>
+
+There's a third way: walk the grid in rings from the outside in, and move four values at a time around each ring
+(top to right, right to bottom, bottom to left, left to top). It's also O(n²) time and O(1) space and writes each
+value only once, but the index arithmetic is much easier to get wrong.
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Copy, then write | O(n²) | O(n²) | needs a second grid |
+| Transpose, then reverse rows | O(n²) | O(1) | two passes of swaps, in place |
+
+Both are O(n²), so there's no growth chart; the difference is the memory.
+
+## Common mistakes
+
+- **Transposing with both loops from 0.** The inner loop must start at `c = r + 1`. Starting at 0 swaps every pair
+  twice, and the grid ends up exactly as it began.
+- **Reversing columns instead of rows.** Transpose, then reverse each column, turns the grid anticlockwise.
+- **Writing in place without a copy in approach 1.** The value at the target is overwritten before it has been moved.
+
+## Related problems
+
+- [Grids](/concepts/grids/): reading `grid[r][c]`, and the transpose step by step.
+- [Rotate Array](/dsa/rotate-array/): rotating a list in place, also built from reversals.
+- [Spiral Matrix](/dsa/spiral-matrix/): another walk around a grid's rings.

@@ -54,6 +54,7 @@ equal.
 | `x = 5` | Is `x` equal to 5? The answer is true or false. |
 | `x ≠ 5` | Is `x` different from 5? |
 | `<`, `≤`, `>`, `≥` | Less than, less than or equal, greater than, greater than or equal. |
+| `0 ≤ r < m` | Both at once: `r` is at least 0 **and** less than `m`. The usual check that a position is inside the grid or list. |
 | `a and b` | True only if both are true. |
 | `a or b` | True if at least one is true. |
 | `not a` | Flips true to false and false to true. |
@@ -98,6 +99,8 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `a[0]`, `a[i]` | The value at position 0, or at position `i`. Positions start at **0**. |
 | `length(a)` | How many values `a` holds. The last position is `length(a) - 1`. |
 | `a[2..5]` | Positions 2 to 5, both included. `a[3..end]` runs to the last one. |
+| `grid[r][c]` | A grid is a list of rows: `grid[r]` is row `r`, and `grid[r][c]` is the value in column `c` of that row. |
+| `(r, c)` | A pair of values kept together, such as a cell's row and column. `for each dr, dc in directions` unpacks each pair into two names. |
 | `array of n, all 0` | A new list of `n` values, every one 0. |
 | `empty map`, `seen[x] ← i` | A lookup table: store `i` under the key `x`. Later, `seen[x]` gives `i` back. |
 | `x in seen`, `x not in seen` | Is `x` stored in `seen`, or not? |

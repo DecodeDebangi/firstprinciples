@@ -1,0 +1,113 @@
+---
+title: Set Matrix Zeroes
+leetcode: { number: 73, url: "https://leetcode.com/problems/set-matrix-zeroes/" }
+difficulty: Medium
+topics: [Matrix, Hash map, Array]
+added: 2026-11-21
+summary: Wherever a grid has a 0, set that cell's whole row and whole column to 0, in place. Goes from searching a copy, to remembering which rows and columns to clear, to storing those marks in the grid's own first row and first column.
+insight: "Only which rows and which columns contain a 0 matters. Note them in the first row and first column of the grid itself (they'd be cleared anyway), plus two true/false values for whether that row and column had a 0 of their own."
+best: { time: "O(m · n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of numbers with `m` rows and `n` columns. For every 0 that's in the grid at the start, set every value
+in its row and every value in its column to 0. Change the grid itself.
+
+For example, the grid with rows `3 1 0 2`, `5 0 7 1`, `6 2 8 4` and `9 4 3 5` has zeros at row 0, column 2 and at
+row 1, column 1. So rows 0 and 1, and columns 1 and 2, become all zeros, leaving `6 0 0 4` and `9 0 0 5` as the last
+two rows.
+
+## The key question
+
+> **How do I clear rows and columns without the new zeros I write being mistaken for original ones?**
+
+If you clear row 0 as soon as you find its 0, the next cells you read in row 0 are zeros too, and they'd clear their
+columns: soon the whole grid is 0. Each approach keeps the original zeros apart from the new ones. See
+[Grids](/concepts/grids/) for `grid[r][c]`.
+
+## Approach 1: Copy, then clear a row and a column per zero
+
+Look for zeros in a copy of the grid, which never changes, and write into the real grid.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(m · n · (m + n))" space="O(m · n)">
+**Time.** Scanning the copy is O(m · n). Each original 0 then writes `m + n` cells, and there can be up to `m · n`
+zeros: **O(m · n · (m + n))** in the worst case.
+
+**Space.** The copy: **O(m · n)**.
+
+**What it wastes:** two zeros in the same row clear that row twice. And the whole copy is kept just to answer two
+questions: does row `r` contain a 0, and does column `c`?
+</Complexity>
+
+## Approach 2: Remember which rows and columns
+
+Answer exactly those two questions. Pass 1 marks `zeroRow[r]` and `zeroCol[c]` for every 0, without changing the
+grid. Pass 2 sets a cell to 0 if its row or its column is marked.
+
+<Viz client:visible approach="lists" />
+
+<Complexity time="O(m · n)" space="O(m + n)">
+**Time.** Two passes over the grid, constant work per cell: **O(m · n)**.
+
+**Space.** One true/false value per row and per column: **O(m + n)**.
+
+**What it wastes:** two separate lists, when the grid already has a row and a column of exactly the right lengths:
+row 0 has a cell for every column, and column 0 has a cell for every row.
+</Complexity>
+
+## Approach 3: First row and column as markers (optimal)
+
+Store the marks in the grid itself (the same idea as [Rewriting an array in
+place](/concepts/rewriting-arrays-in-place/)): a 0 in `grid[r][0]` means "clear row r", and a 0 in `grid[0][c]` means
+"clear column c". Writing a mark there loses nothing, because those cells are in a row or column that's being cleared
+anyway.
+
+One catch: row 0 and column 0 are now holding marks, so you can't tell whether they contained a 0 of their own. Record
+that first in two true/false values, `row0` and `col0`, and clear row 0 and column 0 last, after their marks have been
+used.
+
+<Viz client:visible approach="markers" />
+
+<Complexity time="O(m · n)" space="O(1)">
+**Time.** Checking row 0 and column 0 is O(m + n). Then two passes over the rest of the grid, and at most one more
+pass over row 0 and column 0: **O(m · n)**.
+
+**Space.** Two true/false values and the loop indices: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Copy, clear per zero | O(m · n · (m + n)) | O(m · n) | clears the same rows repeatedly |
+| Remember rows and columns | O(m · n) | O(m + n) | two true/false lists |
+| First row and column as markers | O(m · n) | O(1) | marks stored in the grid itself |
+
+<GrowthChart client:visible series={growth} caption="Cell reads and writes for an n × n grid where every other value is 0." />
+
+## Common mistakes
+
+- **Clearing as you go, with no copy or marks.** New zeros look exactly like original ones and spread across the
+  grid.
+- **Clearing row 0 or column 0 too early.** In approach 3 they hold the marks for every other row and column; clear
+  them only at the very end.
+- **One flag for both.** `grid[0][0]` belongs to both row 0 and column 0, so a 0 there can't tell you which of the two
+  had a zero. That's why there are two separate values, `row0` and `col0`.
+
+## Related problems
+
+- [Grids](/concepts/grids/): rows, columns, and the grid as its own notebook.
+- [Find All Numbers Disappeared in an Array](/dsa/find-all-numbers-disappeared-in-an-array/): marks stored inside an
+  array instead of a second one.
+- [Spiral Matrix](/dsa/spiral-matrix/): working on whole rows and columns.

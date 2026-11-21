@@ -96,7 +96,14 @@ export interface ArrayStep {
   /** Graphs drawn instead of the array (pass `array: []`). */
   graphs?: GraphData[];
   /** A 2D board of cells drawn instead of the array (pass `array: []`), e.g. a map of land and water. Tones keyed "r,c". */
-  board?: { rows: (number | string)[][]; tones?: Record<string, Tone> };
+  board?: {
+    rows: (number | string)[][];
+    tones?: Record<string, Tone>;
+    /** Draw row numbers down the left and column numbers along the top. */
+    labels?: boolean;
+    /** Smaller cells, e.g. so a 9 × 9 board fits a phone. */
+    dense?: boolean;
+  };
   /** Named pointers, e.g. { lo: 0, hi: 7 }. */
   pointers?: Record<string, number>;
   tones?: Record<number, Tone>;
