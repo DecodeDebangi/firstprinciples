@@ -348,6 +348,8 @@
 .fp-verdict { margin: 12px 0 0; min-height: 1.5em; font-weight: 600; text-align: center; }
 
 /* Shareable links */
+.fp-player .fp-sound { display: inline-flex; align-items: center; gap: 6px; }
+.fp-player .fp-sound.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .fp-player .fp-share { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; }
 .fp-sharemsg { margin: 8px 0 0; font-size: 14px; color: var(--tone-found-border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .fp-sharemsg input { flex: 1 1 260px; font: 13px var(--font-mono); padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }

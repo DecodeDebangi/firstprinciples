@@ -5,6 +5,7 @@ import { ListView } from "./ListView";
 import { TreeView } from "./TreeView";
 import { GraphView, BoardView } from "./GraphView";
 import { InputForm, parseDraft, toText, type InputField, type InputValues, type Prepared } from "./input";
+import { cueFor, playCue, useSound } from "./sound";
 import "./player.css";
 
 /** Each 4-space indent becomes a 4ch-wide span with a faint guide line, like an editor's indent guides. */
@@ -53,6 +54,9 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const [linked, setLinked] = useState(false);
   const [shareMsg, setShareMsg] = useState<{ text: string; url?: string } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // Optional sound cues (off until the reader switches them on; shared by every player on the page)
+  const [sound, setSound] = useSound();
+  const shownIdx = useRef<number | null>(null);
 
   // Open at the step in the URL: ?approach=<id>&step=<n>[&<field>=<value>…]
   useEffect(() => {
@@ -121,6 +125,12 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const nextRef = useRef(next);
   nextRef.current = next;
 
+  // A sound for each step the reader moves to (not for the step shown when the page opens).
+  useEffect(() => {
+    if (shownIdx.current !== null && shownIdx.current !== idx && sound) playCue(cueFor(step));
+    shownIdx.current = idx;
+  }, [idx]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!playing) return;
     if (atEnd) { setPlaying(false); return; }
@@ -167,6 +177,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
     if (e.key === "ArrowRight") { e.preventDefault(); next(); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); go(idx - 1); }
     else if (e.key === " ") { e.preventDefault(); togglePlay(); }
+    else if (e.key === "s" || e.key === "S") { e.preventDefault(); setSound(!sound); }
   }
 
   const codeLines = approach.code.replace(/\n$/, "").split("\n");
@@ -316,6 +327,14 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
               aria-pressed={i === speed} onClick={() => setSpeed(i)}>{s.label}</button>
           ))}
         </div>
+        <button type="button" className={`fp-sound${sound ? " is-on" : ""}`} aria-pressed={sound} onClick={() => setSound(!sound)}
+          title={sound ? "Sound is on: each step plays a short cue (S)" : "Turn on short sound cues for each step (S)"}>
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 9v6h4l5 4V5L8 9H4z" />
+            {sound ? <><path d="M16.5 8.5a5 5 0 0 1 0 7" /><path d="M19.5 5.5a9 9 0 0 1 0 13" /></> : <path d="M17 9l5 6M22 9l-5 6" />}
+          </svg>
+          Sound
+        </button>
         <button type="button" className="fp-share" onClick={share} title="Copy a link that opens this exact step">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />

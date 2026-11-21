@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrayCells } from "./ArrayCells";
 import { ListView } from "./ListView";
 import { TreeView } from "./TreeView";
@@ -6,6 +6,7 @@ import { GraphView, BoardView } from "./GraphView";
 import { SPEEDS } from "./ArrayPlayer";
 import { InputForm, type InputField, type InputValues, type Prepared } from "./input";
 import { Tracer, type Approach, type ArrayStep } from "./trace";
+import { cueFor, playCue, soundOn } from "./sound";
 import "./player.css";
 
 /** Index of the last step that has happened once `clock` operations have been done. */
@@ -59,6 +60,16 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
   const choose = (side: 0 | 1, p: number) => { setPick((cur) => (side === 0 ? [p, cur[1]] : [cur[0], p])); go(0); };
 
   const bothDone = traces.every((s) => stepAt(s, clock) === s.length - 1);
+
+  // The race only plays a sound as each lane finishes; two lanes ticking at once would just be noise.
+  const lanesDone = traces.map((s) => stepAt(s, clock) === s.length - 1);
+  const doneBefore = useRef<boolean[] | null>(null);
+  useEffect(() => {
+    const before = doneBefore.current;
+    doneBefore.current = lanesDone;
+    if (!before || !soundOn()) return;
+    lanesDone.forEach((d, i) => { if (d && !before[i]) playCue(cueFor(traces[i][traces[i].length - 1])); });
+  }, [clock]); // eslint-disable-line react-hooks/exhaustive-deps
   const [a, b] = finals;
   const [nameA, nameB] = pick.map((p) => approaches[p].name);
   let verdict = "";

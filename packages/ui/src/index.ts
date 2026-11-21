@@ -15,3 +15,5 @@ export { GraphView, BoardView } from "./GraphView";
 export { AutoDemo } from "./AutoDemo";
 export { Quiz } from "./Quiz";
 export type { QuizQuestion } from "./Quiz";
+export { cueFor, playCue, soundOn, setSoundOn, useSound } from "./sound";
+export type { Cue } from "./sound";
