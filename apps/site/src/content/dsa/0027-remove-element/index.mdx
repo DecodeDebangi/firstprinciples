@@ -1,0 +1,102 @@
+---
+title: Remove Element
+leetcode: { number: 27, url: "https://leetcode.com/problems/remove-element/" }
+difficulty: Easy
+topics: [Two pointers, Array]
+added: 2026-11-19
+summary: Remove every copy of a value from an array in place, and report how many values are left. Goes from copying the keepers to a second list, to a read pointer and a write pointer, to covering each unwanted value with the last one.
+insight: "Read every value with one index and write the keepers with a second one, which never passes the first. Or, since the order doesn't matter, cover each unwanted value with the last value and shrink the array."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array `nums` and a value `val`. Remove every copy of `val` **in place**, without making a second array,
+and return `k`, the number of values that are left. Those `k` values must end up in `nums[0..k−1]`, in any order;
+whatever sits after them doesn't matter.
+
+For example, `nums = [3, 2, 2, 5, 3, 9]` with `val = 3` returns `k = 4`, with `2, 2, 5, 9` (in some order) in the
+first four positions.
+
+## The key question
+
+> **How do I close the gaps left by removed values, without a second array and without overwriting anything I still need?**
+
+This is the first move from [Rewriting an array in place](/concepts/rewriting-arrays-in-place/). The approaches differ
+in how much copying they do.
+
+## Approach 1: Copy the keepers out, then back
+
+Collect every value that isn't `val` in a separate list, then copy that list back over the front of `nums`.
+
+<Viz client:visible approach="copyBack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to collect, one to copy back: **O(n)**.
+
+**Space.** The second list can hold all `n` values: **O(n)**.
+
+**What it wastes:** a whole second array, which the problem forbids. The keepers could be written straight into the
+front of `nums` while reading.
+</Complexity>
+
+## Approach 2: A read pointer and a write pointer
+
+`r` reads every position. `w` is where the next value worth keeping goes. When `nums[r]` isn't `val`, write it at
+`nums[w]` and move `w` on. `w` never passes `r`, so nothing is overwritten before it's been read.
+
+<Viz client:visible approach="readWrite" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass: **O(n)**.
+
+**Space.** Two indices: **O(1)**.
+
+**What it wastes:** nothing in Big-O, but it copies almost every kept value one place to the left, even when only one
+value at the very start had to go.
+</Complexity>
+
+## Approach 3: Swap unwanted values with the end (optimal)
+
+The order of the kept values doesn't matter. So when `nums[i]` must go, cover it with the **last** counted value and
+shrink the count by one. Don't move `i` afterwards: the value just pulled in hasn't been checked yet. Kept values are
+never moved at all.
+
+<Viz client:visible approach="swapEnd" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Every step either moves `i` forward or shrinks `n`, and they meet after at most `n` steps: **O(n)**.
+
+**Space.** Two indices: **O(1)**. And there's one write per removed value, not one per kept value, which is much
+cheaper when only a few values need removing.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Keeps the order? | Writes |
+|---|---|---|---|---|
+| Copy out and back | O(n) | O(n) | yes | every kept value, twice |
+| Read and write pointers | O(n) | O(1) | yes | every kept value |
+| Cover with the last value | O(n) | O(1) | no | one per removed value |
+
+All three are O(n), so there's no growth chart; the difference is memory and how much copying happens.
+
+## Common mistakes
+
+- **Removing from the middle of a list in a loop.** Deleting shifts every later value left: O(n) per removal, O(n²)
+  in total, and it's easy to skip the value that slides into the current spot.
+- **Moving `i` on after covering.** In approach 3, the value pulled in from the end might also be `val`.
+- **Returning the wrong count.** The answer is how many values remain (`w` or `n`), not how many were removed.
+
+## Related problems
+
+- [Rewriting an array in place](/concepts/rewriting-arrays-in-place/): the read that covers these moves.
+- [Remove Duplicates from Sorted Array](/dsa/remove-duplicates-from-sorted-array/): the same two pointers, with a
+  different test for keeping a value.
+- [Move Zeroes](/dsa/move-zeroes/): remove zeros with a read and write pointer, then fill the end.

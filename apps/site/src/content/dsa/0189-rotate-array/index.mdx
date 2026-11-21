@@ -1,0 +1,103 @@
+---
+title: Rotate Array
+leetcode: { number: 189, url: "https://leetcode.com/problems/rotate-array/" }
+difficulty: Medium
+topics: [Array, Two pointers]
+added: 2026-11-19
+summary: Rotate an array to the right by k places, so the last k values move to the front, in place. Goes from shifting everything one place k times, to copying each value straight to its new position, to three reversals with no extra array.
+insight: "Reversing the whole array puts the last k values at the front, just backwards, and the rest after them, also backwards. Reverse each part again and everything is in order."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array `nums` and a number `k`. Rotate the array to the right by `k` places, changing `nums` itself. Each
+rotation by one moves every value one place right, and the last value wraps round to the front. `k` can be larger
+than the array is long.
+
+For example, `[8, 1, 6, 3, 9, 4]` rotated right by 2 becomes `[9, 4, 8, 1, 6, 3]`: the last two values, 9 and 4, are
+now at the front.
+
+## The key question
+
+> **Can I move every value to its final place without shifting the whole array k times, and without a second array?**
+
+After the rotation, the value at position `i` belongs at position `(i + k) % n`. Rotating by `n` changes nothing, so
+only `k % n` matters (see [Numbers](/concepts/numbers-and-remainders/)).
+
+## Approach 1: Rotate by one, k times
+
+Do exactly what the problem describes: shift everything one place right, put the old last value at the front, and
+repeat `k` times.
+
+<Viz client:visible approach="stepByStep" />
+
+<Complexity time="O(n · k)" space="O(1)">
+**Time.** Each round moves about `n` values, and there are `k` rounds: **O(n · k)**. With `n` and `k` both around
+100,000, that's 10 billion moves.
+
+**Space.** One saved value: **O(1)**.
+
+**What it wastes:** every value is moved `k` times, one place at a time, when it could jump straight to where it ends
+up.
+</Complexity>
+
+## Approach 2: Copy each value to its new place
+
+Each value's final position is `(i + k) % n`, so write it there directly, in a second array, then copy the second
+array back.
+
+<Viz client:visible approach="extraArray" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two passes: **O(n)**.
+
+**Space.** The second array: **O(n)**.
+
+**What it wastes:** a full copy of the array. The problem asks you to do it in place.
+</Complexity>
+
+## Approach 3: Three reversals (optimal)
+
+Reverse the whole array. The last `k` values are now at the front, but backwards, and the other `n − k` values follow,
+also backwards. Reverse the first `k`, then reverse the rest, and both groups are the right way round. Each reversal
+swaps from both ends inwards (see [Rewriting an array in place](/concepts/rewriting-arrays-in-place/)).
+
+<Viz client:visible approach="reversals" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** The three reversals swap about `n / 2 + k / 2 + (n − k) / 2 = n` pairs: **O(n)**.
+
+**Space.** Two indices for swapping: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Rotate by one, k times | O(n · k) | O(1) | moves every value k times |
+| Copy to the new place | O(n) | O(n) | needs a second array |
+| Three reversals | O(n) | O(1) | in place, each value moved at most twice |
+
+<GrowthChart client:visible series={growth} caption="Moves to rotate n values by k = n − 1." />
+
+## Common mistakes
+
+- **Forgetting `k % n`.** With `k` larger than `n`, `reverse(nums, 0, k − 1)` runs past the end of the array.
+- **Reversing in the wrong order.** Reversing the two parts first and then the whole array rotates **left**, not
+  right.
+- **Rotating left by mistake.** Right by `k` means the **last** `k` values come to the front.
+
+## Related problems
+
+- [Rotate List](/dsa/rotate-list/): the same rotation on a linked list, where it's a cut instead of reversals.
+- [Rewriting an array in place](/concepts/rewriting-arrays-in-place/): reversal and the other in-place moves.
+- [Reverse Linked List](/dsa/reverse-linked-list/): reversal, with pointers instead of swaps.

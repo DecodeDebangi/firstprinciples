@@ -78,7 +78,7 @@ export const glossary = [
     def: "The input that makes an algorithm do the most work. Big-O usually describes this case." },
   { id: "amortised", term: "Amortised", match: ["amortised", "amortized"], read: "big-o-in-plain-words",
     def: "Averaged over many operations: one may be slow, but slow ones are rare enough that each costs little on average." },
-  { id: "in-place", term: "In place", match: ["in place", "in-place"],
+  { id: "in-place", term: "In place", match: ["in place", "in-place"], read: "rewriting-arrays-in-place",
     def: "Changing the input directly instead of building a copy, so almost no extra memory is needed." },
   { id: "hash-map", term: "Hash map", match: ["hash map", "hash maps"], read: "how-hash-maps-work",
     def: "A lookup table that stores values under keys and finds any key in about one step, O(1) on average." },

@@ -1,0 +1,84 @@
+---
+title: Remove Duplicates from Sorted Array
+leetcode: { number: 26, url: "https://leetcode.com/problems/remove-duplicates-from-sorted-array/" }
+difficulty: Easy
+topics: [Two pointers, Array]
+added: 2026-11-19
+summary: In a sorted array, keep one copy of each value at the front, in place, and report how many distinct values there are. Goes from collecting the distinct values in a second list, to a read pointer and a write pointer that compare each value with the last one kept.
+insight: "In a sorted array, copies of a value sit next to each other, so a value is new exactly when it differs from the last one kept. Read every value, and write the new ones at a second index."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array `nums` sorted from smallest to largest, possibly with repeated values. Rearrange it **in place** so
+that its first `k` positions hold each distinct value once, in their original order, and return `k`. What comes after
+position `k − 1` doesn't matter.
+
+For example, `[1, 1, 2, 3, 3, 3, 5]` returns `k = 4`, with `1, 2, 3, 5` in the first four positions.
+
+## The key question
+
+> **How do I recognise a duplicate in one pass, without remembering every value I've seen?**
+
+Usually that needs a [hash set](/concepts/how-hash-maps-work/). But the array is sorted, so all the copies of a value
+are next to each other. A value is a duplicate exactly when it equals the **last value kept**, and that's one
+comparison.
+
+## Approach 1: Collect the distinct values in a second list
+
+Walk the array, adding each value that differs from the last one in a second list. Then copy that list back.
+
+<Viz client:visible approach="withList" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to collect, one to copy back: **O(n)**.
+
+**Space.** The second list holds up to `n` values: **O(n)**.
+
+**What it wastes:** a second array that the problem doesn't allow, when the distinct values could be written straight
+into the front of `nums`.
+</Complexity>
+
+## Approach 2: Read and write pointers (optimal)
+
+`nums[0]` is always kept, so the write position `w` starts at 1. The read position `r` walks from 1 to the end. The
+last kept value is `nums[w − 1]`; if `nums[r]` differs from it, it's new, so write it at `nums[w]` and move `w` on.
+This is the same move as [Remove Element](/dsa/remove-element/), with a different test for "keep".
+
+<Viz client:visible approach="twoPointers" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, one comparison per value: **O(n)**.
+
+**Space.** Two indices: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Collect in a second list | O(n) | O(n) | copies everything out and back |
+| Read and write pointers | O(n) | O(1) | writes straight into the front |
+
+Both are O(n), so there's no growth chart.
+
+## Common mistakes
+
+- **Comparing with the wrong neighbour in the variants.** Here `nums[r − 1]` works too, because the array is sorted.
+  But only "the last value kept", `nums[w − 1]`, extends to the variant that allows each value up to twice: there you
+  compare with `nums[w − 2]`.
+- **Starting `w` at 0.** Then the first value is compared with `nums[−1]`, which doesn't exist.
+- **Forgetting the array is sorted.** Without sorting, equal values aren't neighbours, and you need a set.
+
+## Related problems
+
+- [Remove Element](/dsa/remove-element/): the same read and write pointers.
+- [Rewriting an array in place](/concepts/rewriting-arrays-in-place/): the moves behind both.
+- [Contains Duplicate](/dsa/contains-duplicate/): finding duplicates when the array isn't sorted.

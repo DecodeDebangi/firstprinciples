@@ -109,7 +109,7 @@ export function ArrayCells({ step }: { step: ArrayStep }) {
           const c = cols[i];
           if (!c) return null;
           return (
-            <span className="fp-ptr" key={name}
+            <span className={`fp-ptr${row ? " is-stacked" : ""}`} key={name}
               style={{ width: c.w, transform: `translate(${c.x}px, ${row * PTR_ROW}px)` }}>
               {name}
             </span>

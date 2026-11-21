@@ -1,0 +1,102 @@
+---
+title: Find All Numbers Disappeared in an Array
+leetcode: { number: 448, url: "https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/" }
+difficulty: Easy
+topics: [Array, Hash map]
+added: 2026-11-19
+summary: An array of n values, each between 1 and n, has some values repeated and so some missing. List the missing ones. Goes from scanning the array for each value, to a set of the values seen, to marking positions in the array itself with a minus sign.
+insight: "Each value v names a position, v − 1. Walk the array and make the number at each named position negative. Afterwards, any position still positive was never named, so its value is missing."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array `nums` of `n` whole numbers, each between 1 and `n`. Some values appear twice (or more), so some
+values from 1 to `n` don't appear at all. Return the missing ones. Try to use no extra memory besides the answer.
+
+For example, `[4, 2, 2, 6, 1, 4]` has six values, so it should contain 1 to 6. The 2 and the 4 appear twice, and 3
+and 5 never appear, so the answer is `[3, 5]`.
+
+## The key question
+
+> **How can I remember which values I've seen, without a set and without extra memory?**
+
+A [hash set](/concepts/how-hash-maps-work/) would do it, but costs O(n) memory. The values themselves are the
+clue: every value is a valid position (minus one), so the array has exactly one slot to note down each value.
+
+## Approach 1: Search the array for each value
+
+For each `v` from 1 to `n`, scan the whole array for it.
+
+<Viz client:visible approach="search" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n` values, each needing a scan of up to `n` positions: **O(n²)**.
+
+**Space.** Nothing extra besides the answer: **O(1)**.
+
+**What it wastes:** it reads the whole array again for every single value.
+</Complexity>
+
+## Approach 2: Remember the values in a set
+
+One pass puts every value in a set; then each `v` from 1 to `n` is one lookup.
+
+<Viz client:visible approach="withSet" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two passes with O(1) work per step: **O(n)**.
+
+**Space.** The set holds up to `n` values: **O(n)**.
+
+**What it wastes:** memory for a set, when the array itself has a slot for every possible value.
+</Complexity>
+
+## Approach 3: Mark positions in the array itself (optimal)
+
+Value `v` names position `v − 1`. Walk the array, and for each value make the number at its named position negative:
+that minus sign means "`v` appears". Values already turned negative by an earlier mark still tell you what they
+were: take `abs(x)`. At the end, any position `i` that is still positive was never named, so `i + 1` is missing.
+This is the "array as its own notebook" move from [Rewriting an array in
+place](/concepts/rewriting-arrays-in-place/).
+
+<Viz client:visible approach="marking" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass to mark, one to collect: **O(n)**.
+
+**Space.** The marks live in the input itself, so nothing extra besides the answer: **O(1)**. (It does change the
+input; you could turn every value positive again afterwards.)
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Search for each value | O(n²) | O(1) | rescans everything |
+| A set of values | O(n) | O(n) | simple, but a whole set |
+| Mark with minus signs | O(n) | O(1) | the array is its own set |
+
+<GrowthChart client:visible series={growth} caption="Checks when every value is 1, so almost every value is missing." />
+
+## Common mistakes
+
+- **Forgetting `abs`.** A value may already have been made negative by an earlier mark; `nums[x − 1]` with a negative
+  `x` points outside the array. Always use `abs(x)` to read what was stored.
+- **Flipping instead of marking.** `nums[p] ← -nums[p]` turns a mark back off when a value appears twice. Use
+  `-abs(nums[p])`, which stays negative.
+- **Off by one.** Value `v` lives at position `v − 1`, and position `i` stands for value `i + 1`.
+
+## Related problems
+
+- [Rewriting an array in place](/concepts/rewriting-arrays-in-place/): the marking trick and the other in-place moves.
+- [Contains Duplicate](/dsa/contains-duplicate/): the set version of "have I seen this value?".
+- First Missing Positive (LeetCode 41) uses the same idea when the values aren't promised to be between 1 and n.

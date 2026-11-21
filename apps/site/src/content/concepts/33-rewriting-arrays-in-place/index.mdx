@@ -1,0 +1,81 @@
+---
+title: "Rewriting an array in place"
+topic: Arrays & hashing
+kind: Explainer
+order: 3
+summary: Many array problems ask you to change the array itself, with no second array. Three moves cover most of them - a read pointer with a write pointer, swapping from both ends to reverse, and rotating with three reversals - plus the trick of using the array's own values as markers.
+added: 2026-11-19
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Why "in place"?
+
+**In place** means changing the input array itself, using only a few extra variables: O(1) extra space. Problems ask
+for it when the data is large, or simply to test whether you can rearrange values without copying them. The
+difficulty is that every write overwrites something, so each move has to be arranged so that nothing you still need
+gets destroyed.
+
+## Move 1: a read pointer and a write pointer
+
+To remove values, or keep only some, walk the array with two indices. `r` reads every position in order. `w` marks
+where the next value worth keeping should be written. Everything before `w` is finished; everything from `w` on is
+free to overwrite. Because `w` never passes `r`, a value is always read before its slot can be written over.
+
+<Viz client:visible approach="keep" />
+
+The kept values end up at the front, in their original order. That's the whole of [Remove
+Element](/dsa/remove-element/) and [Remove Duplicates from Sorted Array](/dsa/remove-duplicates-from-sorted-array/), and
+[Move Zeroes](/dsa/move-zeroes/) adds one more step: fill the rest with zeros.
+
+## Move 2: reversing by swapping from both ends
+
+To reverse a section, swap its two end values, step both ends inwards, and stop when they meet. Each swap puts two
+values in their final places, so a section of length `L` takes about `L / 2` swaps.
+
+<Viz client:visible approach="reverse" />
+
+The same two-ends pattern is the [two pointers](/concepts/two-pointers/) technique; here both pointers simply swap
+what they find.
+
+## Move 3: rotating with three reversals
+
+Rotating right by `k` moves the last `k` values to the front. Copying into a new array is easy but uses O(n) space.
+In place, three reversals do it: reverse the whole array, which puts the last `k` values at the front but backwards;
+then reverse the first `k`, and reverse the rest.
+
+<Viz client:visible approach="rotate" />
+
+Use `k % n` first: rotating by the full length changes nothing, so only the remainder matters (see
+[Numbers](/concepts/numbers-and-remainders/)). This is [Rotate Array](/dsa/rotate-array/).
+
+## Move 4: the array as its own notebook
+
+Sometimes you need to remember extra facts, like "have I seen the value 4?", without spare memory. If the values are
+known to be between 1 and `n`, every value names a position, and you can mark that position in the array itself: for
+example by making the number there negative. A negative number at position 3 then means "4 was seen", and taking the
+absolute value still recovers what was stored there. [Find All Numbers Disappeared in an
+Array](/dsa/find-all-numbers-disappeared-in-an-array/) works exactly like this.
+
+## Interview theory
+
+<QA q="How do you remove every copy of a value from an array in O(1) extra space?">
+Use a read pointer and a write pointer. Read every position; whenever the value should stay, write it at the write
+position and move that forward. At the end, the first `w` positions hold the kept values in order.
+</QA>
+
+<QA q="How can you rotate an array by k in place?">
+Reduce `k` to `k % n`, then reverse the whole array, reverse its first `k` values, and reverse the remaining `n − k`.
+O(n) time, O(1) space.
+</QA>
+
+<QA q="What's the risk when rewriting an array in place?">
+Overwriting a value you still need. Order the work so that every value is read before its slot is written, for
+example by keeping the write pointer behind the read pointer, or by swapping instead of copying.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
