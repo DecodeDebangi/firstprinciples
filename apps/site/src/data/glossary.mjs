@@ -152,6 +152,8 @@ export const glossary = [
     def: "A tree node with no children." },
   { id: "subtree", term: "Subtree", match: ["subtree", "subtrees"], read: "tree-traversals",
     def: "A node together with everything below it." },
+  { id: "trie", term: "Trie", match: ["trie"], read: "tries",
+    def: "A tree of letters (said \"try\"): each path from the root spells the beginning of stored words, so words with the same beginning share nodes, and a lookup takes one step per letter." },
   { id: "dfs", term: "Depth-first search (DFS)", match: ["depth-first search", "depth-first", "DFS"], read: "tree-traversals",
     def: "Exploring by going as deep as possible down one path before backing up to try the next one." },
   { id: "bfs", term: "Breadth-first search (BFS)", match: ["breadth-first search", "breadth-first", "BFS"], read: "graphs",

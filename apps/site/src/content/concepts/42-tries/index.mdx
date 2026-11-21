@@ -1,0 +1,81 @@
+---
+title: "Tries: storing words letter by letter"
+topic: Tries
+kind: Explainer
+order: 1
+summary: A trie (said "try") stores words as paths in a tree, one letter per step, so words that begin the same way share their nodes. Build one word by word, look words and prefixes up in one step per letter, and see why the "end of word" mark matters.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## The idea
+
+A [hash set](/concepts/how-hash-maps-work/) of words answers "is `cart` in the list?" quickly. It can't answer "does
+any word start with `ca`?" without checking every word. A **trie** can.
+
+A trie is a [tree](/concepts/tree-traversals/) where every edge is a letter. The root (drawn `•`) is empty. Following
+`c`, then `a`, then `r` from the root spells "car". Words that begin the same way, like "car", "cat" and "cart",
+share the nodes for their common beginning, their **prefix**. Each node keeps a map from a letter to the child node it
+leads to; with only lowercase letters, an array of 26 works too.
+
+The animations draw each node with the letter that leads to it, and "✓ end" under the nodes where a word ends.
+
+## Inserting
+
+Start at the root. For each letter, follow the child for that letter, creating it if it doesn't exist. After the
+last letter, mark the node as the end of a word.
+
+<Viz client:visible approach="build" />
+
+Inserting a word of length `L` takes **O(L)** steps, however many words are already stored. The trie needs at most one
+node per letter inserted, and fewer when words share prefixes.
+
+## Looking up a word or a prefix
+
+Follow the letters from the root. If a letter has no child, nothing stored begins that way: stop. If every letter is
+found, the answer depends on the question:
+
+- **Is the word stored?** Only if the last node is marked ✓. With "cart" stored, the path for "car" exists, but "car"
+  itself might not have been inserted.
+- **Does any stored word start with it?** Yes, as soon as the whole path exists. The mark doesn't matter.
+
+<Viz client:visible approach="search" />
+
+Both take **O(L)** for a query of length `L`. Try searching for `car`, `cars` or `do`.
+
+## What tries are good for
+
+- **Prefix questions:** autocomplete, "how many words start with…". [Implement Trie (Prefix
+  Tree)](/dsa/implement-trie-prefix-tree/) builds exactly this.
+- **Wildcards:** with a `.` that matches any letter, follow every child at that step. That's [Design Add and Search
+  Words Data Structure](/dsa/design-add-and-search-words-data-structure/).
+- **Shortest root of a word:** walk a word down the trie and stop at the first ✓, as in [Replace
+  Words](/dsa/replace-words/).
+- **Building words letter by letter:** a word whose every prefix is also a word is a path of ✓s, as in [Longest Word in
+  Dictionary](/dsa/longest-word-in-dictionary/).
+
+The cost is memory: every node holds a map of children. For a handful of exact-match lookups, a hash set is simpler.
+
+## Interview theory
+
+<QA q="What is a trie, and what does a lookup cost?">
+A tree whose edges are letters, so each path from the root spells the beginning of stored words. Looking up a word or a
+prefix of length L costs O(L), independent of how many words are stored.
+</QA>
+
+<QA q="Why does a trie node need an end-of-word flag?">
+A stored word can be the beginning of another stored word ("car" and "cart"). The path alone can't tell them apart; the
+flag records that a word ends at this node.
+</QA>
+
+<QA q="When would you choose a trie over a hash set?">
+When the questions are about prefixes or partial matches: autocomplete, wildcards, or finding many words at once. For
+exact lookups only, a hash set is simpler and uses less memory.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

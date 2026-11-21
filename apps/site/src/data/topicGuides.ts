@@ -159,6 +159,22 @@ return prev`,
     return combine(node, left, right)`,
     payoff: "Each node is visited once: O(n) time, with O(h) stack space for a tree of height h.",
   },
+  Tries: {
+    idea: "A trie is a tree of letters: each path from the root spells the start of some word, and words that begin the same way share their path. Looking up a word or a prefix takes one step per letter, however many words are stored.",
+    signals: [
+      "Many words, and questions about their beginnings (prefixes)",
+      "Autocomplete, or \"does any word start with …\"",
+      "Matching words with wildcards, letter by letter",
+      "Searching a grid or text for many words at once",
+    ],
+    template: `node ← root
+for each ch in word
+    if ch not in node.children
+        node.children[ch] ← new node
+    node ← node.children[ch]
+node.isEnd ← true`,
+    payoff: "A lookup costs O(length of the word), not O(number of words), and shared beginnings are stored only once.",
+  },
   Heaps: {
     idea: "A heap always hands you the smallest (or largest) item in O(log n), without sorting everything.",
     signals: ["Top k, kth largest or smallest", "Repeatedly take the best remaining option", "Merging k sorted sources"],
