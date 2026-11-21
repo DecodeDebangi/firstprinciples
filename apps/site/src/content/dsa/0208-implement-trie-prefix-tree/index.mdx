@@ -1,0 +1,92 @@
+---
+title: Implement Trie (Prefix Tree)
+leetcode: { number: 208, url: "https://leetcode.com/problems/implement-trie-prefix-tree/" }
+difficulty: Medium
+topics: [Trie, String, Hash map]
+added: 2026-11-21
+summary: Build a word store with three operations - insert a word, search for a whole word, and check whether any stored word starts with a prefix. Goes from a plain list that checks every word, to a trie where each operation takes one step per letter.
+insight: "Store words as paths of letters from a shared root, marking where each word ends. Then insert, search and startsWith all walk one node per letter; search also checks the end mark."
+best: { time: "O(L)", space: "O(N · L)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Build a word store, called a **trie** or prefix tree, with three operations:
+
+- `insert(word)` stores a word.
+- `search(word)` says whether that exact word was stored.
+- `startsWith(prefix)` says whether any stored word begins with `prefix`.
+
+For example, after `insert cat` and `insert car`, `search ca` is false (nobody stored "ca"), but `startsWith ca` is
+true. After `insert ca`, `search ca` becomes true.
+
+Below, `L` is the length of the word in an operation, and `N` is the number of words stored.
+
+## The key question
+
+> **How can a lookup cost depend only on the length of the word, not on how many words are stored?**
+
+See [Tries](/concepts/tries/), which builds one step by step.
+
+## Approach 1: Keep a plain list of words
+
+Insert appends to a list. `search` and `startsWith` look through every word.
+
+<Viz client:visible approach="list" />
+
+<Complexity time="O(N · L)" space="O(N · L)">
+**Time.** Insert is O(1). Each search or startsWith may compare against all `N` words, each comparison up to `L`
+letters: **O(N · L)**.
+
+**Space.** All the letters: **O(N · L)**.
+
+**What it wastes:** every query re-reads words that obviously can't match: once the first letter differs, the whole
+word is irrelevant. Grouping words by their letters, one level at a time, skips them all at once.
+</Complexity>
+
+## Approach 2: A trie (optimal)
+
+Store words as paths from a shared root, one node per letter, and mark the node where each word ends. `find` walks the
+letters of a string from the root and returns the node it reaches, or none if a letter is missing. `search` needs that
+node to exist **and** be marked as the end of a word; `startsWith` only needs it to exist.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(L)" space="O(N · L)">
+**Time.** Every operation walks at most one node per letter: **O(L)**, whatever `N` is.
+
+**Space.** At most one node per letter inserted: **O(N · L)**, and less when words share beginnings. Each node also
+holds a map of children (or an array of 26).
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same operations:
+
+<Compare client:visible />
+
+| Approach | insert | search / startsWith | Space |
+|---|---|---|---|
+| Plain list | O(1) | O(N · L) | O(N · L) |
+| Trie | O(L) | O(L) | O(N · L) |
+
+<GrowthChart client:visible series={growth} caption="Steps to store n five-letter words, then run 5 searches for words that aren't there." />
+
+A hash set of words would make `search` O(L) too, but it can't answer `startsWith` without checking every word.
+
+## Common mistakes
+
+- **Forgetting the end mark.** Without it, `search` can't tell a stored word from the beginning of a longer one.
+- **Making `startsWith` check the end mark.** A prefix doesn't have to be a whole word.
+- **Creating nodes while searching.** `find` must only follow existing children; creating them changes the trie.
+
+## Related problems
+
+- [Tries](/concepts/tries/): inserting and searching, step by step.
+- [Design Add and Search Words Data Structure](/dsa/design-add-and-search-words-data-structure/): the same trie, with
+  wildcards.
+- [Longest Common Prefix](/dsa/longest-common-prefix/): another question about shared beginnings.
