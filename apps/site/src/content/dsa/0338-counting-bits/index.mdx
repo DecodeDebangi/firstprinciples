@@ -1,0 +1,89 @@
+---
+title: Counting Bits
+leetcode: { number: 338, url: "https://leetcode.com/problems/counting-bits/" }
+difficulty: Easy
+topics: [Bit manipulation, Dynamic programming]
+added: 2026-11-21
+summary: For every number from 0 to n, count how many 1 bits it has. Goes from counting each number's bits on its own, to building each answer from a smaller number's - i has the same bits as i >> 1, plus its last bit.
+insight: "Dropping the last bit of i gives i >> 1, a smaller number whose count is already known. So ans[i] = ans[i >> 1] + (i & 1): one step per number."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a number `n`. Return a list `ans` of `n + 1` numbers where `ans[i]` is how many 1s there are in the binary form
+of `i`, for every `i` from 0 to `n`.
+
+For example, for `n = 5` the answer is `[0, 1, 1, 2, 1, 2]`: 0, 1, 10, 11, 100 and 101 have 0, 1, 1, 2, 1 and 2 ones.
+
+## The key question
+
+> **Can each answer be built from a smaller number's answer, instead of counting from scratch?**
+
+Counting one number's bits is [Number of 1 Bits](/dsa/number-of-1-bits/). Here there are `n + 1` of them, and their
+bits overlap a lot.
+
+## Approach 1: Count each number's bits on its own
+
+For every `i`, count its 1s with the `x & (x − 1)` loop from [Bit tricks](/concepts/bit-tricks/), one step per 1.
+
+<Viz client:visible approach="eachAlone" />
+
+<Complexity time="O(n log n)" space="O(1)">
+**Time.** A number up to `n` has at most `log₂ n` ones, so each costs up to O(log n): **O(n log n)** in total.
+
+**Space.** Nothing besides the answer: **O(1)** extra.
+
+**What it wastes:** `6 = 110` and `3 = 11` share the bits `11`, yet both are counted from scratch. Smaller numbers'
+answers are already sitting in the list.
+</Complexity>
+
+## Approach 2: Reuse the answer for i >> 1 (optimal)
+
+`i >> 1` is `i` with its last bit dropped: `6 = 110` becomes `3 = 11`. It's smaller than `i`, so its answer is already
+filled in. `i` has the same bits plus its last one, which is `i & 1`. So:
+
+```text
+ans[i] = ans[i >> 1] + (i & 1)
+```
+
+<Viz client:visible approach="fromHalf" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One lookup and one addition per number: **O(n)**.
+
+**Space.** Nothing besides the answer: **O(1)** extra.
+</Complexity>
+
+Building each answer from smaller answers like this is [dynamic programming](/concepts/memoisation-vs-tabulation/).
+`ans[i] = ans[i & (i − 1)] + 1` works too: `i & (i − 1)` is smaller, with one fewer 1.
+
+## Comparing the approaches
+
+Both for the same `n`:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Count each on its own | O(n log n) | O(1) | recounts shared bits |
+| Reuse ans[i >> 1] | O(n) | O(1) | one step per number |
+
+<GrowthChart client:visible series={growth} caption="Steps to fill the answer for 0 to n." />
+
+## Common mistakes
+
+- **Filling the list out of order.** `ans[i >> 1]` must be filled before `ans[i]`, so go from 0 upwards.
+- **Mixing up `i >> 1` and `i − 1`.** `i − 1` can have many more ones than `i` (`7` vs `8`), so its count doesn't
+  help directly.
+- **Forgetting `ans[0] = 0`.** Every chain of halvings ends at 0.
+
+## Related problems
+
+- [Number of 1 Bits](/dsa/number-of-1-bits/): counting one number.
+- [Bit tricks](/concepts/bit-tricks/): shifts and x & (x − 1).
+- [Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/): building answers from smaller ones.
