@@ -1,0 +1,91 @@
+---
+title: String to Integer (atoi)
+leetcode: { number: 8, url: "https://leetcode.com/problems/string-to-integer-atoi/" }
+difficulty: Medium
+topics: [String, Math]
+added: 2026-11-21
+summary: Read a whole number out of the start of a piece of text, following exact rules - skip leading spaces, take one optional sign, read digits until something else, and clamp the answer to the 32-bit range. Goes from reading everything and clamping at the end, to checking for overflow before every digit.
+insight: "Build the number digit by digit with result · 10 + d. Before each step, check whether that would pass 2³¹ − 1; if so, stop and return the limit, so the number never overflows."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s`. Read a 32-bit signed integer from its start, following these rules in order:
+
+1. Skip any spaces at the start.
+2. If the next character is `+` or `-`, it sets the sign. At most one sign is read.
+3. Read digits until a character that isn't a digit, or the end. Leading zeros are fine.
+4. If no digits were read, the answer is 0.
+5. If the number is below −2³¹ (−2147483648), return −2³¹; if it's above 2³¹ − 1 (2147483647), return 2³¹ − 1.
+
+For example, `"  -0420x9"` gives −420: two spaces are skipped, the sign is negative, then `0420` is read, and the `x`
+stops it. `"+-1"` gives 0, because after the `+` the next character isn't a digit.
+
+## The key question
+
+> **How do I read a number that may be too big to store, without ever storing it?**
+
+Reading the digits is the move from [Reading text apart](/concepts/reading-text-apart/): `result ← result · 10 + d`.
+The difficulty is the last rule. In most languages an integer has a fixed size, and going past it
+[overflows](/concepts/numbers-and-remainders/), silently giving a wrong value.
+
+## Approach 1: Read everything, clamp at the end
+
+Follow rules 1 to 3, building the whole number, then apply the sign and clamp it into range.
+
+<Viz client:visible approach="clampEnd" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass: **O(n)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** nothing in time, but it's only correct if the number type can hold whatever the text contains. In
+Python, whose integers grow as needed, it works. In Java, C++ or JavaScript, a long run of digits overflows inside the
+loop, so the value is already wrong before the clamp runs. Type `99999999999` into the box to see the problem: the
+number grows past the limit before anything notices.
+</Complexity>
+
+## Approach 2: Check before every digit (optimal)
+
+Before adding digit `d`, ask whether `result · 10 + d` would be larger than `MAX = 2³¹ − 1`. Rearranged so that nothing
+large is ever computed, that's `result > (MAX − d) / 10`. If so, stop and return `MAX` for a positive number or
+`−MAX − 1 = −2³¹` for a negative one. (A negative number can reach one further than a positive one, and returning
+`−2³¹` whenever the digits pass `MAX` is right in both cases.)
+
+<Viz client:visible approach="checkEach" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, with one extra comparison per digit: **O(n)**.
+
+**Space.** A few variables: **O(1)**, and `result` never goes above `MAX`, so it fits in a 32-bit integer.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same text:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Read everything, clamp at the end | O(n) | O(1) | overflows with fixed-size integers |
+| Check before every digit | O(n) | O(1) | never overflows |
+
+Both are O(n), so there's no growth chart; the difference is correctness.
+
+## Common mistakes
+
+- **Skipping spaces in the middle.** Only leading spaces are skipped: `"4 2"` is 4.
+- **Reading two signs.** `"+-1"` is 0, not −1.
+- **Checking for overflow after the multiplication.** By then the value has already wrapped round.
+- **Forgetting the empty case.** `""`, `"   "` and `"-"` all give 0.
+
+## Related problems
+
+- [Reading text apart](/concepts/reading-text-apart/): turning digits into a number.
+- [Numbers and remainders](/concepts/numbers-and-remainders/): integer sizes and overflow.
+- [Add Two Numbers](/dsa/add-two-numbers/): building a number digit by digit, with a carry.
