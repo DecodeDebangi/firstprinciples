@@ -1,0 +1,90 @@
+---
+title: Longest Word in Dictionary
+leetcode: { number: 720, url: "https://leetcode.com/problems/longest-word-in-dictionary/" }
+difficulty: Medium
+topics: [Trie, String, Hash map]
+added: 2026-11-21
+summary: Find the longest word in a list that can be built one letter at a time, where every shorter beginning of it is also in the list. Goes from checking every word's beginnings in a set, to walking a trie only through nodes that end a word.
+insight: "In a trie of the words, a word can be built letter by letter exactly when every node on its path is marked as the end of a word. So explore only through marked nodes, and the deepest one reached is the answer."
+best: { time: "O(N · L)", space: "O(N · L)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of words. Find the longest word that can be built one letter at a time by other words in the list:
+every beginning of it, from its first letter up, must also be in the list. If several are equally long, return the one
+that comes first in alphabetical order. If no word qualifies, return the empty string.
+
+For example, in `c, ca, cat, cats, cab, d, do, dot, dotty` the answer is `cats`, built from `c`, `ca` and `cat`.
+`dotty` is longer but can't be built, because `dott` isn't in the list.
+
+Below, `N` is the number of words and `L` the longest length.
+
+## The key question
+
+> **How do I check every beginning of every word without rebuilding and looking up each one?**
+
+Words that share a beginning share a path in a [trie](/concepts/tries/), so each beginning is checked once.
+
+## Approach 1: Check every prefix in a set
+
+Put all the words in a [hash set](/concepts/how-hash-maps-work/). For each word, look up each of its shorter
+beginnings. If they're all there and the word beats the best so far, keep it.
+
+<Viz client:visible approach="prefixSet" />
+
+<Complexity time="O(N · L²)" space="O(N · L)">
+**Time.** Each word has up to `L` beginnings, and building and hashing one costs up to `L`: **O(N · L²)**.
+
+**Space.** The set: **O(N · L)**.
+
+**What it wastes:** `cats` checks `c`, `ca` and `cat`, then `cab` checks `c` and `ca` again. Shared beginnings are
+re-checked for every word that has them.
+</Complexity>
+
+## Approach 2: Walk the trie through end marks only (optimal)
+
+Insert every word into a trie. A word can be built letter by letter exactly when every node on its path ends a word.
+So walk the trie from the root, only stepping into children marked as the end of a word, and keep the longest path
+found. Trying children from `a` to `z`, and replacing the best only with something strictly longer, settles ties in
+alphabetical order automatically.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(N · L)" space="O(N · L)">
+**Time.** Building the trie reads every letter once, and the walk visits each node at most once: **O(N · L)**.
+
+**Space.** The trie: **O(N · L)** nodes at most, plus the recursion's [call stack](/concepts/recursion/), O(L).
+</Complexity>
+
+Sorting the words first also works: go through them shortest first, and add a word to a set of buildable words only if
+the word minus its last letter is already there. Sorting costs O(N log N) comparisons of words.
+
+## Comparing the approaches
+
+Both on the same words:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every prefix in a set | O(N · L²) | O(N · L) | re-checks shared beginnings |
+| Trie, through end marks | O(N · L) | O(N · L) | each beginning checked once |
+
+<GrowthChart client:visible series={growth} caption="Steps for the words a, aa, aaa, … up to n letters, where every word can be built." />
+
+## Common mistakes
+
+- **Forgetting the first letter.** A word can only start being built from a one-letter word, so `cat` needs `c` too.
+- **Breaking ties the wrong way.** Among equally long answers, return the alphabetically first one.
+- **Walking into unmarked nodes.** Anything below a missing step can't be built, however long it is.
+
+## Related problems
+
+- [Tries](/concepts/tries/): the end-of-word marks.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/): building the trie.
+- [Replace Words](/dsa/replace-words/): stopping at the first end mark instead of requiring all of them.
