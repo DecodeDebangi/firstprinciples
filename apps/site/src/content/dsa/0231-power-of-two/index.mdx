@@ -1,0 +1,84 @@
+---
+title: Power of Two
+leetcode: { number: 231, url: "https://leetcode.com/problems/power-of-two/" }
+difficulty: Easy
+topics: [Bit manipulation, Math]
+added: 2026-11-21
+summary: Decide whether a number is a power of two (1, 2, 4, 8, …). Goes from halving it while it's even and checking that 1 is left, to one bit test - a power of two has exactly one 1 bit, so n & (n − 1) is 0.
+insight: "In binary, every power of two is a single 1 followed by 0s. n & (n − 1) removes the lowest 1, so it's 0 exactly when n had only one 1."
+best: { time: "O(1)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a whole number `n`, which may be negative. Return whether it's a power of two: `2^k` for some whole `k ≥ 0`.
+The powers of two are 1, 2, 4, 8, 16, …
+
+For example, 16 is (`2^4`), but 48 isn't: `48 = 16 · 3`. Zero and negative numbers never are.
+
+## The key question
+
+> **What do all powers of two have in common, written in binary?**
+
+See [Binary](/concepts/binary-and-bits/): a power of two is `1` followed only by `0`s, like `10000`.
+
+## Approach 1: Halve while even
+
+A power of two is 1 doubled `k` times. So undo it: while `n` is even, halve it. If what's left is 1, it was a power of
+two; any other odd number means some other factor was in there.
+
+<Viz client:visible approach="halve" />
+
+<Complexity time="O(log n)" space="O(1)">
+**Time.** Each halving removes one bit, so at most `log₂ n` halvings: **O(log n)**, at most 31 for a 32-bit number.
+
+**Space.** One number: **O(1)**.
+
+**What it wastes:** it checks one bit per loop. The question "is there exactly one 1?" can be answered for all the bits
+at once.
+</Complexity>
+
+## Approach 2: Exactly one 1 bit (optimal)
+
+`n & (n − 1)` removes the lowest 1 bit (see [Bit tricks](/concepts/bit-tricks/)). If `n` has a single 1, nothing is
+left. So `n` is a power of two exactly when `n > 0` and `n & (n − 1) = 0`. The `n > 0` part matters: `0 & −1` is also
+0.
+
+<Viz client:visible approach="oneBit" />
+
+<Complexity time="O(1)" space="O(1)">
+**Time.** One subtraction, one AND, one comparison: **O(1)**.
+
+**Space.** **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same number:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Halve while even | O(log n) | O(1) | one bit per loop |
+| One 1 bit | O(1) | O(1) | all bits at once |
+
+<GrowthChart client:visible series={growth} caption="Steps for n = 2^k, by k." />
+
+## Common mistakes
+
+- **Forgetting zero and negatives.** `0 & (0 − 1)` is 0, so the test needs `n > 0`.
+- **Using floating-point logarithms.** `log₂(n)` being a whole number seems neat, but rounding errors can make it wrong
+  for large `n`.
+- **Operator precedence.** In C, C++ and Java, `n & (n - 1) == 0` compares first and ANDs second. Bracket it:
+  `(n & (n - 1)) == 0`.
+
+## Related problems
+
+- [Bit tricks](/concepts/bit-tricks/): where n & (n − 1) comes from.
+- [Number of 1 Bits](/dsa/number-of-1-bits/): counting all the 1s.
+- [Counting Bits](/dsa/counting-bits/): the count for every number up to n.
