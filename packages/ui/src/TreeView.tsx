@@ -50,7 +50,8 @@ function Tree({ tree }: { tree: TreeData }) {
     pos.set(id, { x, d });
     return x;
   };
-  if (tree.layout === "compact") walkCompact(tree.root, 0); else walk(tree.root, 0);
+  if (tree.roots) for (const r of tree.roots) walkCompact(r, 0); // a forest, side by side
+  else if (tree.layout === "compact") walkCompact(tree.root, 0); else walk(tree.root, 0);
   const count = Math.max(order, 1);
   const xp = (id: string) => ((pos.get(id)!.x + 0.5) / count) * 100;
   const yp = (id: string) => TOP + pos.get(id)!.d * LEVEL + 20;

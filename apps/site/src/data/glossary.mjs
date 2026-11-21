@@ -160,6 +160,8 @@ export const glossary = [
     def: "Exploring level by level: everything one step away, then everything two steps away, and so on." },
   { id: "graph", term: "Graph", match: ["graph", "graphs"], read: "graphs",
     def: "Points (nodes) joined by connections (edges), like cities joined by roads." },
+  { id: "union-find", term: "Union-find", match: ["union-find", "disjoint set", "disjoint sets"], read: "union-find",
+    def: "A structure that tracks which items are in the same group as links are added. Each group is a tree of parent pointers: find(x) returns its root, union(a, b) joins two groups." },
   { id: "dijkstra", term: "Dijkstra's algorithm", match: ["Dijkstra's algorithm", "Dijkstra's", "Dijkstra"],
     def: "Finds the cheapest route when connections have different costs, like roads of different lengths. It's breadth-first search with a min-heap: it always continues from the closest place it hasn't finished yet." },
   { id: "heap", term: "Heap", match: ["heap", "heaps", "priority queue", "priority queues"], read: "heaps",

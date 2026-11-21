@@ -59,6 +59,7 @@ export const roadmap: RoadmapStep[] = [
     title: "Advanced",
     topics: [
       { name: "Graphs", blurb: "Explore connections with BFS and DFS.", tags: ["Graph", "BFS", "DFS"] },
+      { name: "Union-find", blurb: "Keep track of which things are connected as links are added.", tags: ["Union-find"] },
       { name: "Dynamic programming", blurb: "Build each answer from smaller answers.", tags: ["Dynamic programming"] },
       { name: "Greedy & intervals", blurb: "Take the best local choice, safely.", tags: ["Greedy", "Intervals"] },
       { name: "Bit manipulation", blurb: "Work directly with the 0s and 1s inside a number.", tags: ["Bit manipulation"] },

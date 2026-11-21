@@ -1,0 +1,91 @@
+---
+title: "Union-find: keeping track of groups"
+topic: Union-find
+kind: Explainer
+order: 1
+summary: Union-find (also called a disjoint set) answers "are these two connected?" while links keep arriving. Each group is a tree of parent pointers; find walks up to the root that names the group, and union joins two groups by pointing one root at the other. Two small improvements make both operations almost O(1).
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## The question it answers
+
+Imagine items (computers, people, cells of a grid) and links arriving one at a time: "0 is connected to 1", "2 to 3",
+"1 to 3"… At any moment you want to know whether two items are connected, directly or through others, and how many
+separate groups there are. A [graph search](/concepts/graphs/) after every new link would work, but repeats a lot of
+work. **Union-find** keeps the groups up to date as links arrive.
+
+## Groups as trees
+
+Every item has a **parent**. At the start, each item is its own parent: a group of one, and its own **root**. A group is
+a tree of parent pointers, and its root names the group.
+
+- **find(x)** follows parents up from `x` until it reaches an item that is its own parent: the root. Two items are in
+  the same group exactly when they have the same root.
+- **union(a, b)** finds both roots. If they differ, point one root at the other. That single change moves a whole tree
+  into the other group.
+
+The drawing shows each group as a tree, roots at the top; the panel shows the `parent` array the trees come from.
+
+<Viz client:visible approach="basic" />
+
+## The catch: long chains
+
+A find costs one step per level of its tree. Nothing so far stops a tree from becoming a long chain. Linking `0-1`,
+`1-2`, `2-3`, `3-4` one after another, each union puts the old chain under a new root:
+
+<Viz client:visible approach="chain" />
+
+Now `find(0)` walks the whole chain: O(n) per operation, and O(n²) over `n` links.
+
+## Two fixes that make it almost O(1)
+
+- **Union by size.** Keep the size of each group. When joining, hang the root of the **smaller** tree under the root of
+  the bigger one. An item only gets one level deeper when its group at least doubles, so no tree is deeper than
+  `log₂ n`.
+- **Path compression.** While find walks up to the root, point every item it passes straight at the root. The next
+  find from any of them takes one step.
+
+The same links, with both fixes:
+
+<Viz client:visible approach="optimised" />
+
+Together they make each operation so close to O(1) that it's usually treated as constant. (The exact bound grows with
+the inverse Ackermann function, which is below 5 for any input that fits in a computer.)
+
+## Where it's used
+
+- **Counting groups** as links arrive: start with `n` groups and subtract one for each union that joins two different
+  roots. That's [Number of Provinces](/dsa/number-of-provinces/) and [Number of Operations to Make Network
+  Connected](/dsa/number-of-operations-to-make-network-connected/).
+- **Finding a cycle**: in an undirected graph, an edge whose two ends already have the same root closes a loop.
+  That's [Redundant Connection](/dsa/redundant-connection/).
+- **Merging things that turn out equal**, like the letters in [Satisfiability of Equality
+  Equations](/dsa/satisfiability-of-equality-equations/).
+
+Union-find can only join groups, never split them. If links can also be removed, it's the wrong tool.
+
+## Interview theory
+
+<QA q="What are the two operations of union-find, and what do they do?">
+find(x) returns the root of x's tree, which identifies its group. union(a, b) finds both roots and, if they differ,
+points one at the other, merging the groups.
+</QA>
+
+<QA q="What do union by size and path compression each fix?">
+Union by size keeps trees shallow (depth at most log₂ n) by hanging the smaller tree under the bigger. Path compression
+flattens trees as they're used, by pointing every item a find passes straight at the root. Together, operations are
+almost O(1).
+</QA>
+
+<QA q="When would you choose union-find over BFS or DFS?">
+When connections arrive one at a time and you need to answer "connected?" or "how many groups?" in between, or to spot
+the first edge that makes a cycle. A single BFS/DFS is fine when the whole graph is known up front and only asked once.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

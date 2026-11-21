@@ -212,6 +212,24 @@ while queue not empty
             queue.push(nxt)`,
     payoff: "Every node and edge is handled once: O(V + E).",
   },
+  "Union-find": {
+    idea: "Keep every item in a group, stored as a tree where each item points towards its group's root. find(x) follows the pointers to the root, which names the group; union(a, b) joins two groups by pointing one root at the other.",
+    signals: [
+      "Links arrive one by one, and you ask \"are these connected?\"",
+      "Counting groups (components) as connections are added",
+      "Finding the link that first creates a cycle",
+      "Merging things that turn out to be the same",
+    ],
+    template: `function find(x)
+    if parent[x] ≠ x
+        parent[x] ← find(parent[x])
+    return parent[x]
+function union(a, b)
+    ra, rb ← find(a), find(b)
+    if ra ≠ rb
+        parent[rb] ← ra`,
+    payoff: "With union by size and path compression, each operation is almost O(1), so n links take about O(n), with no graph search.",
+  },
   "Dynamic programming": {
     idea: "Build each answer from smaller answers you've already computed, storing them so nothing is solved twice.",
     signals: ["Count the ways, or find the best value", "The answer for n depends on answers for smaller n", "A recursive solution repeats the same subproblems"],
