@@ -1,4 +1,4 @@
-import { measureGrowth, treeFromLevelOrder, type Approach, type InputField, type ListRow, type Prepared, type Tone, type TreeData, type TreeNodeData } from "@firstprinciples/ui";
+import { treeFromLevelOrder, type Approach, type InputField, type ListRow, type Prepared, type Tone, type TreeData, type TreeNodeData } from "@firstprinciples/ui";
 
 export type Input = { list: number[]; tree: (number | null)[] };
 type P = Input;

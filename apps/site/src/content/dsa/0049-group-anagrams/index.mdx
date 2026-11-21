@@ -1,0 +1,115 @@
+---
+title: Group Anagrams
+leetcode: { number: 49, url: "https://leetcode.com/problems/group-anagrams/" }
+difficulty: Medium
+topics: [Hash map, String, Sorting]
+added: 2026-11-21
+summary: Put words made of the same letters into the same group. Goes from comparing each word with every group so far, to giving each word a key built from its letters (sorted, or counted) and collecting the words in a map.
+insight: "Two words are anagrams exactly when their letters sorted are the same text, or their letter counts are the same. Use that as a key in a map, and every group collects itself in one pass."
+best: { time: "O(n · k)", space: "O(n · k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of lowercase words. Group together the words that are anagrams of each other, meaning they use exactly
+the same letters the same number of times, and return the groups in any order. A word with no anagram in the list is a
+group on its own.
+
+For example, `tap, pat, owl, low, apt, cat` gives three groups: `[tap, pat, apt]`, `[owl, low]` and `[cat]`.
+
+Below, `n` is the number of words and `k` is the length of the longest word.
+
+## The key question
+
+> **What can I compute from a word alone that is the same for all its anagrams, and different for every other word?**
+
+That's a grouping key (see [Hashing patterns](/concepts/hashing-patterns/)). Without one, the only way to find a
+word's group is to compare it with the others.
+
+## Approach 1: Compare with each group
+
+Keep a list of groups. For each word, check it against the first word of each group with the letter-counting check
+from [Valid Anagram](/dsa/valid-anagram/). If one matches, join that group; if none does, start a new one.
+
+<Viz client:visible approach="compare" />
+
+<Complexity time="O(n² · k)" space="O(n · k)">
+**Time.** In the worst case no two words are anagrams, so the `i`-th word is compared with `i` groups: about
+`n² / 2` checks. Each check reads both words, O(k). Together: **O(n² · k)**.
+
+**Space.** The groups hold every word once: **O(n · k)**, which is the answer itself. Each check needs only a small
+count table.
+
+**What it wastes:** a word is compared with groups it obviously doesn't belong to. If a word could tell us its group
+directly, one lookup would replace all those checks.
+</Complexity>
+
+## Approach 2: Sorted letters as the key
+
+Sort each word's letters: `tap`, `pat` and `apt` all become `apt`. Two words sort to the same text exactly when
+they're anagrams, so that text is the key. A [hash map](/concepts/how-hash-maps-work/) from key to list collects
+the groups as you go.
+
+<Viz client:visible approach="sorted" />
+
+<Complexity time="O(n · k log k)" space="O(n · k)">
+**Time.** Sorting a word of `k` letters takes O(k log k), and the map lookup is O(k) on average (hashing reads the
+key's `k` letters). For `n` words: **O(n · k log k)**.
+
+**Space.** The map holds each word once, plus one key per group: **O(n · k)**.
+
+**What it wastes:** sorting does more work than needed. To know two words have the same letters, it's enough to count
+the letters, which needs one pass and no sort.
+</Complexity>
+
+## Approach 3: Letter counts as the key (optimal)
+
+Count each word's letters into 26 slots, one per letter (`code(ch) - code('a')` is the letter's place in the alphabet,
+from 0, see [Strings and characters](/concepts/strings-and-characters/)). Anagrams have exactly the same 26 counts, so
+write the counts out as text and use that as the key. The animation shows only the letters that appear: `tap` is
+`a×1 p×1 t×1`.
+
+<Viz client:visible approach="counts" />
+
+<Complexity time="O(n · k)" space="O(n · k)">
+**Time.** One pass over each word's `k` letters, plus writing out the 26 counts: O(k + 26) per word, so
+**O(n · k)** in total, since 26 is a constant.
+
+**Space.** The map holds every word, and each key has a fixed 26 counts: **O(n · k)**.
+</Complexity>
+
+For short words, sorting a handful of letters can be just as quick as filling and writing out 26 slots, so in practice
+approaches 2 and 3 are close. Approach 3 wins as the words get longer.
+
+## Comparing the approaches
+
+All three on the same words:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Compare with each group | O(n² · k) | O(n · k) | checks every group so far |
+| Sorted letters as the key | O(n · k log k) | O(n · k) | one sort and one lookup per word |
+| Letter counts as the key | O(n · k) | O(n · k) | one pass and one lookup per word |
+
+<GrowthChart client:visible series={growth} caption="Letter steps for n words of 32 letters, no two of them anagrams." />
+
+## Common mistakes
+
+- **Using the letters as a set.** "aab" and "abb" have the same letters but different counts, so they aren't anagrams.
+  The key must record how many of each letter.
+- **Writing counts with no separator.** Counts of 1 and 11 next to each other can be misread: written as `1,11` and
+  `11,1` they're different keys, but run together both are `111`. Put a separator between counts, or the letter next
+  to each one.
+- **Adding the key instead of the word.** The answer lists the original words, not their sorted letters.
+
+## Related problems
+
+- [Valid Anagram](/dsa/valid-anagram/): checking just two words.
+- [Hashing patterns](/concepts/hashing-patterns/): grouping by a key, and the other map moves.
+- [Top K Frequent Elements](/dsa/top-k-frequent-elements/): counting, then picking the most common.

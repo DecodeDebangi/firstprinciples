@@ -1,0 +1,116 @@
+---
+title: "Hashing patterns: count, remember, look up, group"
+topic: Arrays & hashing
+kind: Explainer
+order: 4
+summary: Most hash map solutions are one of five moves - counting, remembering what you've seen, looking up the value you need, grouping by a key, and keeping running totals. See three of them animated, learn which one a problem is asking for, and what to store as the key and the value.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Searching becomes looking up
+
+A [hash map](/concepts/how-hash-maps-work/) stores pairs: a **key**, which you look things up by, and a **value**
+stored under it. Finding a key takes O(1) on average, however many pairs there are. A **hash set** is the same thing
+with keys only: it answers "is this in here?".
+
+That changes how you solve problems. Many slow solutions have a loop inside a loop: for each value, search all the
+others for something. If you can name what you're searching for, you can store the values in a map as you go and
+look it up instead. The inner loop disappears, and O(n²) becomes O(n), paid for with O(n) memory.
+
+Almost every such solution is one of five moves. Each one is a choice of **what the key is** and **what to store
+under it**.
+
+| Move | Key | Stored value | The question it answers |
+|---|---|---|---|
+| Count | a value | how many times it appeared | How often? |
+| Seen | a value | nothing (a set) | Have I met this before? |
+| Look up what you need | a value | its index | Is the partner I need already here? |
+| Group | something values share | the list of those values | Which ones belong together? |
+| Running totals | a total so far | how many times it appeared | How many stretches add up to k? |
+
+## Move 1: count
+
+Walk once, and for each value add one to its count. `(count[x] or 0)` means "the number stored under `x`, or 0 if
+`x` isn't stored yet", so the first sighting starts at 1.
+
+<Viz client:visible approach="count" />
+
+Counting answers "how often" questions: the most common value ([Majority Element](/dsa/majority-element/), [Top K
+Frequent Elements](/dsa/top-k-frequent-elements/)), or whether two words use the same letters the same number of times
+([Valid Anagram](/dsa/valid-anagram/)).
+
+## Move 2: have I seen it?
+
+When all you need to know is whether a value appeared before, store it in a set. Before adding each value, ask
+`x in seen`: a yes means a repeat. That's the whole of [Contains Duplicate](/dsa/contains-duplicate/), and [Longest
+Consecutive Sequence](/dsa/longest-consecutive-sequence/) uses a set to ask "is `x − 1` here?" in O(1).
+
+## Move 3: look up what you need
+
+Sometimes each value needs a partner. In [Two Sum](/dsa/two-sum/), a value `x` needs `target − x` (its
+**complement**: what's left to make the target). Instead of searching for it, look it up among the values already
+passed, then store `x` with its index so later values can find it. Each value is checked against every earlier value
+at once, with one lookup.
+
+## Move 4: group by a key
+
+To put values that belong together into lists, work out a **key** that's the same for every member of a group, and
+different for different groups. The map stores key → list. Here the key is the remainder after dividing by 3:
+
+<Viz client:visible approach="group" />
+
+The skill is choosing the key. For words made of the same letters, the key can be the word's letters sorted, so "tea"
+and "eat" both become "aet". That's [Group Anagrams](/dsa/group-anagrams/).
+
+## Move 5: running totals in a map
+
+To count the stretches of an array that add up to `k` (a stretch with no gaps is called a **subarray**), use
+[prefix sums](/concepts/prefix-sums/). A subarray ending at the current position adds up to `k` exactly when the
+total so far, minus the total at some earlier point, is `k`. So the question at each position is: how many earlier
+totals were exactly `total − k`? Keep every earlier total in a map, with how often it appeared, and that's one
+lookup.
+
+<Viz client:visible approach="prefixMap" />
+
+The map starts with `seen[0] = 1`, the total before any value, so that subarrays starting at position 0 are counted
+too. This works with negative numbers, where a [sliding window](/concepts/sliding-window/) doesn't. It's [Subarray
+Sum Equals K](/dsa/subarray-sum-equals-k/).
+
+## Which move is it?
+
+- "How many times", "most common", "same letters": **count**.
+- "Any repeats?", "is x present?": **seen**, with a set.
+- "Two values that add up to", "a pair that": **look up what you need**, storing each value with its index.
+- "Group", "which belong together", "same pattern": **group**, and think hard about the key.
+- "How many subarrays add up to", "a stretch with total": **running totals**.
+
+## Interview theory
+
+<QA q="What does a hash map buy you, and what does it cost?">
+Lookups in O(1) on average, which often removes an inner loop and turns O(n²) into O(n). The cost is O(n) extra
+memory for the stored keys.
+</QA>
+
+<QA q="When should you use a set instead of a map?">
+When you only need to know whether something is present, and nothing about it. A map is for when you also need a
+value stored with each key: a count, an index or a list.
+</QA>
+
+<QA q="In 'count subarrays that add up to k', why does the map start with seen[0] = 1?">
+The total before any value is 0. Without it, a subarray starting at position 0 (whose total is just the running total)
+would never find an earlier total of `total − k = 0`, and would be missed.
+</QA>
+
+<QA q="What makes a good grouping key?">
+Every member of a group gives the same key, and members of different groups always give different keys. Sorted
+letters work for anagrams because anagrams contain the same letters, and different letters can't sort to the same
+string.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

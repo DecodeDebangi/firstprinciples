@@ -92,6 +92,8 @@ export const glossary = [
     def: "The biggest whole number that divides two numbers exactly. The GCD of 18 and 12 is 6. Euclid's algorithm finds it fast: gcd(a, b) = gcd(b, a % b), until the remainder is 0." },
   { id: "prefix-sum", term: "Prefix sum", match: ["prefix sum", "prefix sums"], read: "prefix-sums",
     def: "A running total: prefix[i] is the sum of everything before position i, so any range's sum takes one subtraction." },
+  { id: "subarray", term: "Subarray", match: ["subarray", "subarrays"], read: "hashing-patterns",
+    def: "A stretch of an array with no gaps: positions l to r, in order. [3, 9] is a subarray of [4, 3, 9, 1]; [4, 9] isn't, because it skips the 3." },
   { id: "binary-search", term: "Binary search", match: ["binary search"], read: "binary-search-invariants",
     def: "Finding a value in a sorted list by checking the middle and discarding the half it can't be in. O(log n)." },
   { id: "invariant", term: "Invariant", match: ["invariant", "invariants"], read: "binary-search-invariants",

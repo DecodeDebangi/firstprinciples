@@ -65,7 +65,7 @@ Some problems ask how many stretches add up to a target `k`. A stretch `l..r` ad
 `prefix[r + 1] − prefix[l] = k`, that is, when an *earlier* prefix sum equals `prefix[r + 1] − k`. So walk once,
 keeping a running total, and use a [hash map](/concepts/how-hash-maps-work/) to count how many times each earlier
 total has appeared. Each step asks one O(1) question: "how many earlier totals were exactly `k` less than this one?"
-That turns an O(n²) search over every pair of ends into O(n). The hashing patterns read covers it in full.
+That turns an O(n²) search over every pair of ends into O(n). [Hashing patterns](/concepts/hashing-patterns/) covers it in full.
 
 ## Interview theory
 

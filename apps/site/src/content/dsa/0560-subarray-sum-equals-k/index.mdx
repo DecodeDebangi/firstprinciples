@@ -1,0 +1,97 @@
+---
+title: Subarray Sum Equals K
+leetcode: { number: 560, url: "https://leetcode.com/problems/subarray-sum-equals-k/" }
+difficulty: Medium
+topics: [Prefix sum, Hash map]
+added: 2026-11-21
+summary: Count the stretches of an array, with no gaps, that add up to exactly k. Goes from trying every start and end with a running total, to one pass that asks a map how many earlier running totals were exactly k less than the current one.
+insight: "A stretch ending here adds up to k exactly when the running total now, minus the running total just before the stretch, is k. So count how often each running total has appeared, and look up total − k."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an array of whole numbers `nums`, which may be negative, and a number `k`. Count how many subarrays add up to
+exactly `k`. A subarray is a stretch of neighbouring positions, `l` to `r`, with nothing skipped, and it has at least
+one value.
+
+For example, `[3, −1, 1, 2, −2, 3]` with `k = 3` has 7: `3`, `3, −1, 1`, `1, 2`, `3, −1, 1, 2, −2`, `−1, 1, 2, −2, 3`,
+`2, −2, 3` and the last `3`.
+
+## The key question
+
+> **Can I tell how many subarrays ending at this position add up to k, without going back over the earlier values?**
+
+[Prefix sums](/concepts/prefix-sums/) turn any subarray's total into a subtraction of two running totals. The question
+then becomes how quickly you can find the right earlier totals.
+
+## Approach 1: Every start, with a running total
+
+For each start `i`, extend the end `j` one step at a time and keep a running total, so each subarray costs one
+addition instead of being added up from scratch. Count every total that equals `k`.
+
+<Viz client:visible approach="everyStart" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** There are `n` starts, and start `i` has `n − i` ends: `n + (n − 1) + … + 1 = n(n + 1) / 2` subarrays, one
+addition each. **O(n²)**. Adding each one up from scratch would be O(n³).
+
+**Space.** Three numbers: **O(1)**.
+
+**What it wastes:** every start recomputes totals the earlier starts already passed through. The total of `i..j` is
+just "total up to `j`" minus "total before `i`", and those can be remembered.
+</Complexity>
+
+## Approach 2: Running total and a map (optimal)
+
+Walk once with a running total. The subarray from `l` to the current position adds up to `k` exactly when the running
+total now, minus the running total before `l`, is `k`. That is, when an earlier running total was `total − k`. So
+keep a [hash map](/concepts/how-hash-maps-work/) from each running total seen so far to how many times it appeared,
+and at each position add `seen[total − k]` to the count (see [Hashing patterns](/concepts/hashing-patterns/)).
+
+<Viz client:visible approach="prefixMap" />
+
+The map starts with `seen[0] = 1`: before any value, the running total is 0. Without it, subarrays that start at
+position 0 would never be counted. And the lookup comes **before** recording the current total, so that when
+`k = 0` a position can't pair with itself and count an empty subarray.
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass, with one lookup and one update per value, each O(1) on average: **O(n)**.
+
+**Space.** Up to `n + 1` different running totals in the map: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same array:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Every start, running total | O(n²) | O(1) | visits every subarray |
+| Running total and a map | O(n) | O(n) | one lookup per position |
+
+<GrowthChart client:visible series={growth} caption="Additions and lookups for n values." />
+
+## Common mistakes
+
+- **Using a sliding window.** Growing and shrinking a window only works when every value is positive, so that adding
+  a value always raises the total. Here values can be negative, so a total that's too big can still come back down.
+- **Forgetting `seen[0] = 1`.** Subarrays that start at position 0 are then missed.
+- **Recording the total before looking it up.** With `k = 0`, the current total would find itself and count a
+  subarray with no values in it.
+- **Storing a yes or no instead of a count.** The same running total can appear several times, and each earlier
+  appearance is a different starting point.
+
+## Related problems
+
+- [Prefix sums](/concepts/prefix-sums/): where the running totals come from.
+- [Hashing patterns](/concepts/hashing-patterns/): this is the "running totals in a map" move.
+- [Two Sum](/dsa/two-sum/): the same "look up what you need among the values already passed", on single values
+  instead of totals.
+- [Maximum Subarray](/dsa/maximum-subarray/): another question about subarrays, solved with a running total alone.

@@ -100,7 +100,8 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `a[2..5]` | Positions 2 to 5, both included. `a[3..end]` runs to the last one. |
 | `array of n, all 0` | A new list of `n` values, every one 0. |
 | `empty map`, `seen[x] ← i` | A lookup table: store `i` under the key `x`. Later, `seen[x]` gives `i` back. |
-| `x in seen` | Is `x` stored in `seen`? |
+| `x in seen`, `x not in seen` | Is `x` stored in `seen`, or not? |
+| `(count[x] or 0)` | The value stored under `x`, or 0 if `x` isn't stored yet. |
 | `empty set`, `seen.add(x)` | A collection of distinct values, for quick "have I seen this?" checks. |
 | `stack.push(x)`, `stack.pop()`, `stack.top()` | Add on top, take from the top, look at the top. Last in, first out. |
 | `queue.push(x)`, `queue.popFront()` | Join at the back, leave from the front. First in, first out. |

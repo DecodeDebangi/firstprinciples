@@ -10,7 +10,6 @@ export function prepare(raw: Input): Prepared<Input> {
   if (raw.nums.some((x) => !Number.isInteger(x) || x < 1 || x > n)) return { error: `With ${n} values, each one must be a whole number from 1 to ${n}.` };
   return { input: raw };
 }
-const missingOf = (nums: number[]) => Array.from({ length: nums.length }, (_, i) => i + 1).filter((v) => !nums.includes(v));
 
 const search: Approach<Input> = {
   id: "search",
