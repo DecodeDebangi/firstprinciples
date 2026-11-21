@@ -1,0 +1,103 @@
+---
+title: Unique Paths
+leetcode: { number: 62, url: "https://leetcode.com/problems/unique-paths/" }
+difficulty: Medium
+topics: [Dynamic programming, Math, Matrix]
+added: 2026-11-21
+summary: Count the routes from the top-left to the bottom-right of a grid, moving only right or down. Goes from plain recursion that recounts the same cells, to a table where each cell is the sum of the one above and the one to the left, to keeping just one row.
+insight: "Every route into a cell arrives from above or from the left, so its count is the sum of those two counts. Fill the grid row by row and each cell takes one addition."
+best: { time: "O(m · n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A robot stands on the top-left cell of a grid with `m` rows and `n` columns. It can only move one cell **right** or one
+cell **down** at a time. How many different routes take it to the bottom-right cell?
+
+For example, a 3 × 3 grid has 6 routes, and a 3 × 7 grid has 28.
+
+## The key question
+
+> **How can the count for a cell be built from counts I already have?**
+
+See [DP on a grid](/concepts/dp-on-a-grid/), which walks through this example in detail.
+
+## Approach 1: Plain recursion
+
+The last move into `(r, c)` came from above or from the left, so `paths(r, c) = paths(r − 1, c) + paths(r, c − 1)`, and
+the top row and left column have one route each.
+
+<Viz client:visible approach="recursion" />
+
+<Complexity time="O(2^(m+n))" space="O(m + n)">
+**Time.** Each call makes two more until it reaches an edge, and the same cells are recounted along every route through
+them: the number of calls grows exponentially, about **O(2^(m+n))**.
+
+**Space.** The [call stack](/concepts/recursion/) is at most `m + n` calls deep: **O(m + n)**.
+
+**What it wastes:** there are only `m · n` different cells, but they're worked out over and over. Store each answer
+once.
+</Complexity>
+
+## Approach 2: Fill a table
+
+`dp[r][c]` is the number of routes to `(r, c)`. Set the top row and left column to 1, then fill the rest row by row with
+`dp[r][c] = dp[r − 1][c] + dp[r][c − 1]`.
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** One addition per cell: **O(m · n)**.
+
+**Space.** The whole table: **O(m · n)**.
+
+**What it wastes:** every finished row is kept, though only the latest one is ever read.
+</Complexity>
+
+## Approach 3: Keep one row (optimal space)
+
+Keep a single row and update it in place from left to right: before the update `row[c]` holds the value from the row
+above, and `row[c − 1]` has already been updated to this row.
+
+<Viz client:visible approach="oneRow" />
+
+<Complexity time="O(m · n)" space="O(n)">
+**Time.** Still one addition per cell: **O(m · n)**.
+
+**Space.** One row: **O(n)**. Using the shorter side as the row gives O(min(m, n)).
+</Complexity>
+
+There's also a formula: every route makes exactly `m − 1` moves down and `n − 1` moves right, in some order, so the count
+is the number of ways to choose which of the `m + n − 2` moves go down. That's O(min(m, n)) arithmetic, but the
+table is the idea that carries over to other grid problems.
+
+## Comparing the approaches
+
+All three on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Plain recursion | O(2^(m+n)) | O(m + n) | recounts cells |
+| Fill a table | O(m · n) | O(m · n) | each cell once |
+| Keep one row | O(m · n) | O(n) | only the row still needed |
+
+<GrowthChart client:visible series={growth} caption="Steps for an n × n grid." />
+
+## Common mistakes
+
+- **Starting the edges at 0.** The top row and left column have exactly one route each, not zero.
+- **Swapping rows and columns.** The answer is symmetric, but an off-by-one in either loop reads outside the table.
+- **Updating the one row from right to left.** Then `row[c − 1]` still holds the old row's value, and the sums are
+  wrong.
+
+## Related problems
+
+- [DP on a grid](/concepts/dp-on-a-grid/): the table and the one-row trick.
+- [Minimum Path Sum](/dsa/minimum-path-sum/): the same table, taking the cheaper neighbour.
+- [Pascal's Triangle](/dsa/pascals-triangle/): the same additions, arranged as a triangle.
