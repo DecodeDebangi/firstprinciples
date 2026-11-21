@@ -1,0 +1,87 @@
+---
+title: "Palindromes: from the ends and from the centre"
+topic: Strings
+kind: Explainer
+order: 2
+summary: A palindrome reads the same forwards and backwards. Check one with two pointers walking in from the ends, and find them with the opposite move - start at a centre and expand outwards. Every palindrome has one of 2n − 1 centres, which turns an O(n³) search into O(n²).
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## What a palindrome is
+
+A **palindrome** reads the same forwards and backwards: `racecar`, `noon`, `a`. Its first character equals its last,
+its second equals its second-last, and so on to the middle. A single character is a palindrome, and so is the empty
+string.
+
+Two kinds of question come up. **Is this string a palindrome?** That's a check. **Which parts of this string are
+palindromes?** That's a search over its [substrings](/concepts/strings-and-characters/), and it needs a different
+move.
+
+## Checking: walk in from the ends
+
+Put one pointer at each end and compare. If the characters match, step both inwards; if they ever differ, it isn't a
+palindrome. This is the [two pointers](/concepts/two-pointers/) move.
+
+<Viz client:visible approach="ends" />
+
+About `n / 2` comparisons: **O(n)** time and **O(1)** space, with no reversed copy. [Valid
+Palindrome](/dsa/valid-palindrome/) adds skipping over spaces and punctuation, and [Reverse String](/dsa/reverse-string/)
+uses the same two pointers to swap instead of compare.
+
+## Searching: every palindrome has a centre
+
+Checking every substring separately is slow: there are about `n² / 2` substrings, and checking each costs up to O(n),
+so **O(n³)** in total. The trick is to notice that every palindrome is built around a **centre**:
+
+- A palindrome of **odd** length, like `bacab`, has a middle character (`c`).
+- A palindrome of **even** length, like `abba`, has a middle **gap**, between the two `b`s.
+
+So a string of `n` characters has `n` character centres and `n − 1` gap centres: **2n − 1** centres in all.
+
+## Expanding around a centre
+
+From a centre, step outwards one character on each side at a time. As long as the two new ends match, the wider
+string is a palindrome too, because its inside already was. The first mismatch, or the end of the string, stops it:
+nothing wider around this centre can be a palindrome, since it would contain the mismatched pair.
+
+Type a position like `3` to centre on a character, or `2.5` for the gap between positions 2 and 3.
+
+<Viz client:visible approach="expand" />
+
+Expanding from one centre takes at most `n / 2` steps, so trying all `2n − 1` centres costs **O(n²)** time and only
+**O(1)** extra space. Each step also finds a palindrome, so counting palindromes is one expansion step per palindrome
+found, plus one stop per centre. That's [Palindromic Substrings](/dsa/palindromic-substrings/), and keeping the widest
+one instead is [Longest Palindromic Substring](/dsa/longest-palindromic-substring/).
+
+## Other ways, briefly
+
+- **A table.** `s[i..j]` is a palindrome when `s[i] = s[j]` and `s[i+1..j-1]` is one. Filling a table of answers for
+  every `i` and `j`, shortest first, is also O(n²) time, but needs O(n²) memory. That's [dynamic
+  programming](/concepts/memoisation-vs-tabulation/).
+- **Manacher's algorithm** reuses what earlier expansions found to do the whole search in O(n). It's rarely expected in
+  interviews.
+
+## Interview theory
+
+<QA q="How do you check whether a string is a palindrome in O(1) extra space?">
+Two pointers, one at each end. Compare, and step both inwards while they match; any mismatch means no. About n / 2
+comparisons, and no reversed copy.
+</QA>
+
+<QA q="Why are there 2n − 1 centres, and why do gaps count?">
+Odd-length palindromes centre on one of the n characters; even-length ones centre on one of the n − 1 gaps between
+neighbours. Skipping the gaps would miss every even-length palindrome, like "abba".
+</QA>
+
+<QA q="Why can you stop expanding at the first mismatch?">
+Any wider string around the same centre contains that mismatched pair at mirrored positions, so it can't be a
+palindrome either.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

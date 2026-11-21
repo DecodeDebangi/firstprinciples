@@ -1,0 +1,85 @@
+---
+title: Reverse String
+leetcode: { number: 344, url: "https://leetcode.com/problems/reverse-string/" }
+difficulty: Easy
+topics: [String, Two pointers]
+added: 2026-11-21
+summary: Reverse a list of characters in place, using only O(1) extra memory. Goes from filling a reversed copy and copying it back, to swapping characters from both ends inwards.
+insight: "The first and last characters trade places, then the second and second-last, and so on to the middle. Two pointers and one swap per pair, no second array."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string as a list of characters, `s`. Reverse it **in place**: change `s` itself, using only a fixed amount of
+extra memory, and return nothing.
+
+For example, `s t r e s s e d` becomes `d e s s e r t s`.
+
+## The key question
+
+> **How do I move every character to its mirror position without a second array to copy into?**
+
+The character at position `i` belongs at `n − 1 − i`. Writing it there directly would overwrite a character that
+hasn't moved yet, unless the two trade places. See [Palindromes](/concepts/palindromes/) for the same two pointers
+used to compare.
+
+## Approach 1: Fill a reversed copy, then copy it back
+
+Make a second array `rev` with `rev[i] = s[n − 1 − i]`, then copy it over `s`.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two passes: **O(n)**.
+
+**Space.** The second array: **O(n)**.
+
+**What it wastes:** a full copy, which the problem forbids. Swapping two characters keeps both, so mirror pairs can
+trade places directly.
+</Complexity>
+
+## Approach 2: Swap from both ends (optimal)
+
+Start `lo` at the first position and `hi` at the last. Swap `s[lo]` and `s[hi]`, then move both inwards, until they
+meet or cross. With an odd length, the middle character is its own mirror and stays put.
+
+<Viz client:visible approach="swap" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** `floor(n / 2)` swaps: **O(n)**.
+
+**Space.** Two indices: **O(1)**.
+</Complexity>
+
+A recursive version, "swap the ends, then reverse the inside", does the same swaps, but each call waits on the
+[call stack](/concepts/recursion/) until the inside is done: O(n) memory for `n / 2` waiting calls.
+
+## Comparing the approaches
+
+Both on the same characters:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Reversed copy | O(n) | O(n) | a second array |
+| Swap from both ends | O(n) | O(1) | one swap per mirror pair |
+
+Both are O(n), so there's no growth chart; the difference is the memory.
+
+## Common mistakes
+
+- **Looping `lo` over the whole array.** Past the middle, each pair is swapped back, and the string ends where it
+  started. Stop when `lo` reaches `hi`.
+- **Using the language's "reverse into a new string".** Strings can't be changed in most languages (they're
+  [immutable](/concepts/strings-and-characters/)), so that builds a copy. Here the input is a list of characters, so it
+  can be changed in place.
+
+## Related problems
+
+- [Palindromes](/concepts/palindromes/): the same two pointers, comparing instead of swapping.
+- [Rewriting an array in place](/concepts/rewriting-arrays-in-place/): reversing a section of an array.
+- [Reverse Linked List](/dsa/reverse-linked-list/): reversing with pointers when you can't jump to the end.

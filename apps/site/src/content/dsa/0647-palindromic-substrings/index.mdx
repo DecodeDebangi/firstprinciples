@@ -1,0 +1,85 @@
+---
+title: Palindromic Substrings
+leetcode: { number: 647, url: "https://leetcode.com/problems/palindromic-substrings/" }
+difficulty: Medium
+topics: [Palindrome, String, Two pointers]
+added: 2026-11-21
+summary: Count how many substrings of a string are palindromes, counting the same text again if it appears at different positions. Goes from checking every substring, to expanding from each of the 2n − 1 centres and counting one palindrome per successful step outwards.
+insight: "Each palindrome has exactly one centre. Expanding from every centre visits every palindrome exactly once, one matching pair of ends at a time, so counting the successful steps counts them all."
+best: { time: "O(n²)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s`. Count its substrings that are palindromes. Substrings at different positions count separately,
+even if they contain the same characters.
+
+For example, `aabaa` has 9: the five single letters, `aa` twice (at the start and at the end), `aba`, and `aabaa`
+itself.
+
+## The key question
+
+> **How do I count palindromes without checking each substring separately?**
+
+See [Palindromes](/concepts/palindromes/). Every palindrome sits around exactly one centre, a character or a gap, and
+expanding from that centre reaches it.
+
+## Approach 1: Check every substring
+
+For every start `i` and end `j`, check `s[i..j]` with two pointers, and count the palindromes.
+
+<Viz client:visible approach="everySub" />
+
+<Complexity time="O(n³)" space="O(1)">
+**Time.** About `n² / 2` substrings, each checked in up to `n / 2` comparisons: **O(n³)** when many of them are
+palindromes, as in `aaaa…`.
+
+**Space.** A few indices and the count: **O(1)**.
+
+**What it wastes:** checking `s[i..j]` repeats the check of `s[i+1..j-1]` inside it. Going outwards from a centre,
+each wider palindrome costs just one more comparison.
+</Complexity>
+
+## Approach 2: Expand around every centre (optimal)
+
+Try all `2n − 1` centres. From each, step outwards while the new ends match; every successful step has found one more
+palindrome, so add 1 to the count. The first mismatch ends that centre, because nothing wider around it can be a
+palindrome.
+
+<Viz client:visible approach="centres" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `2n − 1` centres, each expanding at most about `n / 2` times: **O(n²)**. Put another way, the work is one
+step per palindrome found plus one stop per centre, and a string can have up to `n(n + 1) / 2` palindromes.
+
+**Space.** A few indices and the count: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every substring | O(n³) | O(1) | re-checks the insides of substrings |
+| Expand around every centre | O(n²) | O(1) | one step per palindrome found |
+
+<GrowthChart client:visible series={growth} caption="Character comparisons for a string of n identical letters." />
+
+## Common mistakes
+
+- **Forgetting the gap centres.** Even-length palindromes like `aa` are never counted.
+- **Counting different texts only.** `aa` at the start and `aa` at the end are two substrings, so both count.
+- **Forgetting single characters.** Each one is a palindrome: a string of `n` characters has at least `n`.
+
+## Related problems
+
+- [Palindromes](/concepts/palindromes/): centres and expanding.
+- [Longest Palindromic Substring](/dsa/longest-palindromic-substring/): the same expansion, keeping the widest.
+- [Valid Palindrome](/dsa/valid-palindrome/): checking one string.

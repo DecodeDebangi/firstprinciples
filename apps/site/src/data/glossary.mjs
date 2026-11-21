@@ -30,6 +30,8 @@ export const glossary = [
     def: "A run of neighbouring characters inside a string: \"nan\" is a substring of \"banana\". Skipping characters doesn't count." },
   { id: "anagram", term: "Anagram", match: ["anagram", "anagrams"], read: "strings-and-characters",
     def: "A word made from exactly the same letters as another, the same number of times, in any order: \"listen\" and \"silent\"." },
+  { id: "palindrome", term: "Palindrome", match: ["palindrome", "palindromes", "palindromic"], read: "palindromes",
+    def: "A string that reads the same forwards and backwards, like \"racecar\" or \"noon\". A single character counts." },
   { id: "stack-overflow", term: "Stack overflow", match: ["stack overflow"], read: "recursion",
     def: "A crash when too many function calls are waiting at once and the call stack runs out of room, usually from recursion that goes too deep or never reaches its base case." },
   { id: "constraints", term: "Constraints", match: ["constraints"], read: "reading-a-problem",

@@ -1,0 +1,90 @@
+---
+title: Longest Palindromic Substring
+leetcode: { number: 5, url: "https://leetcode.com/problems/longest-palindromic-substring/" }
+difficulty: Medium
+topics: [Palindrome, String, Two pointers]
+added: 2026-11-21
+summary: Find the longest stretch of a string that reads the same forwards and backwards. Goes from checking every substring, to expanding outwards from each of the 2n − 1 possible centres and keeping the widest palindrome found.
+insight: "Every palindrome is centred on a character or on the gap between two. Expand from each centre while the two new ends match; the first mismatch means nothing wider around that centre can be a palindrome."
+best: { time: "O(n²)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s`. Return its longest substring that is a palindrome: a stretch of neighbouring characters that
+reads the same forwards and backwards. If several are equally long, any of them will do.
+
+For example, in `cabbad` the longest palindrome is `abba`. Every single character counts as a palindrome, so the
+answer is never empty.
+
+## The key question
+
+> **How do I find palindromes without checking every substring separately?**
+
+There are about `n² / 2` substrings. See [Palindromes](/concepts/palindromes/): every palindrome has a centre, and
+growing outwards from a centre finds all the palindromes around it in one go.
+
+## Approach 1: Check every substring
+
+For every start `i` and end `j`, check `s[i..j]` with two pointers from its ends, and keep the longest palindrome.
+
+<Viz client:visible approach="everySub" />
+
+<Complexity time="O(n³)" space="O(1)">
+**Time.** About `n² / 2` substrings, each checked in up to `n / 2` comparisons. When many substrings are palindromes or
+nearly so (`aaaa…` is the worst), the checks run long: **O(n³)**.
+
+**Space.** A few indices: **O(1)**.
+
+**What it wastes:** checking `s[i..j]` repeats the work of checking `s[i+1..j-1]` inside it, which was already
+checked. Growing a palindrome outwards from its centre reuses that work: each new pair of ends costs one comparison.
+</Complexity>
+
+## Approach 2: Expand around every centre (optimal)
+
+A string of `n` characters has `2n − 1` centres: `n` characters, for odd-length palindromes, and `n − 1` gaps between
+neighbours, for even-length ones. Number them `c = 0, 1, …, 2n − 2`; centre `c` starts at `lo = floor(c / 2)` and
+`hi = lo + c % 2`, so even `c` is a character and odd `c` a gap. From each, expand while `s[lo] = s[hi]`, and keep the
+widest palindrome found.
+
+<Viz client:visible approach="centres" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `2n − 1` centres, each expanding at most about `n / 2` times: **O(n²)**.
+
+**Space.** A few indices, and the answer is stored as two positions: **O(1)**.
+</Complexity>
+
+A table also works: `s[i..j]` is a palindrome when its ends match and `s[i+1..j-1]` is one. Filling that table is O(n²)
+time but O(n²) memory. Manacher's algorithm gets to O(n), but it's rarely expected in an interview.
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every substring | O(n³) | O(1) | re-checks the insides of substrings |
+| Expand around every centre | O(n²) | O(1) | one comparison per new pair of ends |
+
+<GrowthChart client:visible series={growth} caption="Character comparisons for a string of n identical letters." />
+
+## Common mistakes
+
+- **Only trying character centres.** That misses every even-length palindrome, like `abba`.
+- **Returning the wrong slice after expanding.** The loop stops one step too far on each side, so the palindrome is
+  `lo + 1` to `hi − 1`.
+- **Comparing the string with its reverse.** The longest stretch that `s` and its reverse share isn't always a
+  palindrome. `abacdfgdcaba` reversed is `abacdgfdcaba`; both start with `abacd`, which isn't a palindrome.
+
+## Related problems
+
+- [Palindromes](/concepts/palindromes/): checking from the ends and expanding from a centre.
+- [Palindromic Substrings](/dsa/palindromic-substrings/): the same expansion, counting instead of keeping the longest.
+- [Valid Palindrome](/dsa/valid-palindrome/): checking a whole sentence.
