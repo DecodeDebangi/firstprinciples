@@ -1,0 +1,100 @@
+---
+title: Minimum Path Sum
+leetcode: { number: 64, url: "https://leetcode.com/problems/minimum-path-sum/" }
+difficulty: Medium
+topics: [Dynamic programming, Matrix]
+added: 2026-11-21
+summary: Find the cheapest route from the top-left to the bottom-right of a grid of costs, moving only right or down. Goes from plain recursion that re-solves the same cells, to a table where each cell is its own cost plus the cheaper of the cells above and to the left, to a single row.
+insight: "The cheapest route to a cell ends with a step from above or from the left, so its cost is the cell's own cost plus the cheaper of those two. Fill the grid row by row."
+best: { time: "O(m · n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of non-negative numbers, `m` rows by `n` columns. Moving only right or down, find a route from the
+top-left cell to the bottom-right one whose numbers add up to the least, and return that sum. The start and end cells
+count.
+
+For example, in the grid with rows `1 4 2`, `3 1 5` and `6 2 1`, the cheapest route is 1 → 3 → 1 → 2 → 1, costing 8.
+
+## The key question
+
+> **What's the cheapest way to reach each cell, given the cheapest ways to reach its neighbours?**
+
+This is [Unique Paths](/dsa/unique-paths/) with costs: instead of adding the two counts, take the cheaper neighbour. See
+[DP on a grid](/concepts/dp-on-a-grid/).
+
+## Approach 1: Plain recursion
+
+`best(r, c)` is the cheapest cost to reach `(r, c)`: the cell's own cost plus the cheaper of `best` above and `best` to
+the left. The top row and left column have only one neighbour.
+
+<Viz client:visible approach="recursion" />
+
+<Complexity time="O(2^(m+n))" space="O(m + n)">
+**Time.** Each call makes up to two more, and cells are re-solved along every route through them: exponential, about
+**O(2^(m+n))**.
+
+**Space.** The [call stack](/concepts/recursion/): **O(m + n)**.
+
+**What it wastes:** only `m · n` different cells exist. Each answer should be worked out once.
+</Complexity>
+
+## Approach 2: Fill a table
+
+Fill `dp[r][c]` row by row: the start is its own cost; other cells take the cheaper of the cell above and the cell to
+the left, treating a neighbour outside the grid as infinitely expensive (`∞`), then add their own cost.
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** One `min` and one addition per cell: **O(m · n)**.
+
+**Space.** The table: **O(m · n)**. (Writing into the input grid itself also works, if changing it is allowed.)
+
+**What it wastes:** every old row is kept, though only the one above is read.
+</Complexity>
+
+## Approach 3: Keep one row (optimal space)
+
+Keep one row of best costs and update it left to right: `row[c]` still holds the value from above until it's
+overwritten, and `row[c − 1]` is already this row's value. The first cell of each row can only come from above.
+
+<Viz client:visible approach="oneRow" />
+
+<Complexity time="O(m · n)" space="O(n)">
+**Time.** **O(m · n)**, as before.
+
+**Space.** One row: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+All three on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Plain recursion | O(2^(m+n)) | O(m + n) | re-solves cells |
+| Fill a table | O(m · n) | O(m · n) | each cell once |
+| Keep one row | O(m · n) | O(n) | only the row still needed |
+
+<GrowthChart client:visible series={growth} caption="Steps for an n × n grid of costs." />
+
+## Common mistakes
+
+- **Choosing greedily.** Stepping to whichever neighbour is cheaper right now can walk into an expensive region; the
+  table looks at every way in.
+- **Forgetting the start cell's cost.** The sum includes both the first and the last cell.
+- **Using 0 for missing neighbours.** A neighbour outside the grid must never be chosen, so it counts as `∞`.
+
+## Related problems
+
+- [Unique Paths](/dsa/unique-paths/): the same table, counting instead of minimising.
+- [DP on a grid](/concepts/dp-on-a-grid/): the four decisions behind any grid DP.
+- [Edit Distance](/dsa/edit-distance/): a cheapest-cost table where the two sides are strings.
