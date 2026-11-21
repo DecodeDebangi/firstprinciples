@@ -1,0 +1,82 @@
+---
+title: "Counting characters and string keys"
+topic: Strings
+kind: Explainer
+order: 1
+summary: Most string problems start by counting characters or by turning a string into a key that captures what matters about it. Count letters into 26 slots, compare counts, find the first character that doesn't repeat, and number characters by first appearance to compare the shapes of two words.
+added: 2026-11-21
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## A string is a list of characters
+
+Everything from [Strings and characters](/concepts/strings-and-characters/) still applies: `s[i]` is the character
+at position `i`, `length(s)` is how many there are, and every character is stored as a number, its `code`. So the
+array moves work on strings too. This read covers the move that starts most string problems: **counting**.
+
+## Counting into 26 slots
+
+To count characters you can use a [hash map](/concepts/how-hash-maps-work/), character → count, as in [Hashing
+patterns](/concepts/hashing-patterns/). When the text is only lowercase letters, there's something simpler: an array
+of 26 counts. The letter `ch` goes in slot `code(ch) - code('a')`, so `a` is slot 0 and `z` is slot 25.
+
+<Viz client:visible approach="slots" />
+
+The array never grows past 26, however long the text, so it takes **O(1)** space. A map works for any characters
+(capitals, digits, spaces, emoji), and holds one entry per different character. Use the array when the problem
+promises lowercase letters, and the map otherwise.
+
+## What counts answer
+
+- **Same letters?** Two words are [anagrams](/dsa/valid-anagram/) when their counts match. Count one word up and the
+  other down: they're anagrams if every count ends at 0.
+- **Which character doesn't repeat?** Count everything first, then walk the string again and stop at the first
+  character whose count is 1. Two passes are needed, because a character's count isn't final until the whole string
+  has been read. That's [First Unique Character in a String](/dsa/first-unique-character-in-a-string/).
+- **Can this be built from that?** Is every count in the first string at most its count in the second?
+- **The window version.** To find every place in a text where some rearrangement of a word appears, keep the counts
+  of a window the length of the word and update them as it slides. That's [sliding window](/concepts/sliding-window/)
+  plus counting.
+
+## String keys
+
+Sometimes you want to treat different strings as the same when they share some property. Turn each one into a
+**key** that captures just that property, then compare keys or group by them in a map:
+
+| Property | Key | Example |
+|---|---|---|
+| Same letters, any order | the letters sorted | `"tea"` and `"eat"` both give `"aet"` |
+| Same letters, any order | the 26 counts written out | `"tea"` gives `a×1 e×1 t×1` |
+| Same shape | each character's number by first appearance | `"paper"` and `"title"` both give `0 1 0 2 3` |
+
+The first two are how [Group Anagrams](/dsa/group-anagrams/) works. The third is new: give the first different
+character the number 0, the next new one 1, and so on, reusing a character's number when it comes back.
+
+<Viz client:visible approach="pattern" />
+
+Two strings with the same pattern have repeats in exactly the same places, so one can be turned into the other by
+swapping characters consistently. That's [Isomorphic Strings](/dsa/isomorphic-strings/).
+
+## Interview theory
+
+<QA q="When is an array of 26 better than a hash map for counting?">
+When the characters are known to be lowercase letters. The array needs no hashing, and its size is fixed at 26, so
+the space is O(1). For any other characters (capitals, digits, symbols), use a map.
+</QA>
+
+<QA q="Why does finding the first non-repeating character take two passes?">
+While reading, you don't yet know whether a character will appear again later. Count every character in a first pass;
+then a second pass can check each one's final count, in order.
+</QA>
+
+<QA q="What's a string key, and when would you use one?">
+A value computed from a string that is equal for exactly the strings you want to treat as the same, such as sorted
+letters for anagrams. Use it to compare strings in O(1) once the keys are built, or to group strings in a map.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

@@ -1,0 +1,94 @@
+---
+title: Isomorphic Strings
+leetcode: { number: 205, url: "https://leetcode.com/problems/isomorphic-strings/" }
+difficulty: Easy
+topics: [String, Hash map]
+added: 2026-11-21
+summary: Decide whether one string can be turned into another by consistently swapping characters - every copy of a character must become the same character, and no two different characters may become the same one. Goes from comparing every pair of positions, to one pass with a map in each direction.
+insight: "Pair the strings up position by position. Each character of s must always meet the same character of t, and each character of t the same character of s. A map for each direction catches a broken pairing the moment it happens."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two strings `s` and `t` of the same length. They are **isomorphic** if you can replace characters in `s` to
+get `t`, following two rules: every copy of a character is replaced by the same character, and two different
+characters are never replaced by the same one. (A character may stay as it is.)
+
+For example, `level` and `madam` are isomorphic: `l → m`, `e → a`, `v → d`. But `lever` and `madam` aren't: `l` and
+`r` would both have to become `m`.
+
+## The key question
+
+> **How do I check that the pairing works in both directions, in one pass?**
+
+Two strings are isomorphic exactly when they have the same **shape**: repeats in the same places. See [Counting
+characters and string keys](/concepts/counting-characters/), where each word is turned into its pattern of first
+appearances; `level` and `madam` both give `0 1 2 1 0`.
+
+## Approach 1: Compare every pair of positions
+
+For every two positions `i` and `j`, `s` must repeat a character there exactly when `t` does. If `s[i] = s[j]` but
+`t[i] ≠ t[j]`, or the other way round, the shapes differ.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** `n(n − 1) / 2` pairs: **O(n²)**.
+
+**Space.** Two indices: **O(1)**.
+
+**What it wastes:** each character is compared with every other position, again and again. Remembering what each
+character has been paired with answers the same question with one lookup per position.
+</Complexity>
+
+## Approach 2: Two maps, one pass (optimal)
+
+Walk both strings together. `sToT` records which character of `t` each character of `s` has met, and `tToS` the
+reverse. At each position, if either side was already paired with something else, the strings aren't isomorphic.
+
+One map isn't enough. With only `sToT`, the strings `ab` and `cc` would pass (`a → c`, `b → c`), but two different
+characters must not turn into the same one. In the example, `lever` against `madam` fails only at the last position,
+where `tToS` notices that `m` already belongs to `l`.
+
+<Viz client:visible approach="twoMaps" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass with a few O(1) map lookups per position: **O(n)**.
+
+**Space.** One entry per different character in each map. The characters come from a fixed set (LeetCode allows any
+of the 128 basic ASCII characters), so the maps can't grow past that: **O(1)**. Without that limit, it's O(n).
+</Complexity>
+
+Comparing first-appearance patterns works too: build both patterns in O(n) and compare them. It needs two passes and
+two pattern lists, but no reverse map.
+
+## Comparing the approaches
+
+Both on the same strings:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Every pair of positions | O(n²) | O(1) | compares each position with all the others |
+| Two maps | O(n) | O(1) | one entry per different character |
+
+<GrowthChart client:visible series={growth} caption="Comparisons and lookups for two isomorphic strings of n different characters." />
+
+## Common mistakes
+
+- **Checking one direction only.** `ab` and `cc` pass a single `s → t` map but aren't isomorphic.
+- **Comparing letter counts.** `aab` and `xyy` have the same counts (two of one, one of another) but different
+  shapes: the repeat is at the start of one and the end of the other.
+- **Thinking a character must change.** `a → a` is allowed, as long as the rules hold.
+
+## Related problems
+
+- [Counting characters and string keys](/concepts/counting-characters/): the first-appearance pattern.
+- [Group Anagrams](/dsa/group-anagrams/): another problem solved with a key built from a string.
+- [Two Sum](/dsa/two-sum/): remembering what each value was paired with, in a map.

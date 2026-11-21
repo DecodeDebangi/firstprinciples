@@ -1,0 +1,86 @@
+---
+title: First Unique Character in a String
+leetcode: { number: 387, url: "https://leetcode.com/problems/first-unique-character-in-a-string/" }
+difficulty: Easy
+topics: [String, Hash map]
+added: 2026-11-21
+summary: Find the position of the first character in a string that appears nowhere else in it, or -1 if every character repeats. Goes from checking each character against all the others, to counting every character first and then reading the string once more.
+insight: "You can't tell whether a character repeats until you've seen the whole string. So count every character in one pass, then walk the string again and stop at the first character whose count is 1."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` of lowercase letters. Return the position of the first character that appears exactly once in
+the whole string. If every character appears more than once, return -1.
+
+For example, in `abacabad` the letters `a` and `b` repeat, and `c` (at position 3) is the first that doesn't, so the
+answer is 3. In `abab` every letter repeats, so the answer is -1.
+
+## The key question
+
+> **How do I know whether a character repeats, without searching the rest of the string for it?**
+
+A character might appear again right at the end, so no single left-to-right reading can decide as it goes. See
+[Counting characters and string keys](/concepts/counting-characters/).
+
+## Approach 1: Check each character against all the others
+
+For each position `i`, scan the whole string for another copy of `s[i]`. The first position with no copy is the
+answer.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** For each of the `n` positions, up to `n − 1` comparisons: **O(n²)** in the worst case, for example when
+every letter's twin is half the string away.
+
+**Space.** Two indices: **O(1)**.
+
+**What it wastes:** the same character is searched for again and again. A count per letter, made once, would answer
+"does it repeat?" in one lookup.
+</Complexity>
+
+## Approach 2: Count first, then find the first count of 1 (optimal)
+
+Pass 1 counts every letter into 26 slots, using `code(ch) − code('a')` as the slot. Pass 2 walks the string in order
+and returns the first position whose letter has a count of 1.
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Two passes over the string, one O(1) slot update or lookup per character: **O(n)**.
+
+**Space.** 26 counts, however long the string: **O(1)**. With any characters allowed, a hash map would hold one count
+per different character instead.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check against all the others | O(n²) | O(1) | searches for each character again |
+| Count, then find | O(n) | O(1) | 26 counts, two passes |
+
+<GrowthChart client:visible series={growth} caption="Comparisons and lookups when no character is unique and each twin is half the string away." />
+
+## Common mistakes
+
+- **Returning the character instead of its position.** The answer is the index, or -1.
+- **Stopping after one pass.** During the counting pass, a count of 1 only means "not seen again yet".
+- **Walking the counts in alphabet order in pass 2.** That finds the alphabetically first unique letter, not the
+  first one in the string. Walk the string.
+
+## Related problems
+
+- [Counting characters and string keys](/concepts/counting-characters/): counting into 26 slots.
+- [Valid Anagram](/dsa/valid-anagram/): comparing two strings' counts.
+- [Contains Duplicate](/dsa/contains-duplicate/): finding repeats in a list.

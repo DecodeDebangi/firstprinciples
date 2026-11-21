@@ -30,6 +30,23 @@ for each index i, value x in nums
     seen[x] ← i`,
     payoff: "An O(n²) \"compare every pair\" becomes one O(n) pass, at the cost of O(n) memory.",
   },
+  Strings: {
+    idea: "A string is a list of characters, so array moves work on it: count characters in a map, walk two pointers in from the ends, slide a window along it. Most string problems are one of those, plus care with how text is built and compared.",
+    signals: [
+      "Same letters, anagrams, or the first character that doesn't repeat",
+      "Reading the same forwards and backwards (palindromes)",
+      "Finding a word or pattern inside a longer text",
+      "Splitting text into words, or reading a number out of it",
+    ],
+    template: `count ← empty map
+for each ch in s
+    count[ch] ← (count[ch] or 0) + 1
+for each index i, value ch in s
+    if count[ch] = 1
+        return i
+return -1`,
+    payoff: "Counting first turns \"compare every pair of characters\" (O(n²)) into two passes (O(n)), with at most one entry per different character.",
+  },
   Sorting: {
     idea: "Put items in order so equal or related values sit together and binary search, two pointers and merging become possible. Which sort to use depends on the data and on what you need to preserve.",
     signals: [

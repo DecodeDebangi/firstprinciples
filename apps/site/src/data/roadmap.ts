@@ -26,7 +26,8 @@ export const roadmap: RoadmapStep[] = [
     title: "Foundations",
     topics: [
       { name: "Big-O & complexity", blurb: "How to measure and compare an algorithm's cost.", tags: ["Complexity"] },
-      { name: "Arrays & hashing", blurb: "Store, look up and count in one pass, and find your way around a grid.", tags: ["Array", "Hash map", "Prefix sum", "Matrix", "Math", "String"] },
+      { name: "Arrays & hashing", blurb: "Store, look up and count in one pass, and find your way around a grid.", tags: ["Array", "Hash map", "Prefix sum", "Matrix", "Math"] },
+      { name: "Strings", blurb: "Count characters, compare and search text, and take it apart.", tags: ["String", "Palindrome", "String matching"] },
       { name: "Sorting", blurb: "Put things in order, and know which sort to use when.", tags: ["Sorting"] },
     ],
   },
@@ -64,7 +65,7 @@ export const roadmap: RoadmapStep[] = [
 ];
 
 /** Tags nearly every problem carries; they decide a problem's home only when nothing more specific does. */
-export const GENERIC = new Set(["Array", "String", "Math"]);
+export const GENERIC = new Set(["Array", "Math"]);
 export const allTopics = roadmap.flatMap((s) => s.topics);
 export const topicSlug = (name: string) =>
   name.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

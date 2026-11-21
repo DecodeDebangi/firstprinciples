@@ -1,0 +1,92 @@
+---
+title: Longest Common Prefix
+leetcode: { number: 14, url: "https://leetcode.com/problems/longest-common-prefix/" }
+difficulty: Easy
+topics: [String]
+added: 2026-11-21
+summary: Find the longest beginning that every word in a list shares. Goes from trying the first word's prefixes from longest to shortest, to comparing the words one column at a time and stopping at the first column where any of them disagrees.
+insight: "Line the words up and read down the columns. A column belongs to the answer only if every word has the same character there, so the first column where one word differs or runs out is where the prefix ends."
+best: { time: "O(n · m)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of words. Return the longest string that every word starts with. If they don't all start with the
+same character, return the empty string `""`.
+
+For example, `carpet`, `cargo` and `card` all start with `car`, and no longer beginning is shared, so the answer is
+`car`. For `dog`, `cat` the answer is `""`.
+
+Below, `n` is the number of words, `m` the length of the answer and `L` the length of the first word.
+
+## The key question
+
+> **How do I find where the words stop agreeing, without comparing the same characters twice?**
+
+A **prefix** is a beginning of a string: `c`, `ca`, `car` and so on. The answer is a prefix of every word, and in
+particular of the first one. `first[0..len-1]` means its first `len` characters, which is empty when `len` is 0.
+
+## Approach 1: Try each prefix, longest first
+
+Take the first word's prefixes from longest to shortest, and return the first one that every word starts with.
+
+<Viz client:visible approach="longestFirst" />
+
+<Complexity time="O(n · L²)" space="O(1)">
+**Time.** Let `L` be the length of the first word. Up to `L` prefixes are tried, longest first, and checking one reads
+up to `n · L` characters before it succeeds or fails: **O(n · L²)**. The worst case is a long first word with a short
+answer, where almost every try fails.
+
+**Space.** A few indices, if "starts with" is checked character by character: **O(1)**.
+
+**What it wastes:** every try starts again from the first character, re-reading characters that already matched last
+time, and it starts from the longest prefix when the answer may be short. Growing the prefix from the front reads
+each column once and stops as soon as the words disagree.
+</Complexity>
+
+## Approach 2: Column by column (optimal)
+
+Walk column `i = 0, 1, 2, …` of the first word. For each column, check that every word is long enough and has the same
+character there. The first column that fails ends the prefix; if none fails, the whole first word is the answer.
+
+<Viz client:visible approach="columns" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** Columns `0` to `m` are each checked in all `n` words, then it stops: **O(n · m)**. No approach can do better,
+since every character of the answer has to be checked in every word.
+
+**Space.** Two indices: **O(1)**, besides the answer.
+</Complexity>
+
+Another way: sort the words alphabetically, then compare only the first and the last. Every word in between shares at
+least what those two share. It's neat, but sorting costs O(n log n) comparisons of whole words, so it's slower than
+reading the columns.
+
+## Comparing the approaches
+
+Both on the same words:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Longest prefix first | O(n · L²) | O(1) | re-reads the same characters for every try |
+| Column by column | O(n · m) | O(1) | reads each needed column once |
+
+<GrowthChart client:visible series={growth} caption="Character comparisons for a first word of length n and two short words that share only its first letter." />
+
+## Common mistakes
+
+- **Reading past the end of a shorter word.** In column `i`, check `i = length(w)` before reading `w[i]`.
+- **Assuming the first word is the shortest.** Any word can run out first.
+- **Forgetting the one-word list.** The answer is the whole word.
+
+## Related problems
+
+- [Counting characters and string keys](/concepts/counting-characters/): more ways to compare strings.
+- [Grids](/concepts/grids/): reading down columns, as here with the words lined up as rows.
+- [Valid Anagram](/dsa/valid-anagram/): another comparison of strings, character by character.
