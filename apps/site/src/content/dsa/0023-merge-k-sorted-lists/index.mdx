@@ -1,0 +1,90 @@
+---
+title: Merge k Sorted Lists
+leetcode: { number: 23, url: "https://leetcode.com/problems/merge-k-sorted-lists/" }
+difficulty: Hard
+topics: [Heap, Linked list]
+added: 2026-11-22
+summary: Merge k sorted linked lists into one sorted list. Goes from merging them in one at a time, which rescans the growing result over and over, to a min-heap holding only the k current heads.
+insight: "The next node of the output is always the smallest of the k heads. A min-heap of heads gives it in O(log k)."
+best: { time: "O(n log k)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+You're given `k` linked lists, each already sorted from smallest to largest. Join all their nodes into one sorted
+linked list and return it. Some lists may be empty, and there may be no lists at all.
+
+For the lists `1 → 5 → 8`, `4 → 6`, `2 → 3 → 9` and `7`, the result is `1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9`.
+
+The animations draw each list as a row, with n for the total number of nodes.
+
+## The key question
+
+> **Merging two sorted lists is easy: compare their heads. With k lists, how do I find the smallest head quickly,
+> every time?**
+
+## Approach 1: Merge the lists in one at a time
+
+Use the [two-list merge](/dsa/merge-two-sorted-lists/) k times: merge list 0 into an empty result, then list 1 into
+that, and so on.
+
+<Viz client:visible approach="oneByOne" />
+
+<Complexity time="O(k · n)" space="O(1) extra">
+**Time.** Each two-list merge walks over the whole result so far plus the new list. With k lists of about n / k
+nodes each, the result has n / k, 2n / k, 3n / k, … nodes as it grows, which adds up to about k · n / 2:
+**O(k · n)**.
+
+**Space.** Merging linked lists only relinks nodes: **O(1)** extra.
+
+**What it wastes:** the first lists' nodes are walked over again in every later merge, up to k times each.
+</Complexity>
+
+## Approach 2: A min-heap of the k heads
+
+Each list's head is its smallest remaining node, so the next node of the output is the smallest of the k heads.
+Keep the heads in a min-heap: pop the smallest, link it onto the output, and push its `next` (if any) in its place.
+This is the second pattern in [Heaps in practice](/concepts/heaps-in-practice/).
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(n log k)" space="O(k)">
+**Time.** Each of the n nodes is pushed once and popped once, on a heap of at most k nodes: **O(n log k)**.
+
+**Space.** The heap holds at most one node per list: **O(k)**.
+
+**What it wastes:** nothing significant. Merging in **pairs** (list 0 with 1, 2 with 3, then the results, like
+merge sort) also reaches O(n log k), with O(1) extra space, because each node is walked over only log k times.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| One at a time | O(k · n) | O(1) | Repeat the two-list merge k times |
+| Heap of heads | **O(n log k)** | O(k) | The smallest head is always next |
+| Merge in pairs | **O(n log k)** | O(1) | Halve the number of lists each round |
+
+<GrowthChart client:visible series={growth} caption="Operations to merge k lists of 2 nodes each, as k grows." />
+
+## Common mistakes
+
+- **Pushing empty lists into the heap.** Skip any list that has no head.
+- **Heaps that can't compare nodes.** Many languages can't order two list nodes; push `(value, list index)` or
+  `(value, counter, node)` so ties never compare the nodes themselves.
+- **Collecting every value and sorting.** It works, in O(n log n), but ignores that each list is already sorted.
+- **Forgetting the empty input.** No lists, or only empty ones, means an empty result.
+
+## Related problems
+
+- Merge Two Sorted Lists (LeetCode 21). The two-list merge this builds on.
+- Kth Smallest Element in a Sorted Matrix (LeetCode 378). Each row is a sorted list; a heap of row heads finds it.
+- Find Median from Data Stream (LeetCode 295). Another heap pattern from the same read.
