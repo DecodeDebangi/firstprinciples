@@ -1,0 +1,94 @@
+---
+title: Remove K Digits
+leetcode: { number: 402, url: "https://leetcode.com/problems/remove-k-digits/" }
+difficulty: Medium
+topics: [Monotonic stack, Stack, Greedy, String]
+added: 2026-11-22
+summary: Remove exactly k digits from a number written as a string so that what's left is as small as possible. Goes from removing one digit per round, rescanning each time, to one pass with a stack of kept digits that rise toward the top.
+insight: "Earlier digits matter most, so a smaller digit should push out bigger digits just before it. Keep the digits on a stack and pop while the top is bigger and removals are left."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a whole number as a string of digits, `num`, and a number `k`. Remove exactly `k` digits, keeping the rest in
+their original order, so that the number left is as **small** as possible. Return it as a string without leading
+zeros, or `"0"` if nothing is left.
+
+For `num = "4825173"` and `k = 3`, remove the 4, the 8 and the 5 to get `"2173"`. For `num = "10200"` and `k = 1`,
+removing the 1 leaves `"0200"`, which is `"200"`.
+
+## The key question
+
+> **Which digit is worth removing first?**
+
+The leftmost digit counts the most: any number starting with 2 is smaller than any number of the same length starting
+with 4. So remove a digit when the **next** digit is smaller, because the smaller one slides into its place. The
+first such drop from the left is the best single removal.
+
+## Approach 1: Remove one digit per round, k times
+
+Each round, scan from the left for the first digit that's bigger than the digit after it, and remove it. If the
+digits never drop, remove the last one, the biggest.
+
+<Viz client:visible approach="rounds" />
+
+<Complexity time="O(n · k)" space="O(n)">
+**Time.** Each of the `k` rounds scans up to `n` digits and shifts the rest left after removing one: **O(n · k)**,
+which is O(n²) when `k` is about `n / 2`.
+
+**Space.** The digits as a list: **O(n)**.
+
+**What it wastes:** each round starts again from the left, rereading digits that the previous round already found to
+be in rising order.
+</Complexity>
+
+## Approach 2: Monotonic stack of kept digits (optimal)
+
+Read the digits once, keeping them on a stack. When a new digit is smaller than the digit on top and removals are
+left, pop the top: the new digit in its place makes the number smaller. Then push the new digit. The kept digits rise
+toward the top, so if removals are still left at the end, the biggest digits are the last ones: cut them off. This is
+the monotonic stack used as a greedy builder; [Monotonic stack patterns](/concepts/monotonic-stack-patterns/) covers
+the questions it usually answers.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each digit is pushed once and popped at most once, and the final cut and the zero stripping are one pass
+each: **O(n)**, whatever `k` is.
+
+**Space.** The stack holds up to `n` digits: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| One digit per round | O(n · k) | O(n) | Rescan for the first drop every round |
+| Monotonic stack | **O(n)** | O(n) | A smaller digit pops bigger digits before it |
+
+<GrowthChart client:visible series={growth} caption="Operations for n rising digits with k = n / 2: no digit ever drops, so every round scans to the end." />
+
+## Common mistakes
+
+- **Forgetting the removals left over.** If the digits only rise, nothing gets popped. Remove the last `k` digits at
+  the end.
+- **Leaving leading zeros.** `"0200"` must become `"200"`, and an empty result must become `"0"`.
+- **Removing the biggest digits.** In `"4825173"` the 7 is bigger than the 4, but removing the 4 helps more, because
+  it's further left.
+
+## Related problems
+
+- [Final Prices With a Special Discount in a Shop](/dsa/final-prices-with-a-special-discount-in-a-shop/). Another
+  stack that pops on "the new value is smaller".
+- [Remove All Adjacent Duplicates in String](/dsa/remove-all-adjacent-duplicates-in-string/). A stack that builds a
+  string by cancelling with the top.
+- [Daily Temperatures](/dsa/daily-temperatures/). The classic monotonic stack.
