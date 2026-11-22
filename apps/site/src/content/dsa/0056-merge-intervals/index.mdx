@@ -1,0 +1,80 @@
+---
+title: Merge Intervals
+leetcode: { number: 56, url: "https://leetcode.com/problems/merge-intervals/" }
+difficulty: Medium
+topics: [Intervals, Sorting, Array]
+added: 2026-11-22
+summary: Combine every group of overlapping intervals into one, and return the intervals that remain. Goes from repeatedly finding and merging any overlapping pair, to sorting by start and sweeping once, extending the last merged interval or starting a new one.
+insight: "Once intervals are sorted by start, an interval can only overlap the most recent merged one. So each either extends it or starts a new one: one pass after the sort."
+best: { time: "O(n log n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of intervals `[start, end]`. Merge every set of overlapping intervals into one interval covering them
+all, and return the resulting intervals. Two intervals overlap if one starts before or exactly when the other ends, so
+`[1, 3]` and `[3, 5]` merge into `[1, 5]`.
+
+For example, `[6, 8], [1, 3], [2, 4], [7, 9], [0, 1]` becomes `[0, 4], [6, 9]`.
+
+## The key question
+
+> **If the intervals were in order, which ones could a new interval possibly overlap?**
+
+See [Greedy in practice](/concepts/greedy-in-practice/): sort, then sweep once.
+
+## Approach 1: Merge any overlapping pair, repeat
+
+Look for any two intervals that overlap, replace them with one covering both, and repeat until none overlap.
+
+<Viz client:visible approach="repeat" />
+
+<Complexity time="O(n³)" space="O(1)">
+**Time.** Each round compares every pair, O(n²), and up to `n − 1` merges need a round each: **O(n³)**.
+
+**Space.** Merging in place: **O(1)** extra.
+
+**What it wastes:** without order, every interval has to be compared with every other, again after each merge.
+</Complexity>
+
+## Approach 2: Sort by start, then sweep once (optimal)
+
+Sort by start. Go through the intervals: if one starts no later than the last merged interval ends, extend that one's
+end; otherwise start a new merged interval.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Sorting is O(n log n); the sweep is O(n): **O(n log n)**.
+
+**Space.** The result, up to `n` intervals: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same intervals:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Merge any pair, repeat | O(n³) | O(1) | compares everything, again and again |
+| Sort, then sweep | O(n log n) | O(n) | one pass after the sort |
+
+<GrowthChart client:visible series={growth} caption="Steps for n intervals that chain together one by one." />
+
+## Common mistakes
+
+- **Setting the end to the new interval's end.** A short interval can sit inside a long one: use `max` of the two ends.
+- **Sorting by end.** Then an early-starting interval can come late and overlap a merged interval that's no longer last.
+- **Treating touching intervals as separate.** Here `[1, 3]` and `[3, 5]` overlap.
+
+## Related problems
+
+- [Insert Interval](/dsa/insert-interval/): merging one new interval into a sorted list.
+- [Non-overlapping Intervals](/dsa/non-overlapping-intervals/): sorting by end instead.
+- [Greedy and intervals](/concepts/greedy-intervals/): which end to sort by, and why.
