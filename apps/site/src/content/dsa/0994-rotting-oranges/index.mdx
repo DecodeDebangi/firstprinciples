@@ -1,0 +1,85 @@
+---
+title: Rotting Oranges
+leetcode: { number: 994, url: "https://leetcode.com/problems/rotting-oranges/" }
+difficulty: Medium
+topics: [BFS, Graph, Matrix]
+added: 2026-11-22
+summary: Every minute, each rotten orange in a grid rots the fresh oranges next to it. Find how many minutes until none are fresh, or -1 if some never rot. Goes from rescanning the whole grid every minute to one breadth-first search spreading from all the rotten oranges at once.
+insight: "The rot spreads one step per minute from every rotten orange at the same time: a BFS that starts with all of them in the queue. The minute an orange rots is its distance from the nearest rotten one."
+best: { time: "O(m · n)", space: "O(m · n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid where each cell is empty (0), a fresh orange (1) or a rotten orange (2). Every minute, every fresh orange
+next to a rotten one (up, down, left or right) becomes rotten. Return the number of minutes until no fresh orange is
+left, or -1 if that never happens.
+
+For example, in the grid with rows `2110`, `1101`, `0112` and `1001`, every orange is rotten after 2 minutes except the
+one in the bottom-left corner, which no rotten orange can reach, so the answer is -1.
+
+## The key question
+
+> **Each minute, which oranges change, and can I find them without looking at every cell again?**
+
+Only oranges next to ones that rotted the minute before. See [Searching grids](/concepts/searching-grids/): BFS from
+many starts at once.
+
+## Approach 1: Scan the whole grid every minute
+
+Each minute, scan every cell for fresh oranges with a rotten neighbour, and rot them all at once.
+
+<Viz client:visible approach="simulate" />
+
+<Complexity time="O((m · n)²)" space="O(m · n)">
+**Time.** Each minute scans all `m · n` cells, and there can be up to `m · n` minutes (a long winding line of oranges):
+**O((m · n)²)**.
+
+**Space.** The list of newly rotten oranges: **O(m · n)**.
+
+**What it wastes:** each scan re-checks cells far from any change. Only the oranges rotted last minute can rot anything
+new.
+</Complexity>
+
+## Approach 2: Multi-source BFS (optimal)
+
+Put every rotten orange in a queue at minute 0. Take them out in order; each rots its fresh neighbours at one minute
+later and adds them to the queue. At the end, if a fresh orange remains, return -1; otherwise return the latest minute.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** Each cell is queued at most once and checks four neighbours: **O(m · n)**.
+
+**Space.** The queue: **O(m · n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Rescan every minute | O((m · n)²) | O(m · n) | re-checks unchanged cells |
+| Multi-source BFS | O(m · n) | O(m · n) | each cell once |
+
+<GrowthChart client:visible series={growth} caption="Steps for a single row of n cells, rotten only at the left end." />
+
+## Common mistakes
+
+- **Running one BFS per rotten orange.** The rot spreads from all of them at once; separate searches overcount the
+  minutes and repeat work.
+- **Rotting an orange in the same minute it's reached by a fresh rot.** Mark it with the next minute, not this one.
+- **Forgetting the "no fresh oranges at all" case.** The answer is 0.
+
+## Related problems
+
+- [Searching grids](/concepts/searching-grids/): multi-source BFS.
+- [Number of Islands](/dsa/number-of-islands/): searching a grid for connected cells.
+- [Shortest Path in Binary Matrix](/dsa/shortest-path-in-binary-matrix/): BFS distances from one start.
