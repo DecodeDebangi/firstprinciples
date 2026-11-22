@@ -33,7 +33,8 @@ const ALIASES: Record<string, string> = {
   "Arrays & hashing": "hash map hashmap dictionary set",
   "Linked lists": "ll node pointer",
   "Big-O & complexity": "big o complexity time space",
-  "Stack": "stacks queue queues monotonic",
+  "Stack": "stacks queue queues lifo fifo",
+  "Monotonic stack": "monotonic next greater smaller previous span histogram",
 };
 
 export const GET: APIRoute = async () => {

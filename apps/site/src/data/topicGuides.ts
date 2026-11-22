@@ -84,10 +84,28 @@ while lo < hi
     idea: "Keep unfinished items on a stack: the most recent one is always the next to be resolved.",
     signals: [
       "Matching pairs: brackets, tags, open and close",
-      "\"The next or previous greater (or smaller) element\" for each position, even when the array wraps round",
-      "How far each item reaches before a bigger or smaller one blocks it: spans, widths, areas",
       "Undo, nested structure, or evaluating expressions",
-      "Something waits until a later item settles it",
+      "The newest item cancels or combines with the one before it",
+      "A queue or a minimum built out of stacks",
+    ],
+    template: `stack ← empty stack  // unclosed
+for each c in s
+    if c opens a pair
+        stack.push(c)
+    else if stack is empty
+        return false
+    else if stack.pop() ≠ partner(c)
+        return false
+return stack is empty`,
+    payoff: "The item you need is always on top, so every push, pop and look is O(1), and one pass handles any depth of nesting.",
+  },
+  "Monotonic stack": {
+    idea: "Keep the items still waiting for an answer on a stack in sorted order; each new item settles the ones it beats.",
+    signals: [
+      "\"The next or previous greater (or smaller) element\" for each position",
+      "How long until something bigger arrives, or how far back a run goes",
+      "How far each item reaches before a shorter or taller one blocks it: spans, widths, areas",
+      "The same question on an array that wraps round",
     ],
     template: `stack ← empty stack  // waiting
 for each index i, value x in nums

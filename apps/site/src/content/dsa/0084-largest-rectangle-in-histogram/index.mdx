@@ -2,7 +2,7 @@
 title: Largest Rectangle in Histogram
 leetcode: { number: 84, url: "https://leetcode.com/problems/largest-rectangle-in-histogram/" }
 difficulty: Hard
-topics: [Stack, Array]
+topics: [Monotonic stack, Stack, Array]
 added: 2026-11-22
 summary: Given bar heights, each bar 1 unit wide, find the area of the largest rectangle that fits under the bars. Goes from trying every pair of edges, to finding each bar's nearest shorter neighbours with two stack passes, to one pass where every pop measures a rectangle.
 insight: "The best rectangle is as tall as some bar and stretches until a shorter bar blocks each side. Keep bars on a stack with heights rising; when a bar is popped, the new bar blocks its right and the bar under it blocks its left."

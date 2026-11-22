@@ -2,7 +2,7 @@
 title: Online Stock Span
 leetcode: { number: 901, url: "https://leetcode.com/problems/online-stock-span/" }
 difficulty: Medium
-topics: [Stack]
+topics: [Monotonic stack, Stack]
 added: 2026-11-22
 summary: Prices arrive one day at a time, and for each one you report how many days in a row, ending today, had a price no higher than today's. Goes from counting back over every stored price to a stack of (price, span) pairs that answers in O(1) on average.
 insight: "Keep a stack of (price, span) pairs. A new price pops every pair that's no higher and adds their spans to its own, because those days are covered by today's span too."

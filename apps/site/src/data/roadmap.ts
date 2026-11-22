@@ -35,7 +35,8 @@ export const roadmap: RoadmapStep[] = [
     title: "Core patterns",
     topics: [
       { name: "Two pointers", blurb: "Walk from both ends to skip whole pairs.", tags: ["Two pointers"] },
-      { name: "Stack", blurb: "Last in, first out: matching and undoing.", tags: ["Stack", "Queue"] },
+      { name: "Stack", blurb: "Last in, first out: matching, undoing and evaluating.", tags: ["Stack", "Queue"] },
+      { name: "Monotonic stack", blurb: "Find the next or previous bigger or smaller item for everything, in one pass.", tags: ["Monotonic stack"] },
     ],
   },
   {

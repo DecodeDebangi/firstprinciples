@@ -2,7 +2,7 @@
 title: Next Greater Element I
 leetcode: { number: 496, url: "https://leetcode.com/problems/next-greater-element-i/" }
 difficulty: Easy
-topics: [Stack, Hash map, Array]
+topics: [Monotonic stack, Stack, Hash map, Array]
 added: 2026-11-22
 summary: For each value in a short list, find where it sits in a longer list and report the first bigger value to its right, or -1. Goes from walking right from each value, to one pass over the longer list with a stack of values still waiting for something bigger, storing every answer in a map.
 insight: "Walk the long list once, keeping values that haven't met anything bigger on a stack. Each new value answers every waiting value smaller than it, so pop those and record the answer; then every question is a map lookup."

@@ -2,7 +2,7 @@
 title: Next Greater Element II
 leetcode: { number: 503, url: "https://leetcode.com/problems/next-greater-element-ii/" }
 difficulty: Medium
-topics: [Stack, Array]
+topics: [Monotonic stack, Stack, Array]
 added: 2026-11-22
 summary: The array is a circle, and for each value you find the first bigger value after it, wrapping past the end back to the start. Goes from walking round the circle from every value to a monotonic stack that walks the array twice.
 insight: "Walk the array twice with a stack of values still waiting for a bigger one. The second lap lets values near the end find answers near the start."
