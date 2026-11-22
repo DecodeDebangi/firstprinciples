@@ -1,0 +1,92 @@
+---
+title: Word Break
+leetcode: { number: 139, url: "https://leetcode.com/problems/word-break/" }
+difficulty: Medium
+topics: [Dynamic programming, String, Hash map]
+added: 2026-11-22
+summary: Decide whether a string can be cut into a sequence of words from a given list (words may repeat). Goes from a recursion that tries every word the string starts with, re-checking the same endings again and again, to a table that records, for each prefix, whether it can be split.
+insight: "Let dp[i] say whether the first i letters can be split. dp[i] is true when some word ends at i and the letters before that word could be split."
+best: { time: "O(n · k · L)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a string `s` and a list of words, return `true` if `s` can be cut into pieces that are all words from the list.
+A word can be used any number of times.
+
+For `s = "sunpots"` and the words `sun, su, n, pot`, the answer is `false`: both ways of covering `sunpot` leave a
+final `s` that isn't a word.
+
+n below is the length of `s`, k the number of words and L the length of the longest word.
+
+## The key question
+
+> **Different splits of the start can end at the same position: "su" + "n" and "sun" both end after 3 letters. Whether the rest can be split doesn't depend on how you got there. How do I check each position only once?**
+
+## Approach 1: Plain recursion, try every first word
+
+`canSplit(i)` asks whether `s` from position `i` onwards can be split. It tries every word that fits at `i` and
+recurses on what's left. Reaching the end of `s` means success.
+
+<Viz client:visible approach="recurse" />
+
+<Complexity time="O(2ⁿ) worst case" space="O(n)">
+**Time.** When many words overlap, like `a`, `aa` and `aaa` on `"aaaa…ab"`, each position branches several ways and
+the same endings are re-checked exponentially often: up to **O(2ⁿ)** calls.
+
+**Space.** The recursion goes up to n calls deep: **O(n)**.
+
+**What it wastes:** "can the rest from position i be split?" has one answer per position, but it's worked out again
+for every way of reaching i.
+</Complexity>
+
+## Approach 2: A table of splittable prefixes
+
+Let `dp[i]` say whether the first `i` letters can be split. `dp[0]` is true (no letters need no words). For each
+position `i`, try every word `w` as the **last** piece: it must end exactly at `i`, and the letters before it,
+`dp[i − length(w)]`, must be splittable. This is the shape from [Designing a 1D DP](/concepts/one-dimensional-dp/):
+the choice is where the last word starts.
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(n · k · L)" space="O(n)">
+**Time.** For each of the n positions, try each of the k words, comparing up to L letters: **O(n · k · L)**.
+
+**Space.** The table: **O(n)** (plus the word list).
+
+**What it wastes:** it compares every word at every position. Putting the words in a [trie](/concepts/tries/) or
+a set, and only trying lengths that exist, cuts the checks down when the list is large.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Plain recursion | O(2ⁿ) worst | O(n) | Try every first word, recurse on the rest |
+| Table | **O(n · k · L)** | O(n) | dp[i]: can the first i letters be split? |
+
+Memoising the recursion (saving each `canSplit(i)`) gives the same bound as the table.
+
+<GrowthChart client:visible series={growth} caption="Operations for n letters a followed by one b, with the words a, aa and aaa." />
+
+## Common mistakes
+
+- **Greedily taking the longest word that fits.** For `"pensun"` with the words `pen`, `pens` and `sun`, taking `pens`
+  leaves `un`, which fails, while `pen` + `sun` works.
+- **Forgetting `dp[0] = true`.** Without it, no word can start at the beginning.
+- **Checking only whether each piece is a word, not the order.** The pieces must cover `s` exactly, end to end.
+- **Off-by-one in the slice.** The word ending at `i` covers `s[i − length(w) .. i − 1]`.
+
+## Related problems
+
+- Word Break II (LeetCode 140). List every split, which is backtracking on top of this table.
+- Concatenated Words (LeetCode 472). Word Break run for each word against the others.
+- Decode Ways (LeetCode 91). Another "where does the last piece start" table.
