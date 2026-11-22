@@ -36,6 +36,11 @@ Every monotonic stack problem asks one of four things about each item: the **nex
 Push **positions**, not values. The position gives you the value (`a[i]`) and also the distance between two items,
 which is what [Daily Temperatures](/dsa/daily-temperatures/) asks for.
 
+The pop test is the only thing to change between questions. [Final Prices With a Special Discount in a
+Shop](/dsa/final-prices-with-a-special-discount-in-a-shop/) wants the next price that's *no higher*, so it pops while
+the top is `≥` the new price. [Remove K Digits](/dsa/remove-k-digits/) uses the same pop to build the smallest number,
+letting each smaller digit push out bigger digits before it.
+
 ## Looking back: stock spans
 
 A classic "previous bigger" question: for each day, how many days in a row, ending today, had a value no higher than
@@ -81,7 +86,9 @@ everything in between. To pop whatever is left at the end, treat the position af
 Each bar is pushed once and popped once, and each pop measures one rectangle in O(1): O(n) in total, against O(n²) for
 trying every left and right edge. When two bars have the same height, the first one popped measures too narrow a
 rectangle, but the later one of the same height measures the full width, so the answer is still right. That's [Largest Rectangle in
-Histogram](/dsa/largest-rectangle-in-histogram/).
+Histogram](/dsa/largest-rectangle-in-histogram/). Running it once per row of a grid solves [Maximal
+Rectangle](/dsa/maximal-rectangle/), and the same nearest-smaller boundaries count how many subarrays each value is
+the minimum of in [Sum of Subarray Minimums](/dsa/sum-of-subarray-minimums/).
 
 ## Interview theory
 
