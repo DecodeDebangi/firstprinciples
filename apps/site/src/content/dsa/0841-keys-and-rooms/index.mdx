@@ -1,0 +1,85 @@
+---
+title: Keys and Rooms
+leetcode: { number: 841, url: "https://leetcode.com/problems/keys-and-rooms/" }
+difficulty: Medium
+topics: [Graph, DFS, BFS]
+added: 2026-11-22
+summary: Rooms are locked except room 0, and each room may hold keys to other rooms. Decide whether every room can be opened. Goes from sweeping the open rooms again and again until nothing changes, to one depth-first search from room 0 that enters each room once.
+insight: "Rooms are nodes and each key is an arrow to the room it opens. The question is whether every node can be reached from room 0: one graph search, entering each room once."
+best: { time: "O(n + k)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` rooms, numbered 0 to `n − 1`. Room 0 is open; every other room is locked. Each room contains a list of
+keys, and key `k` opens room `k`. You can enter any room you have a key for. Return whether you can enter every room.
+
+For example, with rooms `[1, 2], [4], [3], [1], [], [0]` (room 0 holds keys 1 and 2, and so on), rooms 0 to 4 can be
+entered, but nothing holds the key to room 5, so the answer is false.
+
+Below, `k` is the total number of keys.
+
+## The key question
+
+> **Isn't this just "which nodes can I reach from node 0"?**
+
+Yes: each key is an edge from its room to the room it opens. See [Graphs](/concepts/graphs/) and [Searching
+grids](/concepts/searching-grids/) for "visit everything reachable".
+
+## Approach 1: Sweep until no new room opens
+
+Keep the set of open rooms. Repeatedly go through every open room, collecting keys and opening their rooms, until a
+whole sweep opens nothing new.
+
+<Viz client:visible approach="passes" />
+
+<Complexity time="O(n · (n + k))" space="O(n)">
+**Time.** Each sweep re-reads every key in every open room, O(n + k), and a long chain of rooms needs up to `n` sweeps:
+**O(n · (n + k))**.
+
+**Space.** The open set: **O(n)**.
+
+**What it wastes:** rooms already searched are searched again every sweep, though their keys never change.
+</Complexity>
+
+## Approach 2: Depth-first search from room 0 (optimal)
+
+Start with room 0 on a stack. Pop a room, and for each key it holds, push that room if it hasn't been seen. When the
+stack is empty, compare the number of rooms seen with `n`.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n + k)" space="O(n)">
+**Time.** Each room is entered once and each key read once: **O(n + k)**.
+
+**Space.** The seen set and the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same rooms:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Sweep until stable | O(n · (n + k)) | O(n) | re-reads keys every sweep |
+| Depth-first search | O(n + k) | O(n) | each room once |
+
+<GrowthChart client:visible series={growth} caption="Steps for a chain of n rooms where each sweep opens just one more." />
+
+## Common mistakes
+
+- **Marking a room seen when it's entered instead of when it's pushed.** Two keys to the same room then push it twice.
+- **Thinking the order of keys matters.** Any order reaches the same rooms.
+- **Forgetting room 0 is already open.** Start the seen set with it.
+
+## Related problems
+
+- [Find if Path Exists in Graph](/dsa/find-if-path-exists-in-graph/): reachability between two nodes.
+- [Number of Provinces](/dsa/number-of-provinces/): counting reachable groups.
+- [Graphs](/concepts/graphs/): BFS, DFS and the visited set.
