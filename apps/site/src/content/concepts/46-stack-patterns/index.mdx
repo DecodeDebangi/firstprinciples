@@ -1,0 +1,74 @@
+---
+title: "Stack patterns: evaluating, tracking the minimum, building a queue"
+topic: Stack
+kind: Explainer
+order: 2
+summary: Three classic jobs for a stack beyond matching brackets. Evaluate postfix expressions by pushing numbers and letting each operator combine the last two. Keep a second stack so the minimum is always one look away. And build a first-in-first-out queue out of two stacks, with every operation O(1) on average.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Stacks vs queues](/concepts/stacks-queues-monotonic/) covers what a stack is: last in, first out, with push, pop and
+top all O(1). Here are three patterns that come up again and again in interviews.
+
+## Evaluating expressions
+
+In **postfix** (also called Reverse Polish notation) each operator comes after the two numbers it combines: `4 2 +`
+means `4 + 2`, and `4 2 + 3 *` means `(4 + 2) · 3`. No brackets are ever needed. A stack evaluates it in one pass: push
+each number; for an operator, pop the top two, combine them, and push the result. The one popped **second** is the left
+side, which matters for `-` and `/`.
+
+<Viz client:visible approach="rpn" />
+
+O(n) for `n` tokens. Ordinary expressions with brackets, like `(1 + 2) · 3`, are evaluated the same way after
+converting them, or with two stacks (one for numbers, one for operators). That's [Evaluate Reverse Polish
+Notation](/dsa/evaluate-reverse-polish-notation/).
+
+The same "push, and let a later item cancel or combine with the top" idea removes neighbouring duplicates in text:
+[Remove All Adjacent Duplicates in String](/dsa/remove-all-adjacent-duplicates-in-string/).
+
+## A stack that knows its minimum
+
+To answer "what's the smallest value in the stack?" in O(1), keep a second stack beside the values. At each level it
+stores the minimum of everything from the bottom up to that level. Pushing `x` pushes `min(x, current minimum)`;
+popping removes both. The minimum is always on top, and after a pop, the previous minimum is right there, with nothing
+to search.
+
+<Viz client:visible approach="minStack" />
+
+Every operation stays O(1); the cost is O(n) extra memory. That's [Min Stack](/dsa/min-stack/).
+
+## A queue from two stacks
+
+A queue hands back the **oldest** value; a stack hands back the **newest**. Two stacks make a queue: push onto an `in`
+stack, and take values from an `out` stack. When `out` is empty, pour everything from `in` into it. Popping and pushing
+reverses the order, so the oldest value ends up on top of `out`.
+
+<Viz client:visible approach="twoStacks" />
+
+One pour can move many values, but each value is pushed once, poured once and popped once. So `n` operations take O(n)
+in total: O(1) each **on average**, which is called [amortised](/concepts/big-o-in-plain-words/) O(1). That's
+[Implement Queue using Stacks](/dsa/implement-queue-using-stacks/).
+
+## Interview theory
+
+<QA q="How do you evaluate a postfix expression?">
+Push numbers onto a stack. For an operator, pop b, then a, push a op b. At the end the stack holds the answer. O(n).
+</QA>
+
+<QA q="How do you get the minimum of a stack in O(1)?">
+Keep a second stack where each level stores the minimum so far. Push min(x, current min) beside each value and pop
+both together; the minimum is always the top of the second stack.
+</QA>
+
+<QA q="How do two stacks make a queue, and why is it O(1) amortised?">
+Push to an in stack; pop from an out stack, refilling it from in (which reverses the order) only when it's empty. Each
+value moves across once, so the total work for n operations is O(n).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
