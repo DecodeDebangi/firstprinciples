@@ -1,0 +1,83 @@
+---
+title: Remove All Adjacent Duplicates In String
+leetcode: { number: 1047, url: "https://leetcode.com/problems/remove-all-adjacent-duplicates-in-string/" }
+difficulty: Easy
+topics: [Stack, String]
+added: 2026-11-22
+summary: Repeatedly delete two equal letters that sit next to each other until none are left, and return what remains. Goes from finding a pair, deleting it and rescanning from the start, to one pass that keeps the surviving letters on a stack.
+insight: "Deleting a pair can bring two earlier letters together, so a new letter only ever needs to be compared with the last letter that survived. Keep the survivors on a stack; an equal newcomer cancels the top."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` of lowercase letters. While there are two equal letters next to each other, delete both. Return
+the string that's left when no such pair remains (it might be empty). The answer is the same whichever order the pairs
+are deleted in.
+
+For example, `cbbcadda` becomes `aa` after removing `bb`, `cc` and `dd`, and then `aa` is a pair too, so the answer is
+the empty string `""`.
+
+## The key question
+
+> **After a pair disappears, which letters can form the next pair?**
+
+Only the letter just before the pair and the letter just after it. That's the "a newcomer meets the top" pattern from
+[Stack patterns](/concepts/stack-patterns/).
+
+## Approach 1: Find a pair, delete it, start again
+
+Scan from the left for two equal neighbours, delete them, and scan again from the start, until no pair is found.
+
+<Viz client:visible approach="rescan" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to `n / 2` deletions, each with a scan and a shift of O(n): **O(n²)**.
+
+**Space.** Changing the string in place: **O(1)** extra.
+
+**What it wastes:** every scan re-reads the letters before the pair, which are already known to have no pairs.
+</Complexity>
+
+## Approach 2: Build the answer on a stack (optimal)
+
+Read the letters once. If the next letter equals the top of the stack, pop it (the pair cancels); otherwise push it. The
+stack, read from bottom to top, is the answer.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One push or pop per letter: **O(n)**.
+
+**Space.** The stack: **O(n)**. A string builder used as the stack works the same way.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Find, delete, rescan | O(n²) | O(1) | rescans from the start |
+| Stack | O(n) | O(n) | each letter once |
+
+<GrowthChart client:visible series={growth} caption="Steps for a string like abc…cba, which collapses from the middle outwards." />
+
+## Common mistakes
+
+- **Removing only one pass of pairs.** `abba` needs two rounds: `bb`, then `aa`.
+- **Building the result with `+=`.** With unchangeable strings, that copies every time; use a stack or builder and
+  join once (see [Reading text apart](/concepts/reading-text-apart/)).
+- **Reading the stack top to bottom.** The answer is bottom to top.
+
+## Related problems
+
+- [Stack patterns](/concepts/stack-patterns/): newcomers cancelling the top.
+- [Valid Parentheses](/dsa/valid-parentheses/): a closing bracket cancels its opener on top.
+- [Evaluate Reverse Polish Notation](/dsa/evaluate-reverse-polish-notation/): operators combining the top two values.
