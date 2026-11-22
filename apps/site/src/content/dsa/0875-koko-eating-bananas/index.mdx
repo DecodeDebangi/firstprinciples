@@ -1,0 +1,86 @@
+---
+title: Koko Eating Bananas
+leetcode: { number: 875, url: "https://leetcode.com/problems/koko-eating-bananas/" }
+difficulty: Medium
+topics: [Binary search, Array]
+added: 2026-11-22
+summary: Find the slowest eating speed that finishes every pile of bananas within h hours, eating from one pile per hour. Goes from trying speeds 1, 2, 3, … in turn, to binary searching the possible speeds, since any speed above a fast-enough one is also fast enough.
+insight: "There's no list to search, but the answer is a speed between 1 and the biggest pile, and \"fast enough?\" runs no…no, yes…yes over the speeds. Binary search for the first yes."
+best: { time: "O(n log m)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` piles of bananas and `h` hours. Each hour, Koko picks one pile and eats up to `k` bananas from it; if the
+pile has fewer, she finishes it and waits for the next hour. Return the smallest whole speed `k` that lets her finish
+every pile within `h` hours. (`h` is at least the number of piles, so it's always possible.)
+
+At speed `k`, a pile of `p` takes `⌈p / k⌉` hours: divide and round up. For example, with piles `5, 9, 2, 6` and
+`h = 7`, speed 4 needs 2 + 3 + 1 + 2 = 8 hours, too many, but speed 5 needs 1 + 2 + 1 + 2 = 6. The answer is 5.
+
+Below, `m` is the biggest pile.
+
+## The key question
+
+> **There's no list to search. What range of answers is possible, and how do I test one?**
+
+The speed is between 1 and `m` (eating faster than the biggest pile never helps), and testing a speed means adding up
+the hours. See [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/).
+
+## Approach 1: Try speeds 1, 2, 3, …
+
+Test each speed in turn and stop at the first that's fast enough.
+
+<Viz client:visible approach="linear" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** Up to `m` speeds, each tested in O(n): **O(n · m)**. Piles can hold a billion bananas.
+
+**Space.** **O(1)**.
+
+**What it wastes:** a "too slow" answer at speed `k` also means every slower speed is too slow, and a "fast enough"
+means every faster speed works. Testing one speed at a time ignores that.
+</Complexity>
+
+## Approach 2: Binary search the speeds (optimal)
+
+Search speeds 1 to `m` with the first-yes template: if the middle speed is fast enough, the answer is there or slower;
+if not, it's faster.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(n log m)" space="O(1)">
+**Time.** About `log₂ m` tests, each O(n): **O(n log m)**. For a billion bananas, around 30 tests.
+
+**Space.** **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same piles:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Try every speed | O(n · m) | O(1) | one speed ruled out per test |
+| Binary search the speeds | O(n log m) | O(1) | half the speeds ruled out per test |
+
+<GrowthChart client:visible series={growth} caption="Pile-hours added up when the answer is the biggest pile, n." />
+
+## Common mistakes
+
+- **Rounding the hours down.** A pile of 7 at speed 2 takes 4 hours, not 3: `⌈7 / 2⌉`.
+- **Starting the search at 0.** A speed of 0 never finishes; start at 1.
+- **Overflowing the hour count.** With many huge piles at speed 1, the total can pass a 32-bit integer; use a 64-bit
+  count, or stop adding once it passes `h`.
+
+## Related problems
+
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): searching the possible answers.
+- [First Bad Version](/dsa/first-bad-version/): the same first-yes template on versions.
+- [Search Insert Position](/dsa/search-insert-position/): the first position that's big enough.
