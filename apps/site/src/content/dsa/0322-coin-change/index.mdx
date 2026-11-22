@@ -1,0 +1,91 @@
+---
+title: Coin Change
+leetcode: { number: 322, url: "https://leetcode.com/problems/coin-change/" }
+difficulty: Medium
+topics: [Dynamic programming, Array]
+added: 2026-11-22
+summary: Find the fewest coins that add up to an amount, with unlimited coins of each value, or -1 if it can't be done. Goes from a recursion that tries every coin as the last one, repeating the same amounts exponentially often, to a table filled for every amount from 0 up.
+insight: "Let dp[a] be the fewest coins for amount a. The last coin is some c, so dp[a] = 1 + the smallest dp[a − c]. Fill it from 0 upwards."
+best: { time: "O(amount · k)", space: "O(amount)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of coin values and an amount, return the **fewest** coins that add up to exactly that amount. You have
+as many coins of each value as you like. If no combination works, return `-1`. An amount of 0 needs 0 coins.
+
+For coins `[1, 3, 4]` and amount 6 the answer is **2**: `3 + 3`. Taking the biggest coin first gives `4 + 1 + 1`,
+three coins, so the greedy shortcut fails.
+
+k below is the number of coin values.
+
+## The key question
+
+> **Whatever the best answer is, it ends with some coin c, and the rest must be the best way to make amount − c.
+> How do I avoid working out the same smaller amounts again and again?**
+
+## Approach 1: Plain recursion, try each coin last
+
+`fewest(a)` tries every coin `c` that fits as the last coin, asks `fewest(a − c)`, and keeps the smallest result plus
+one. An amount no coin fits into can't be made, so it returns ∞.
+
+<Viz client:visible approach="recurse" />
+
+<Complexity time="O(k^amount)" space="O(amount)">
+**Time.** Each call branches into up to k calls, up to `amount` levels deep: exponential, **O(k^amount)** at worst.
+
+**Space.** The recursion can go `amount` calls deep (all 1-coins): **O(amount)**.
+
+**What it wastes:** there are only `amount + 1` different questions, but small amounts are answered over and over,
+each time with everything below them.
+</Complexity>
+
+## Approach 2: A table for every amount
+
+Let `dp[a]` be the fewest coins for amount `a`. `dp[0] = 0`, and every other amount takes the best over its possible
+last coins: `dp[a] = 1 + min(dp[a − c])`. Each entry only uses smaller amounts, so fill the table from 0 up. This is
+"best over k options" from [Designing a 1D DP](/concepts/one-dimensional-dp/).
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(amount · k)" space="O(amount)">
+**Time.** Each of the `amount` entries tries each of the k coins: **O(amount · k)**.
+
+**Space.** The table: **O(amount)**.
+
+**What it wastes:** it fills in every amount below the target, even ones the answer never uses. That's the price of a
+simple fill order, and it's what makes the time predictable.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Plain recursion | O(k^amount) | O(amount) | Try every coin last, recursively |
+| Table | **O(amount · k)** | O(amount) | dp[a] = 1 + min over coins of dp[a − c] |
+
+Memoising the recursion (saving each `fewest(a)`) also gives O(amount · k).
+
+<GrowthChart client:visible series={growth} caption="Operations with coins 1, 3 and 4, as the amount grows." />
+
+## Common mistakes
+
+- **Taking the biggest coin first.** It fails for coins like `[1, 3, 4]`: 6 is 3 + 3, not 4 + 1 + 1.
+- **Starting the table with 0s.** Use ∞ (or `amount + 1`) for "not possible yet"; 0 would look like a free answer.
+- **Adding 1 to ∞.** If `dp[a − c]` is ∞, `dp[a − c] + 1` must stay "impossible"; a big sentinel like `amount + 1`
+  avoids overflow.
+- **Returning ∞ instead of -1.** Convert at the end.
+
+## Related problems
+
+- Coin Change II (LeetCode 518). Count the combinations instead of finding the fewest coins.
+- Perfect Squares (LeetCode 279). The same table, with square numbers as the coins.
+- Minimum Cost For Tickets (LeetCode 983). Best over a few options per day.
