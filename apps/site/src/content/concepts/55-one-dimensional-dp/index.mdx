@@ -1,0 +1,99 @@
+---
+title: "Designing a 1D DP: what dp[i] means, and the choice at each step"
+topic: Dynamic programming
+kind: Explainer
+order: 2
+summary: Most one-dimensional DP problems come down to two decisions. What exactly does dp[i] mean (the best over the first i items, or the best that ends at i)? And what choice does position i make (take or skip, or which earlier position to extend)? Watched on two classic shapes, with how to check a recurrence before trusting it.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Two decisions
+
+[Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/) shows how DP saves answers to smaller questions.
+Designing one for a new problem comes down to two decisions:
+
+1. **What does `dp[i]` mean?** Say it in one exact sentence, including which items it covers and whether item `i`
+   must be used.
+2. **What choice does position `i` make?** List every option, and for each one, which earlier `dp` value it builds
+   on. `dp[i]` is the best of those options.
+
+Get the sentence right and the recurrence usually falls out. Most 1D problems fit one of two shapes.
+
+## Shape 1: the best over the first i items (take or skip)
+
+"Pick numbers from a row, never two neighbours, to get the biggest sum." Let `dp[i]` be **the most you can collect
+from positions 0 to i**. Position `i` either isn't picked, leaving the best of the first `i − 1` positions, or is
+picked, which rules out its left neighbour:
+
+```text
+dp[i] = max(dp[i - 1], dp[i - 2] + nums[i])
+```
+
+<Viz client:visible approach="takeSkip" />
+
+The answer is the last entry, since `dp[n − 1]` already covers everything. [House Robber](/dsa/house-robber/) is
+exactly this. [Coin Change](/dsa/coin-change/) has the same feel with more options: the last coin used can be any
+coin, so `dp[a]` takes the best over all of them.
+
+## Shape 2: the best that ends exactly at i
+
+"The longest run of picks whose values keep increasing." Here "the best of the first i" doesn't work: knowing the
+longest run among the first i numbers doesn't tell you whether number i can extend it, because you don't know what
+that run ends with. So pin the end down: let `dp[i]` be **the longest increasing run that ends exactly at position
+i**. Then position `i` chooses which earlier, smaller number to follow:
+
+```text
+dp[i] = 1 + max(dp[j] for j < i with nums[j] < nums[i]), or 1 if none
+```
+
+<Viz client:visible approach="endingHere" />
+
+Because the best run can end anywhere, the answer is the **largest** `dp` value, not the last one. That's the tell for
+this shape. See [Longest Increasing Subsequence](/dsa/longest-increasing-subsequence/), and [Word
+Break](/dsa/word-break/), where `dp[i]` asks whether the first i letters can be split into words, and the choice is
+where the last word starts.
+
+## Check a recurrence before trusting it
+
+- **Base cases.** What are `dp[0]` (and maybe `dp[1]`)? Work them out by hand.
+- **Order.** Every value `dp[i]` uses must already be filled in. Left to right works when `dp[i]` only looks at
+  smaller indexes.
+- **Every option.** Did the choice list miss one? Skipping is easy to forget.
+- **A tiny example.** Fill the table by hand for three or four items and compare with an answer found by brute force.
+
+## What it costs
+
+| Shape | Each dp[i] looks at | Time | Space |
+|---|---|---|---|
+| Take or skip | A fixed number of earlier values | O(n) | O(n), often O(1) |
+| Best over k options | k earlier values | O(n · k) | O(n) |
+| Best ending at i | Every earlier value | O(n²) | O(n) |
+
+When each `dp[i]` only looks back a fixed distance, keep just those last few values instead of the whole table:
+O(1) space.
+
+## Interview theory
+
+<QA q="How do you tell whether dp[i] should mean 'best of the first i' or 'best ending at i'?">
+Ask whether extending an answer needs to know how it ends. Picking non-neighbours only needs to know whether the
+previous position was taken, which the two-step look-back handles. An increasing run needs its last value, so the
+state has to fix where the run ends.
+</QA>
+
+<QA q="Why is the LIS answer max(dp) but the house robber answer dp[n − 1]?">
+Robber's dp[i] covers all of the first i positions, so the last entry covers everything. LIS's dp[i] only counts runs
+ending at i, and the longest run can end anywhere.
+</QA>
+
+<QA q="When can a 1D DP use O(1) space?">
+When dp[i] only reads a fixed number of earlier entries, such as dp[i − 1] and dp[i − 2]. Keep those in variables
+and slide them forward. If it reads every earlier entry, as in LIS, the whole table is needed.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
