@@ -1,0 +1,98 @@
+---
+title: Sum of Subarray Minimums
+leetcode: { number: 907, url: "https://leetcode.com/problems/sum-of-subarray-minimums/" }
+difficulty: Medium
+topics: [Monotonic stack, Stack, Array]
+added: 2026-11-22
+summary: Add up the minimum of every subarray of a list. Goes from visiting every subarray with a running minimum to counting, for each value, how many subarrays it is the minimum of, using two monotonic stack passes.
+insight: "Count each value's share instead: it's the minimum of every subarray that starts after its nearest smaller value on the left and ends before its nearest smaller value on the right."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of numbers `a`. Take every **subarray** (every unbroken run of one or more neighbouring values), find
+its smallest value, and return the sum of all those minimums. The sum can get huge, so return it modulo `10⁹ + 7`
+(the remainder after dividing by that number).
+
+For `a = [3, 1, 2, 4, 2]` the answer is `25`. The 15 subarrays include `[3]` with minimum 3, `[3, 1]` with
+minimum 1, `[2, 4]` with minimum 2, and so on; their minimums add up to 25.
+
+## The key question
+
+> **Instead of finding the minimum of each subarray, how many subarrays is each value the minimum of?**
+
+A value is the minimum of a subarray as long as the subarray doesn't reach a smaller value. So it can start anywhere
+after the nearest smaller value on its left, and end anywhere before the nearest smaller value on its right. Those
+nearest smaller values are what a monotonic stack finds.
+
+## Approach 1: Every subarray, with a running minimum
+
+For each start, extend the end one value at a time. The minimum only ever falls as the end moves right, so keep it up
+to date in O(1) and add it to the total.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** There are `n(n + 1)/2` subarrays, and each costs O(1) thanks to the running minimum: **O(n²)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** a small value is found as the minimum again and again, once for every subarray it's in, instead of
+being counted once.
+</Complexity>
+
+## Approach 2: Count each value's share with two stack passes (optimal)
+
+For each value at index `i`, let `left[i]` be how many places a subarray can start so that `a[i]` is still its
+minimum, and `right[i]` how many places it can end. Then `a[i]` is the minimum of `left[i] × right[i]` subarrays, and
+adds `a[i] × left[i] × right[i]` to the sum.
+
+One stack pass from the left finds the nearest smaller value on each value's left; a second pass from the right finds
+the one on its right. The stack keeps values rising toward the top, so after popping, the top is the nearest smaller
+value. [Monotonic stack patterns](/concepts/monotonic-stack-patterns/) covers these "previous smaller" passes.
+
+**Equal values** need care: in `[2, 2]` the subarray `[2, 2]` has two candidates for its minimum, but it must be
+counted once. So the left pass treats an equal value as a blocker (it pops only values that are **bigger**) and the
+right pass doesn't (it pops values that are **no smaller**). Then every subarray's minimum is credited to its leftmost
+smallest value.
+
+<Viz client:visible approach="share" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each pass pushes every value once and pops it at most once, and the final loop is `n` steps: **O(n)**.
+
+**Space.** The `left` and `right` arrays and the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Every subarray | O(n²) | O(1) | Running minimum per start |
+| Each value's share | **O(n)** | O(n) | Nearest smaller value on each side, then multiply |
+
+<GrowthChart client:visible series={growth} caption="Operations as the list grows: the brute force always visits every subarray." />
+
+## Common mistakes
+
+- **Using `>` (or `≥`) in both passes.** With duplicates, a subarray is then counted twice or not at all. One side
+  must stop at equal values and the other must pass them.
+- **Forgetting the modulo.** On long inputs the sum overflows; take the remainder as you add.
+- **Counting distances wrong.** If the nearest smaller value on the left is at index `p`, a subarray can start at
+  `p + 1` up to `i`: that's `i − p` places, with `p = −1` when there's none.
+
+## Related problems
+
+- [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/). The same two nearest-smaller passes, used
+  to measure widths instead of counts.
+- [Online Stock Span](/dsa/online-stock-span/). How far back a run goes, one side only.
+- [Daily Temperatures](/dsa/daily-temperatures/). The basic next-greater stack.
