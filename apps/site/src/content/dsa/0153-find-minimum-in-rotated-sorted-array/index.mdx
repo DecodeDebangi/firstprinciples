@@ -1,0 +1,84 @@
+---
+title: Find Minimum in Rotated Sorted Array
+leetcode: { number: 153, url: "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/" }
+difficulty: Medium
+topics: [Binary search, Array]
+added: 2026-11-22
+summary: A sorted list of different values was rotated - its end moved to the front - and you must find its smallest value in O(log n). Goes from looking at every value to a binary search that asks, for the middle value, whether it belongs to the lower run that ends the list.
+insight: "A rotated sorted list is an upper run followed by a lower run, and every value of the lower run is at most the last value. \"Is nums[i] ≤ the last value?\" runs no…no, yes…yes, and the first yes is the minimum."
+best: { time: "O(log n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A list of different numbers was sorted in increasing order, then **rotated**: some number of values were moved from the
+end to the front, keeping their order. Find the smallest value, in O(log n) time.
+
+For example, `[2, 3, 5, 6, 8, 9, 12]` rotated by four positions is `[6, 8, 9, 12, 2, 3, 5]`, and its minimum is 2. A list
+rotated all the way round is just sorted, and its minimum is the first value.
+
+## The key question
+
+> **The list isn't sorted any more. Is there still a question whose answers run no…no, yes…yes?**
+
+See [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): binary search only needs that.
+
+## Approach 1: Look at every value
+
+Keep the smallest value seen.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** **O(n)**, looking at every value.
+
+**Space.** **O(1)**.
+
+**What it wastes:** it ignores that the list is two sorted runs. The minimum is exactly where the second run starts, and
+that point can be found by halving.
+</Complexity>
+
+## Approach 2: Binary search for the drop (optimal)
+
+Call the last value `last`. Values in the upper run are bigger than `last`; values in the lower run (which ends the list)
+are at most `last`. So "is `nums[i] ≤ last`?" is no, then yes, and the first yes is the start of the lower run: the
+minimum. Find it with the first-yes template.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(log n)" space="O(1)">
+**Time.** Each check halves the range: **O(log n)**.
+
+**Space.** **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Look at every value | O(n) | O(1) | ignores the order |
+| Binary search for the drop | O(log n) | O(1) | uses the two sorted runs |
+
+<GrowthChart client:visible series={growth} caption="Steps for a sorted list of n values, rotated so the minimum is near the end." />
+
+## Common mistakes
+
+- **Comparing with the first value instead of the last.** If the list isn't rotated at all, every value is ≥ the first,
+  and the comparison can't find the start of the lower run. The last value always works.
+- **Repeated values.** With duplicates (a different problem), `nums[mid] = last` doesn't say which run `mid` is in, and
+  the worst case becomes O(n).
+- **Returning the position instead of the value.** The question asks for the value.
+
+## Related problems
+
+- [Search in Rotated Sorted Array](/dsa/search-in-rotated-sorted-array/): finding a target in the same kind of list.
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): the first-yes template.
+- [Rotate Array](/dsa/rotate-array/): how a rotation moves the values.
