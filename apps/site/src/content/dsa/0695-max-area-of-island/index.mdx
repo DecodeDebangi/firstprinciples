@@ -1,0 +1,84 @@
+---
+title: Max Area of Island
+leetcode: { number: 695, url: "https://leetcode.com/problems/max-area-of-island/" }
+difficulty: Medium
+topics: [DFS, Graph, Matrix]
+added: 2026-11-22
+summary: In a grid of land and water, find the size of the biggest island - a group of land cells joined up, down, left or right. Goes from flood-filling the island of every land cell from scratch, to measuring each island once with a shared set of visited cells.
+insight: "Every land cell belongs to exactly one island. Flood-fill an island the first time you meet one of its cells, marking all of them seen, and every cell is visited once."
+best: { time: "O(m · n)", space: "O(m · n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of 1s (land) and 0s (water). An island is a group of land cells joined horizontally or vertically. Return
+the number of cells in the largest island, or 0 if there's no land.
+
+For example, in the grid with rows `110010`, `100011`, `001011` and `111000`, the islands have 3, 5 and 4 cells, so the
+answer is 5.
+
+## The key question
+
+> **How do I measure every island without measuring any of them twice?**
+
+See [Searching grids](/concepts/searching-grids/): flood fill. This is the measuring version of [Number of
+Islands](/dsa/number-of-islands/).
+
+## Approach 1: Measure the island of every land cell
+
+For every land cell, run a fresh flood fill from it and record the size of its island.
+
+<Viz client:visible approach="everyCell" />
+
+<Complexity time="O((m · n)²)" space="O(m · n)">
+**Time.** Each land cell re-measures its whole island. If one island covers the grid, that's `m · n` flood fills of
+`m · n` cells each: **O((m · n)²)**.
+
+**Space.** One flood fill's seen set and stack: **O(m · n)**.
+
+**What it wastes:** every cell of an island measures the same island again.
+</Complexity>
+
+## Approach 2: Measure each island once (optimal)
+
+Keep a single seen set for the whole grid. Scan the cells; when a land cell isn't seen yet, flood-fill its island,
+marking every cell seen and counting them, and keep the biggest count.
+
+<Viz client:visible approach="once" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** Every cell is visited once in the scan and at most once in a flood fill: **O(m · n)**.
+
+**Space.** The seen set and the stack: **O(m · n)**. Overwriting land with water as you visit it saves the set, if
+changing the grid is allowed.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Measure from every land cell | O((m · n)²) | O(m · n) | re-measures islands |
+| Measure each island once | O(m · n) | O(m · n) | one shared seen set |
+
+<GrowthChart client:visible series={growth} caption="Steps for an n × 3 block of land: one island covering everything." />
+
+## Common mistakes
+
+- **Counting diagonal neighbours.** Islands join only up, down, left and right here.
+- **Marking cells seen when they're visited instead of when they're pushed.** A cell can then be pushed twice and
+  counted twice.
+- **Deep recursion.** A recursive flood fill on a large island can overflow the call stack; an explicit stack can't.
+
+## Related problems
+
+- [Number of Islands](/dsa/number-of-islands/): counting islands instead of measuring them.
+- [Searching grids](/concepts/searching-grids/): flood fill and multi-source BFS.
+- [Rotting Oranges](/dsa/rotting-oranges/): another grid search.
