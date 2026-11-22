@@ -1,0 +1,88 @@
+---
+title: Swap Nodes in Pairs
+leetcode: { number: 24, url: "https://leetcode.com/problems/swap-nodes-in-pairs/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-22
+summary: Swap every two neighbouring nodes of a linked list by changing links, not values. Goes from copying the nodes into an array and relinking them by position to swapping each pair in place with three link changes and a dummy head.
+insight: "With a dummy node in front, every pair has a node before it. For each pair a, b: a points past b, b points to a, and the node before points to b."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given the head of a linked list, swap every two neighbouring nodes and return the new head: the 1st and 2nd trade
+places, then the 3rd and 4th, and so on. If the length is odd, the last node stays where it is. You must move the
+**nodes** themselves, by changing their links; changing the values inside them isn't allowed.
+
+For `4 → 9 → 2 → 7 → 5` the result is `9 → 4 → 7 → 2 → 5`: the last node has no partner, so it stays.
+
+## The key question
+
+> **Swapping two nodes means changing the links into them and out of them. Which links change, and how do I treat
+> the first pair, which has nothing in front of it, the same as the others?**
+
+## Approach 1: Put the nodes in an array, relink by position
+
+Copy a reference to every node into an array. In an array, swapping positions is easy; then walk the array and set
+each node's `next` to the node after it.
+
+<Viz client:visible approach="rebuild" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to copy, one to swap, one to relink: **O(n)**.
+
+**Space.** The array of n node references: **O(n)**.
+
+**What it wastes:** memory. Each swap only involves the two nodes and the one before them, so there's no need to
+hold every node at once.
+</Complexity>
+
+## Approach 2: Relink each pair in place
+
+Put a [dummy node](/concepts/dummy-head/) in front, so the first pair has a node before it like every other pair.
+Keep `prev` on the node just before the next pair `a, b`, and change three links, in this order:
+
+1. `a.next ← b.next`: `a` skips past `b` to the rest of the list.
+2. `b.next ← a`: `b` now comes first.
+3. `prev.next ← b`: the part before the pair now leads to `b`.
+
+Then `a` is the last node of the swapped pair, so it becomes `prev` for the next one.
+
+<Viz client:visible approach="relink" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each pair takes three link changes: **O(n)**.
+
+**Space.** A few pointers and the dummy: **O(1)**.
+
+**What it wastes:** nothing. Every node must be visited once.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Array of nodes | O(n) | O(n) | Swap positions, relink in order |
+| Relink in place | O(n) | **O(1)** | Three link changes per pair |
+
+Both are O(n) time, so there's no growth chart: the difference is the array.
+
+## Common mistakes
+
+- **Changing the links in the wrong order.** Set `a.next ← b.next` before `b.next ← a`, or the rest of the list is lost.
+- **Forgetting `prev.next ← b`.** The pair is swapped, but the node before still points at `a`, skipping `b`.
+- **Losing the new head.** After the first swap the head is `b`; returning `dummy.next` handles it.
+- **Swapping values.** It passes simple tests but isn't allowed, and doesn't work when nodes carry other data.
+
+## Related problems
+
+- Reverse Nodes in k-Group (LeetCode 25). The same idea with groups of k instead of 2.
+- Reverse Linked List (LeetCode 206). Reversing every link, one at a time.
+- Reverse Linked List II (LeetCode 92). Reversing only a stretch in the middle.
