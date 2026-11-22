@@ -1,0 +1,84 @@
+---
+title: Non-overlapping Intervals
+leetcode: { number: 435, url: "https://leetcode.com/problems/non-overlapping-intervals/" }
+difficulty: Medium
+topics: [Intervals, Greedy, Dynamic programming, Sorting]
+added: 2026-11-22
+summary: Remove the fewest intervals so that none of the rest overlap (touching is fine). Goes from finding the longest chain of non-overlapping intervals with a table, to sorting by end and keeping every interval that starts after the last kept one ends.
+insight: "Removing the fewest is keeping the most. Among intervals that could come next, keeping the one that ends earliest leaves the most room for the rest, so sort by end and keep whatever fits."
+best: { time: "O(n log n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of intervals `[start, end]`. Return the fewest intervals to remove so that the remaining ones don't
+overlap. Intervals that only touch, like `[1, 2]` and `[2, 3]`, don't overlap.
+
+For example, `[1, 4], [2, 3], [3, 6], [5, 7], [6, 8]`: keeping `[2, 3], [3, 6], [6, 8]` needs only two removals
+(`[1, 4]` and `[5, 7]`), and no way keeps four, so the answer is 2.
+
+## The key question
+
+> **Which interval should go first in the kept set?**
+
+The one that ends earliest. That's the exchange argument from [Greedy and intervals](/concepts/greedy-intervals/),
+the same rule as fitting the most meetings into one room.
+
+## Approach 1: Sort by start, longest chain that doesn't overlap
+
+Removing the fewest means keeping the most. After sorting by start, `keep[i]` is the longest chain of non-overlapping
+intervals ending with interval `i`: one more than the best `keep[j]` among earlier intervals that end in time. This is
+[dynamic programming](/concepts/memoisation-vs-tabulation/).
+
+<Viz client:visible approach="dp" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each interval looks back at all earlier ones: **O(n²)**.
+
+**Space.** The `keep` table: **O(n)**.
+
+**What it wastes:** it considers every possible previous interval, but one choice is always safe: keep the interval
+that ends first.
+</Complexity>
+
+## Approach 2: Sort by end, keep whatever fits (optimal)
+
+Sort by end. Keep an interval if it starts no earlier than the last kept one ends; otherwise remove it. The answer is the
+number removed.
+
+<Viz client:visible approach="greedy" />
+
+<Complexity time="O(n log n)" space="O(1)">
+**Time.** Sorting is O(n log n), then one pass: **O(n log n)**.
+
+**Space.** Two numbers besides the sort: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same intervals:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Longest chain (DP) | O(n²) | O(n) | tries every previous interval |
+| Sort by end, keep what fits | O(n log n) | O(1) | one safe choice each time |
+
+<GrowthChart client:visible series={growth} caption="Steps for n intervals in a row." />
+
+## Common mistakes
+
+- **Sorting by start and keeping greedily.** An early-starting long interval can block many short ones. Sort by end.
+- **Counting touching intervals as overlapping.** `[1, 2]` then `[2, 3]` is fine: use `start ≥ free`.
+- **Returning the number kept.** The question asks how many to remove.
+
+## Related problems
+
+- [Greedy and intervals](/concepts/greedy-intervals/): why the earliest end is safe.
+- [Merge Intervals](/dsa/merge-intervals/): sorting by start to merge.
+- [Greedy in practice](/concepts/greedy-in-practice/): more greedy patterns.
