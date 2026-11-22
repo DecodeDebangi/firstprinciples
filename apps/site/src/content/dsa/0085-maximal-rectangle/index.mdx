@@ -1,0 +1,91 @@
+---
+title: Maximal Rectangle
+leetcode: { number: 85, url: "https://leetcode.com/problems/maximal-rectangle/" }
+difficulty: Hard
+topics: [Monotonic stack, Stack, Matrix, Dynamic programming]
+added: 2026-11-22
+summary: In a grid of 0s and 1s, find the area of the largest rectangle made only of 1s. Goes from growing a rectangle upward from every corner to turning each row into a histogram and running the Largest Rectangle in Histogram stack on it.
+insight: "Stand on each row and count how many 1s stack straight up from it in each column. That's a histogram, and its largest rectangle is the best one sitting on that row."
+best: { time: "O(rows · cols)", space: "O(cols)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of `0`s and `1`s. Return the **area** of the largest rectangle (with sides along the rows and columns)
+that contains only `1`s.
+
+For the grid with rows `101100`, `111110`, `011111` and `110111` the answer is `8`: rows 1 and 2, columns 1 to 4,
+2 tall and 4 wide.
+
+## The key question
+
+> **If you fix the bottom row of the rectangle, what does the grid above it look like?**
+
+Like a histogram. For each column, count how many `1`s stack straight up from that row before a `0`. Any rectangle
+of `1`s whose bottom edge is on this row fits under those bars, so the best one is the answer to [Largest Rectangle in
+Histogram](/dsa/largest-rectangle-in-histogram/) for those heights.
+
+## Approach 1: From every corner, grow upward
+
+First record, for each cell, how many `1`s run left from it, ending at it: its width. Then treat each cell as the
+bottom-right corner of a rectangle and grow it upward one row at a time. The rectangle can only be as wide as the
+narrowest width it covers, so keep that minimum as you go.
+
+<Viz client:visible approach="corners" />
+
+<Complexity time="O(rows² · cols)" space="O(rows · cols)">
+**Time.** Each of the `rows · cols` corners can grow up through every row above it: **O(rows² · cols)**.
+
+**Space.** The width of every cell: **O(rows · cols)**.
+
+**What it wastes:** a column of `1`s is re-climbed from every corner beneath it, row by row, even though the same
+heights could be carried down from the row above in O(1).
+</Complexity>
+
+## Approach 2: A histogram for every row (optimal)
+
+Keep one array `heights`, a bar per column. Moving down a row, a `1` makes its column's bar one taller, and a `0`
+resets it to `0`, because the stack of `1`s is broken. After each row, find the largest rectangle under the bars with
+the one-pass stack from [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/): keep bars on a stack
+with heights rising, and each pop measures a rectangle. [Monotonic stack
+patterns](/concepts/monotonic-stack-patterns/) explains why that pass is O(n).
+
+<Viz client:visible approach="histograms" />
+
+<Complexity time="O(rows · cols)" space="O(cols)">
+**Time.** Each row updates `cols` heights and runs one stack pass that pushes and pops each bar once:
+**O(rows · cols)**.
+
+**Space.** The heights and the stack: **O(cols)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Grow upward from every corner | O(rows² · cols) | O(rows · cols) | Narrowest width as the rectangle climbs |
+| A histogram for every row | **O(rows · cols)** | O(cols) | Heights carried down, one stack pass per row |
+
+<GrowthChart client:visible series={growth} caption="Operations for an n × n grid of 1s, where every corner grows all the way up." />
+
+## Common mistakes
+
+- **Not resetting a height on a `0`.** A bar counts `1`s stacked *without a break*, so a `0` sets it back to `0`, not
+  just "no change".
+- **Only checking the last row.** The largest rectangle can sit on any row, so run the histogram pass after every row.
+- **Forgetting the bars left on the stack.** As in the histogram problem, a pretend bar of height `0` at the end pops
+  them all.
+
+## Related problems
+
+- [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/). The stack this problem runs once per row.
+- [Max Area of Island](/dsa/max-area-of-island/). The biggest connected area of `1`s, of any shape.
+- [Sum of Subarray Minimums](/dsa/sum-of-subarray-minimums/). The same nearest-smaller boundaries, used to count.
