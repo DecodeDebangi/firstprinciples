@@ -1,0 +1,76 @@
+---
+title: "Greedy in practice: the farthest reach, a running balance, and intervals"
+topic: Greedy & intervals
+kind: Explainer
+order: 2
+summary: Three greedy patterns that come up again and again. Track the farthest point you can reach instead of trying every route. Keep a running balance and restart the moment it goes negative. And for intervals, sort by the right end and sweep once. Each is one pass, and each comes with a short reason it can't miss the best answer.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Greedy and intervals](/concepts/greedy-intervals/) showed what "greedy" means and how the exchange argument proves a
+greedy rule right. Here are three patterns that cover most greedy interview problems. In each, the greedy step is
+simple; the important part is the one-sentence reason it's safe.
+
+## Keep the farthest reach
+
+Each position holds the longest jump you may make from it. Can you reach the end? Trying every route branches at every
+step. Instead, walk forward keeping one number: the farthest position reachable so far. Every position up to it is
+reachable, so from each you can extend the reach. If you ever stand beyond it, you're stuck.
+
+<Viz client:visible approach="reach" />
+
+**Why it's safe:** the farthest reach only grows, and any position within it really can be reached, so nothing is ever
+overlooked. One pass: **O(n)**. That's [Jump Game](/dsa/jump-game/).
+
+## Keep a running balance, restart when it goes negative
+
+Gas stations stand around a loop; at each you collect some gas and then pay some to drive to the next. From which
+station can you drive a full lap? Add up `gas − cost` as you go. If the tank goes below 0 after station `i`, restart
+from `i + 1` with an empty tank.
+
+<Viz client:visible approach="tank" />
+
+**Why it's safe:** any station between the old start and `i` would reach `i` with no more gas than the old start had
+there (it skips the surplus collected before it), so all of them fail too. And if the total of `gas − cost` is at least
+0, the last restart point succeeds. One pass: **O(n)**. That's [Gas Station](/dsa/gas-station/). The same "drop the
+past when it hurts" idea is behind [Maximum Subarray](/dsa/maximum-subarray/).
+
+## Intervals: sort, then sweep once
+
+Most interval problems sort first and then make one pass:
+
+- **Merge overlapping intervals:** sort by start; each interval either overlaps the last merged one (extend it) or
+  starts a new one. [Merge Intervals](/dsa/merge-intervals/).
+- **Fewest removals so none overlap:** sort by end and keep each interval that starts after the last kept one ends,
+  exactly the meeting-room rule from [Greedy and intervals](/concepts/greedy-intervals/). [Non-overlapping
+  Intervals](/dsa/non-overlapping-intervals/).
+- **Insert one interval into a sorted list:** copy the ones that end before it, merge the ones that overlap it, copy the
+  rest. No sorting needed. [Insert Interval](/dsa/insert-interval/).
+
+**Why sorting by end works for removals:** keeping the interval that ends first leaves the most room for everything
+after it, so it can always replace whatever a best answer kept first.
+
+## Interview theory
+
+<QA q="How do you decide whether you can reach the last index of a jump array?">
+Walk forward keeping the farthest reachable index. If the current index ever exceeds it, return false; if it reaches the
+last index, return true. O(n).
+</QA>
+
+<QA q="Why can Gas Station be solved in one pass?">
+If the tank runs dry between start s and station i, no station from s to i can be the start, so skip to i + 1. If total
+gas is at least total cost, the last restart point completes the lap.
+</QA>
+
+<QA q="Which end do you sort intervals by, and when?">
+By start to merge or to sweep them in time order; by end to keep the most non-overlapping ones (or remove the fewest),
+because the interval ending first leaves the most room.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
