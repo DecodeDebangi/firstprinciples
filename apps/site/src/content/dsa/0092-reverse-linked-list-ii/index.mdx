@@ -1,0 +1,90 @@
+---
+title: Reverse Linked List II
+leetcode: { number: 92, url: "https://leetcode.com/problems/reverse-linked-list-ii/" }
+difficulty: Medium
+topics: [Linked list]
+added: 2026-11-22
+summary: Reverse only the nodes from position left to position right of a linked list, in one pass. Goes from copying the stretch's values and writing them back reversed to relinking in place, moving each next node to the front of the stretch.
+insight: "Stop at the node before the stretch. Then, right − left times, unhook the node after the stretch's first node and insert it at the front of the stretch."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given the head of a linked list and two positions `left ≤ right` (counting from 1), reverse the nodes from position
+`left` to position `right` and return the head. The nodes before and after that stretch stay where they are.
+
+For `3 → 8 → 5 → 1 → 9` with `left = 2` and `right = 4`, the result is `3 → 1 → 5 → 8 → 9`.
+
+## The key question
+
+> **Reversing a whole list is one pass of pointer flips. Here only a middle stretch flips, and its two ends must stay
+> connected to the rest. Which node do I hold on to, so nothing gets lost?**
+
+## Approach 1: Copy the values, write them back reversed
+
+Read the values at positions `left` to `right` into a separate list, then walk the same nodes again, writing the
+values back from last to first.
+
+<Viz client:visible approach="values" />
+
+<Complexity time="O(n)" space="O(right − left)">
+**Time.** One walk to copy, one to write back: **O(n)**.
+
+**Space.** A copy of the stretch: **O(right − left)**, which is O(n) at worst.
+
+**What it wastes:** memory, and it changes values instead of links. If each node carried more data than one number,
+every field would have to be copied and moved.
+</Complexity>
+
+## Approach 2: In place, move each node to the front
+
+Use a [dummy node](/concepts/dummy-head/) so the stretch always has a node in front of it, even when `left` is 1. Walk
+`prev` to the node just **before** the stretch, and let `cur` be the stretch's first node. `cur` will end up last, so
+leave it alone and repeat `right − left` times:
+
+1. `move ← cur.next`: the node right after `cur`.
+2. Unhook it: `cur.next ← move.next`.
+3. Put it at the front of the stretch: `move.next ← prev.next`, then `prev.next ← move`.
+
+Each round, one more node jumps to the front, so the stretch reverses one node at a time while both ends stay
+connected.
+
+<Viz client:visible approach="insertFront" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Walking to `prev` and the `right − left` moves are each at most n steps: **O(n)**, in one pass.
+
+**Space.** The dummy and three pointers: **O(1)**.
+
+**What it wastes:** nothing.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Copy values | O(n) | O(right − left) | Read the stretch, write it back reversed |
+| Move to the front | O(n) | **O(1)** | Three link changes per node, by links alone |
+
+Both are O(n) time, so there's no growth chart: the difference is memory, and moving values against moving links.
+
+## Common mistakes
+
+- **No dummy node.** When `left = 1` the head itself changes; without a dummy that needs its own special case.
+- **Advancing `cur`.** `cur` stays the same node throughout; it drifts back as nodes jump in front of it.
+- **Off-by-one walking to `prev`.** It takes `left − 1` steps from the dummy to reach the node before the stretch.
+- **Reversing the stretch and forgetting to reconnect.** The node before must point to the new front, and the old
+  front must point to what came after.
+
+## Related problems
+
+- Reverse Linked List (LeetCode 206). The whole list, one pointer flip at a time.
+- Swap Nodes in Pairs (LeetCode 24). Stretches of two, with the same dummy trick.
+- Reverse Nodes in k-Group (LeetCode 25). This, repeated for every group of k.
