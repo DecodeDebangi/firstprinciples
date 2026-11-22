@@ -1,0 +1,89 @@
+---
+title: Final Prices With a Special Discount in a Shop
+leetcode: { number: 1475, url: "https://leetcode.com/problems/final-prices-with-a-special-discount-in-a-shop/" }
+difficulty: Easy
+topics: [Monotonic stack, Stack, Array]
+added: 2026-11-22
+summary: Each item is discounted by the price of the first later item that costs no more than it; return what you pay for each. Goes from looking right from every item to one pass with a stack of items still waiting for their discount.
+insight: "Keep items still waiting for a discount on a stack. A new price that's no higher than the top settles it, so pop and subtract."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `prices`, one per item in a shop, in order. Each item gets a discount equal to the price of the
+**first item after it** whose price is **no higher** than its own. If there's no such item, it gets no discount.
+Return what you actually pay for each item.
+
+For `prices = [9, 4, 6, 2, 7, 7, 3]` you pay `[5, 2, 4, 2, 0, 4, 3]`. The 9 is discounted by the 4 right after it.
+The first 7 is discounted by the equal 7 after it, so it's free. The 2 and the last 3 have nothing cheaper after
+them, so they pay in full.
+
+## The key question
+
+> **When a cheap item arrives, which earlier items does it discount?**
+
+Every earlier item that's still waiting and costs at least as much, and those are the most recent ones still
+waiting. "Most recent first" is a stack, the same one as [Daily Temperatures](/dsa/daily-temperatures/), looking
+for "no higher" instead of "warmer".
+
+## Approach 1: Look right from each item
+
+For each item, scan to the right until a price no higher than its own appears.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** If prices only rise, no scan finds a discount, so item `i` checks every later item: `n(n − 1)/2` checks,
+**O(n²)**.
+
+**Space.** Nothing beyond the answer: **O(1) extra**.
+
+**What it wastes:** a run of rising prices is scanned again by every item before it.
+</Complexity>
+
+## Approach 2: Monotonic stack (optimal)
+
+Walk once, keeping items still waiting for their discount on a stack. A new price pops every waiting item that costs
+**at least as much** (`≥`) and gives it the discount, then waits itself. The prices on the stack rise toward the top.
+[Monotonic stack patterns](/concepts/monotonic-stack-patterns/) shows how the pop test picks which question a stack
+answers.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Every item is pushed once and popped at most once, so all the `while` loops together run at most `n` times:
+**O(n)**.
+
+**Space.** If prices only rise, every item waits on the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Look right from each item | O(n²) | O(1) | Each item scans for its own discount |
+| Monotonic stack | **O(n)** | O(n) | A cheap item settles every pricier item waiting |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when prices only rise, the worst case for looking right." />
+
+## Common mistakes
+
+- **Popping only strictly higher prices.** An equal price counts as a discount, so pop while the top is `≥` the new
+  price, not `>`.
+- **Discounting by the cheapest later price.** It's the *first* one that's no higher, not the lowest anywhere after.
+- **Changing `prices` while reading it.** Write the results into a copy, or later items read discounted prices.
+
+## Related problems
+
+- [Daily Temperatures](/dsa/daily-temperatures/). The next warmer day instead of the next cheaper item.
+- [Next Greater Element I](/dsa/next-greater-element-i/). The same stack, looking for bigger values.
+- [Online Stock Span](/dsa/online-stock-span/). Looks back instead of forward.
