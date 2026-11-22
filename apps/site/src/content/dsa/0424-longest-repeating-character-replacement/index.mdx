@@ -1,0 +1,89 @@
+---
+title: Longest Repeating Character Replacement
+leetcode: { number: 424, url: "https://leetcode.com/problems/longest-repeating-character-replacement/" }
+difficulty: Medium
+topics: [Sliding window, String, Hash map]
+added: 2026-11-22
+summary: Change at most k letters of a string to make the longest possible run of one repeated letter, and return its length. Goes from extending from every start, to one window whose cost - its length minus the count of its most common letter - must stay within k.
+insight: "The cheapest way to make a window one letter is to keep its most common letter and change the others, so it needs length − (most common count) changes. Grow the window, and shrink it whenever that goes over k."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` of capital letters and a number `k`. You may change any letter to any other letter, at most `k`
+times in total. Return the length of the longest stretch you can make in which every letter is the same.
+
+For example, `BAABCBBA` with `k = 2`: the stretch `BCBBA` (positions 3 to 7) becomes `BBBBB` by changing the C and
+the A, so length 5 is possible. Every stretch of 6 would need at least 3 changes, so the answer is 5.
+
+## The key question
+
+> **How many changes does a window need to become a single repeated letter?**
+
+Keep its most common letter and change everything else: `length − (count of the most common letter)`. So this is the
+"longest window within a budget" from [Window budgets](/concepts/window-budgets/), with that as the cost.
+
+## Approach 1: From every start, extend while it can be fixed
+
+For each start, extend to the right, keeping letter counts and the biggest count, until the cost goes over `k`.
+
+<Viz client:visible approach="everyStart" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each start can scan to the end: **O(n²)**.
+
+**Space.** At most 26 letter counts: **O(1)**.
+
+**What it wastes:** the next start's window overlaps this one, and all its letters are counted again.
+</Complexity>
+
+## Approach 2: One window with letter counts (optimal)
+
+Grow the window one letter at a time, updating its count. While its cost (length minus the largest count, `max(counts)`)
+is more than `k`, drop letters from the left. After each step, the window is fixable, so compare its length with the
+best.
+
+<Viz client:visible approach="window" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each letter enters and leaves once, and the largest of 26 counts is found in 26 steps: O(26 · n) = **O(n)**.
+
+**Space.** 26 counts: **O(1)**.
+</Complexity>
+
+A well-known refinement keeps a running "largest count ever seen" instead of recomputing the maximum. It never shrinks
+the window below its best length, which is all the answer needs, and drops the factor of 26.
+
+## Comparing the approaches
+
+Both on the same string:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Extend from every start | O(n²) | O(1) | recounts every window |
+| One window with counts | O(n) | O(1) | each letter in and out once |
+
+<GrowthChart client:visible series={growth} caption="Steps for a string of n identical letters (every start runs to the end)." />
+
+## Common mistakes
+
+- **Counting the letter to keep as the first letter of the window.** Keep the most common one, which can change as the
+  window moves.
+- **Shrinking with `if` instead of `while`.** Dropping one letter doesn't always lower the cost: if it was one of the
+  most common letters, the length and the largest count both go down by one. Keep shrinking until the window is
+  fixable.
+- **Forgetting that letters outside the window don't matter.** Only the window's own counts decide its cost.
+
+## Related problems
+
+- [Window budgets](/concepts/window-budgets/): the cost-within-budget window.
+- [Max Consecutive Ones III](/dsa/max-consecutive-ones-iii/): the same template with zeros as the cost.
+- [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/): another
+  longest window over letters.
