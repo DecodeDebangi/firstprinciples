@@ -1,0 +1,85 @@
+---
+title: Minimum Size Subarray Sum
+leetcode: { number: 209, url: "https://leetcode.com/problems/minimum-size-subarray-sum/" }
+difficulty: Medium
+topics: [Sliding window, Array, Prefix sum]
+added: 2026-11-22
+summary: Find the length of the shortest stretch of positive numbers adding up to at least a target, or 0 if none does. Goes from extending from every start until the total is enough, to one window that grows to reach the target and shrinks while it still does.
+insight: "With positive numbers, growing a window raises its sum and shrinking lowers it. So add values on the right, and every time the sum reaches the target, record the length and drop values from the left to look for something shorter."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of positive whole numbers and a target. Return the length of the shortest stretch of neighbouring values
+whose total is **at least** the target, or 0 if no stretch reaches it.
+
+For example, in `[1, 4, 2, 1, 6, 2, 1]` with target 8, the stretch `6, 2` reaches exactly 8, so the answer is 2.
+
+## The key question
+
+> **After finding a window that's enough, can I look for a shorter one without starting over?**
+
+See [Window budgets](/concepts/window-budgets/): the shortest-window template.
+
+## Approach 1: From every start, extend until it's enough
+
+For each starting position, add values to the right until the total reaches the target. That's the shortest window
+starting there; keep the best.
+
+<Viz client:visible approach="everyStart" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each of the `n` starts can add up to `n` values: **O(n²)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** moving the start one place right re-adds almost the same values. A window can just drop its first
+value instead.
+</Complexity>
+
+## Approach 2: Grow, then shrink while it's enough (optimal)
+
+Add values on the right. Whenever the total is at least the target, record the window's length, subtract its leftmost
+value and move the left end on, and repeat while the total still reaches the target.
+
+<Viz client:visible approach="window" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each value is added once and subtracted at most once: **O(n)**.
+
+**Space.** **O(1)**.
+</Complexity>
+
+A middle way uses [prefix sums](/concepts/prefix-sums/) and binary search: for each end, find the latest start whose
+prefix sum is small enough. That's O(n log n), and it still needs the values to be positive.
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Extend from every start | O(n²) | O(1) | re-adds values |
+| Grow and shrink | O(n) | O(1) | each value in and out once |
+
+<GrowthChart client:visible series={growth} caption="Additions for n ones and a target of n / 2." />
+
+## Common mistakes
+
+- **Shrinking only once.** After adding a big value, several values may be droppable; use `while`, not `if`.
+- **Recording the length after shrinking.** Record it while the window still reaches the target, before dropping a
+  value.
+- **Using this with negative numbers.** Shrinking could then raise the total; the window method stops being correct.
+
+## Related problems
+
+- [Window budgets](/concepts/window-budgets/): longest within a budget, shortest that's enough.
+- [Max Consecutive Ones III](/dsa/max-consecutive-ones-iii/): the longest-window version.
+- [Subarray Sum Equals K](/dsa/subarray-sum-equals-k/): when values can be negative, prefix sums and a map.
