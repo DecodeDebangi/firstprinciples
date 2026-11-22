@@ -1,0 +1,95 @@
+---
+title: Largest Number
+leetcode: { number: 179, url: "https://leetcode.com/problems/largest-number/" }
+difficulty: Medium
+topics: [Sorting, String, Greedy]
+added: 2026-11-22
+summary: Arrange a list of non-negative whole numbers so that, written one after another, they form the largest possible number. Goes from trying every order to sorting with a rule that compares two numbers by gluing them both ways.
+insight: "Put a before b when a then b, as text, is bigger than b then a. Sorting by that pairwise rule gives the largest number."
+best: { time: "O(d · n log n)", space: "O(n · d)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of non-negative whole numbers, arrange them so that writing them one after another, with nothing in
+between, makes the largest possible number. Return it as a string, because it can be far too long for a normal
+number type.
+
+For `[4, 42, 45, 9, 90]` the answer is `"99045442"`: 9, then 90, then 45, then 4, then 42. If every number is 0, the
+answer is `"0"`, not `"000"`.
+
+d below is the most digits any one number has.
+
+## The key question
+
+> **Sorting from biggest to smallest fails: 90 would come before 9, giving 909 instead of 990. What's the right way
+> to decide which of two numbers goes first?**
+
+## Approach 1: Try every order
+
+Glue the numbers together in every possible order and keep the biggest result.
+
+<Viz client:visible approach="orders" />
+
+<Complexity time="O(n · d · n!)" space="O(n · d)">
+**Time.** There are n! orders, and gluing one builds a string of up to n · d digits: **O(n · d · n!)**. At n = 10
+that's 3.6 million orders; at n = 20, more than the number of seconds since the universe began.
+
+**Space.** One order and one glued string at a time: **O(n · d)**.
+
+**What it wastes:** almost every order is obviously worse. Whether 9 should come before 90 doesn't depend on any of
+the other numbers, yet every order rechecks it.
+</Complexity>
+
+## Approach 2: Sort with a pairwise rule
+
+Decide the order of any two numbers by gluing them both ways: `a` goes before `b` when `a` then `b` (as text) beats
+`b` then `a`. For 9 and 90, `990` beats `909`, so 9 goes first; for 4 and 42, `442` beats `424`, so 4 goes first.
+Sort by that rule and glue. See [Sorting as a tool](/concepts/sorting-as-a-tool/) for sorting with your own rule.
+
+<Viz client:visible approach="rule" />
+
+Why does a pairwise rule give the best **whole** arrangement? The rule is consistent (if `a` beats `b` and `b` beats
+`c`, then `a` beats `c`), so sorting by it is possible. And in any arrangement where a neighbouring pair breaks the
+rule, swapping those two makes the number bigger without touching anything else. So the best arrangement has no
+such pair, which means it's sorted by the rule.
+
+<Complexity time="O(d · n log n)" space="O(n · d)">
+**Time.** Sorting makes O(n log n) comparisons, and each glues two numbers of up to d digits: **O(d · n log n)**.
+
+**Space.** The result string has up to n · d digits, plus whatever the sort needs: **O(n · d)**.
+
+**What it wastes:** nothing significant. Comparing `"a" + "b"` builds two short strings per comparison; you can
+compare digit by digit without building them, but it doesn't change the bound.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Every order | O(n · d · n!) | O(n · d) | Glue and compare all n! arrangements |
+| Pairwise rule | **O(d · n log n)** | O(n · d) | Sort so each pair is in its better order |
+
+<GrowthChart client:visible series={growth} caption="Operations to arrange n numbers." />
+
+## Common mistakes
+
+- **Sorting the numbers from biggest to smallest.** 90 before 9 gives 909, not 990.
+- **Comparing as text alone.** "9" > "90" happens to work, but "30" > "3" as text, and 330 beats 303.
+- **Returning "000".** If the first number after sorting is 0, every number is 0: return `"0"`.
+- **Comparing glued strings as numbers.** They can be far too long to fit; compare them as strings (they're the same
+  length).
+
+## Related problems
+
+- Sort Colors (LeetCode 75). Another problem where the order you need isn't the obvious one.
+- Kth Largest Element in an Array (LeetCode 215). Finding one position without sorting at all.
+- Smallest Value of the Rearranged Number (LeetCode 2165). Arranging digits for the opposite goal.
