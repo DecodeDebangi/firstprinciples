@@ -1,0 +1,87 @@
+---
+title: Symmetric Tree
+leetcode: { number: 101, url: "https://leetcode.com/problems/symmetric-tree/" }
+difficulty: Easy
+topics: [Tree, Binary tree, DFS, BFS]
+added: 2026-11-22
+summary: Decide whether a binary tree is a mirror image of itself around its centre. Goes from checking that every level reads the same backwards to a recursion that compares mirror pairs of nodes directly, using only O(h) space.
+insight: "Recurse on pairs: two subtrees mirror each other when their tops match, the outside pair mirrors and the inside pair mirrors."
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given the root of a binary tree, return `true` if the tree is **symmetric**: its left half is a mirror image of its
+right half, values and shape both.
+
+The example tree is symmetric: under the root, `4` mirrors `4`, the outer `9`s mirror each other, the inner `2`s do,
+and the two `5`s hang on mirrored sides.
+
+h below is the tree's height and w the number of nodes on its widest level.
+
+## The key question
+
+> **A mirror swaps left and right. Which node must each node match, and how do I check all those matches at once?**
+
+## Approach 1: Each level must read the same both ways
+
+Go level by level, writing down each node's value and marking every gap where a node is missing. If the tree is a
+mirror image, each level's list must be a palindrome (the same read backwards). The gaps matter: without them, two
+trees with the same values in different places would look alike.
+
+<Viz client:visible approach="levels" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Every node and every gap below a node is listed once: **O(n)**.
+
+**Space.** A whole level is held at once, gaps included: **O(w)**, which is about n / 2 for a full tree.
+
+**What it wastes:** memory for a whole level, gaps and all, when each node only needs to meet its one mirror
+partner.
+</Complexity>
+
+## Approach 2: Compare mirror pairs recursively
+
+Write a function that takes **two** nodes and asks whether they mirror each other. They do when both are missing, or
+when both exist with equal values, the **outside** pair mirrors (left child of one with right child of the other) and
+the **inside** pair mirrors (right child of one with left child of the other). Start with the root's two children.
+This is "recurse on two nodes at once" from [Tree recursion](/concepts/tree-recursion/).
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is compared once with its partner: **O(n)**, and it stops at the first mismatch.
+
+**Space.** The recursion goes as deep as the tree: **O(h)**.
+
+**What it wastes:** nothing. Every node has to be checked against its partner.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Levels as palindromes | O(n) | O(w) | Each level, gaps included, reads the same backwards |
+| Mirror pairs | O(n) | **O(h)** | Compare each node with its partner |
+
+Both are O(n) time, so there's no growth chart: the difference is memory, a whole level against one path.
+
+## Common mistakes
+
+- **Comparing left with left.** Mirror partners are left with right: `(a.left, b.right)` and `(a.right, b.left)`.
+- **Dropping the gaps in the level check.** `[1, 2, 2, null, 3, null, 3]` has levels that read the same once the
+  gaps are dropped, but it isn't symmetric.
+- **Checking only values, not shape.** One side having a node where the other has none must fail.
+- **Comparing the tree with itself, left to left.** That's [Same Tree](/dsa/same-tree/), which is always true here.
+
+## Related problems
+
+- Same Tree (LeetCode 100). The same pair recursion, without the swap.
+- Invert Binary Tree (LeetCode 226). Builds the mirror image instead of checking for one.
+- Subtree of Another Tree (LeetCode 572). Same Tree, tried at every node.
