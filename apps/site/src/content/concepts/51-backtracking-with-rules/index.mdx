@@ -1,0 +1,98 @@
+---
+title: "Backtracking with rules: repeated values and constraint checks"
+topic: Backtracking
+kind: Explainer
+order: 2
+summary: Two things the basic template doesn't handle. When the input repeats a value, the search builds the same answer more than once; sorting and skipping equal values at the same depth stops it before it starts. And when choices must obey rules (queens that can't attack, brackets that must match), keep the facts each check needs in sets or counters, so every check is instant.
+added: 2026-11-22
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Beyond the plain template
+
+[The first backtracking read](/concepts/backtracking/) builds every answer with **choose, explore, undo**. Real
+problems usually add one of two complications:
+
+1. **The input repeats a value**, like `[2, 1, 2, 2]`. The search treats the three 2s as different items, so it
+   builds the subset `[1, 2]` three times, once with each 2.
+2. **Choices must follow rules**: a queen can't share a row, column or diagonal with another, and a closing bracket
+   needs an open one to match. Checking the rule has to be cheap, because it runs at every call.
+
+## Repeated values: the slow fix
+
+The obvious fix is to build everything and throw away repeats. Sort the list first, so the same subset always comes
+out in the same order, then keep a set of the subsets already recorded.
+
+<Viz client:visible approach="dedupe" />
+
+It gives the right answer, but look at the tree: half the calls build nothing new. Worse, a repeat's whole subtree is
+repeats too, and the search still walks all of it.
+
+## Repeated values: skip at the same depth
+
+Look at where repeats come from. The root call tries `2` at index 1, then `2` at index 2: both calls start from the
+path `[2]` with the same values left to use, so they build exactly the same subtree. The fix is one line in the loop:
+
+```text
+if i > start and nums[i] = nums[i - 1]
+    continue  // same value, same depth
+```
+
+Inside one call's loop, only the **first** of a run of equal values is tried. Equal values at **different depths**
+are still allowed: `[2, 2]` uses the first 2 at one depth and the second 2 at the next. The list must be sorted,
+so that equal values sit side by side.
+
+<Viz client:visible approach="skip" />
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Calls to list the distinct subsets of n copies of the same number." />
+
+With n copies of one number there are only n + 1 distinct subsets (no copies, one, two, …), but building every
+subset and dropping repeats still makes 2ⁿ calls. The skip rule makes n + 1 calls: one per answer.
+[Combination Sum II](/dsa/combination-sum-ii/) uses the same rule while adding up to a target.
+
+## Rules on choices: keep the facts at hand
+
+A choice that breaks a rule should be rejected **before** the call, as in any pruning. The question is how fast you
+can tell. Rescanning everything chosen so far costs time at every call. Instead, keep the facts the rule needs in a
+set or counter: add to it when you choose, and remove from it when you undo, the same way the path itself is undone.
+
+| Problem | The rule | What to keep | The check |
+|---|---|---|---|
+| [N-Queens](/dsa/n-queens/) | No two queens share a column or diagonal | Sets of used columns, `row - col` and `row + col` | Three set lookups |
+| [Generate Parentheses](/dsa/generate-parentheses/) | Never close more than you've opened | How many `(` and `)` are used | Compare two counts |
+| [Combination Sum II](/dsa/combination-sum-ii/) | Don't go over the target | How much is still needed | One comparison |
+
+The diagonal trick: on one diagonal running down to the right, `row - col` is the same for every square, and on one
+running down to the left, `row + col` is. So "is this diagonal taken?" is a single set lookup.
+
+Sometimes the rule isn't a check at all but a **different list of choices at each depth**.
+[Letter Combinations of a Phone Number](/dsa/letter-combinations-of-a-phone-number/) chooses from the letters of
+the first digit, then from the letters of the second, and so on.
+
+## Interview theory
+
+<QA q="Why must the input be sorted before skipping equal values?">
+The rule compares each value with the one before it in the list. That only catches every repeat if equal values
+sit next to each other, which sorting guarantees.
+</QA>
+
+<QA q="Why `i > start` and not `i > 0` in the skip rule?">
+`i > start` limits the rule to the current call's loop. With `i > 0`, a call starting at index 2 would skip
+`nums[2]` just because it equals `nums[1]`, losing answers like `[2, 2]` that use both copies at different depths.
+</QA>
+
+<QA q="How do you check N-Queens placements in O(1)?">
+Place one queen per row, so rows never clash. Keep three sets: used columns, used `row - col` values and used
+`row + col` values. A square is safe if its column and both diagonal values are unused. Add all three when placing,
+and remove them when undoing.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
