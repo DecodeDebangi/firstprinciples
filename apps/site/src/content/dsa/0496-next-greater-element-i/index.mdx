@@ -1,0 +1,87 @@
+---
+title: Next Greater Element I
+leetcode: { number: 496, url: "https://leetcode.com/problems/next-greater-element-i/" }
+difficulty: Easy
+topics: [Stack, Hash map, Array]
+added: 2026-11-22
+summary: For each value in a short list, find where it sits in a longer list and report the first bigger value to its right, or -1. Goes from walking right from each value, to one pass over the longer list with a stack of values still waiting for something bigger, storing every answer in a map.
+insight: "Walk the long list once, keeping values that haven't met anything bigger on a stack. Each new value answers every waiting value smaller than it, so pop those and record the answer; then every question is a map lookup."
+best: { time: "O(m + n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two lists of different numbers, `nums1` and `nums2`, where every value of `nums1` also appears in `nums2`. For
+each value `x` of `nums1`, find `x` in `nums2` and return the first value to its right that is bigger than `x`, or -1 if
+there is none. Return the answers in the order of `nums1`.
+
+For example, with `nums1 = [4, 1, 2]` and `nums2 = [3, 1, 4, 2, 6]`, the answers are `[6, 4, 6]`: after 4 comes 2 (not
+bigger) and then 6; after 1 comes 4; after 2 comes 6.
+
+Below, `m` is the length of `nums1` and `n` of `nums2`.
+
+## The key question
+
+> **Can I find every value's next bigger value in one pass, instead of one walk per question?**
+
+That's the [monotonic stack](/concepts/stacks-queues-monotonic/), the same idea as [Daily
+Temperatures](/dsa/daily-temperatures/), plus a [hash map](/concepts/hashing-patterns/) to answer the questions.
+
+## Approach 1: Scan right from each value
+
+For each question, find its position in `nums2` and walk right until a bigger value appears.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(m · n)" space="O(1)">
+**Time.** Each of the `m` questions can walk almost all of `nums2`: **O(m · n)**.
+
+**Space.** Nothing besides the answer: **O(1)** extra.
+
+**What it wastes:** walks overlap. In a falling run like `5, 4, 3, 9`, the walks from 5, from 4 and from 3 all end at
+the same 9.
+</Complexity>
+
+## Approach 2: One pass with a decreasing stack (optimal)
+
+Walk `nums2` once. Keep the values still waiting for a bigger one on a stack; it's always decreasing from bottom to top,
+since anything bigger would have answered the values below it. When `x` arrives, pop every waiting value smaller than
+`x`, recording `x` as its answer in a map, then push `x`. Finally, look each question up in the map (missing means -1).
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(m + n)" space="O(n)">
+**Time.** Every value of `nums2` is pushed once and popped at most once, then `m` lookups: **O(m + n)**.
+
+**Space.** The stack and the map: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same lists:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Scan right from each value | O(m · n) | O(1) | one walk per question |
+| Decreasing stack and a map | O(m + n) | O(n) | one pass for all answers |
+
+<GrowthChart client:visible series={growth} caption="Steps when nums2 falls and ends with one big value, and every value is a question." />
+
+## Common mistakes
+
+- **Looking for the next bigger value in nums1.** The order that matters is the order in `nums2`.
+- **Using `≤` when popping.** Only strictly smaller values get `x` as their answer. (The values are all different here,
+  but in variants with repeats, an equal value isn't bigger.)
+- **Forgetting the values left on the stack.** They never met anything bigger, so their answer is -1.
+
+## Related problems
+
+- [Daily Temperatures](/dsa/daily-temperatures/): the same stack, counting days instead.
+- [Stacks vs queues, and the monotonic stack](/concepts/stacks-queues-monotonic/): why the stack stays in order.
+- [Stack patterns](/concepts/stack-patterns/): more jobs for a stack.
