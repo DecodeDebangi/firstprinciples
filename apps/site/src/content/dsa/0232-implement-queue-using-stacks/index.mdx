@@ -1,0 +1,84 @@
+---
+title: Implement Queue using Stacks
+leetcode: { number: 232, url: "https://leetcode.com/problems/implement-queue-using-stacks/" }
+difficulty: Easy
+topics: [Stack, Queue]
+added: 2026-11-22
+summary: Build a first-in-first-out queue using only stacks. Goes from rearranging the whole stack at every push so the oldest value stays on top, to two stacks that pour values across only when the output side runs empty - O(1) per operation on average.
+insight: "Pouring one stack into another reverses its order, turning newest-on-top into oldest-on-top. Push into an in stack, pop from an out stack, and refill out only when it's empty: each value crosses once."
+best: { time: "O(1) amortised", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Build a queue (first in, first out) using only stack operations: push to the top, pop from the top, look at the top,
+and check whether it's empty. The queue needs `push(x)` to add at the back, `pop()` to remove from the front, `peek()`
+to look at the front, and `empty()`.
+
+For example, after pushing 1, 2 and 3, `peek` returns 1 and `pop` returns 1; after pushing 4, the next two pops return
+2 and 3.
+
+## The key question
+
+> **A stack gives back the newest value. How do I get at the oldest one without moving everything every time?**
+
+See [Stack patterns](/concepts/stack-patterns/), which walks through the two-stack queue.
+
+## Approach 1: Keep the oldest on top at every push
+
+Keep one stack in queue order, oldest on top. To push, move everything to a second stack, push the new value, and move
+everything back on top of it.
+
+<Viz client:visible approach="eager" />
+
+<Complexity time="O(n) per push" space="O(n)">
+**Time.** pop and peek are O(1), but each push moves all `n` values out and back: **O(n)** per push.
+
+**Space.** The two stacks: **O(n)**.
+
+**What it wastes:** values are reordered at every push, even if nothing is popped for a long time. Reordering is only
+needed when the front is actually asked for.
+</Complexity>
+
+## Approach 2: Pour only when out is empty (optimal)
+
+Push into an `in` stack. To pop or peek, use an `out` stack; if it's empty, pour all of `in` into it first, which
+reverses the order and puts the oldest value on top.
+
+<Viz client:visible approach="twoStacks" />
+
+<Complexity time="O(1) amortised" space="O(n)">
+**Time.** A single pour can move many values, but each value is pushed once, poured once and popped once. `n`
+operations cost O(n) in total, **O(1) amortised** per operation.
+
+**Space.** The two stacks together hold each value once: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same operations:
+
+<Compare client:visible />
+
+| Approach | push | pop / peek | Extra space |
+|---|---|---|---|
+| Reorder at every push | O(n) | O(1) | O(n) |
+| Pour only when empty | O(1) | O(1) amortised | O(n) |
+
+<GrowthChart client:visible series={growth} caption="Steps for n pushes followed by n pops." />
+
+## Common mistakes
+
+- **Pouring when out isn't empty.** New values would land on top of older ones in `out`, breaking the order.
+- **Checking only one stack for empty().** The queue is empty only when both stacks are.
+- **Calling it O(1) worst case.** One pop can take O(n); the O(1) is an average over many operations.
+
+## Related problems
+
+- [Stack patterns](/concepts/stack-patterns/): the two-stack queue and other designs.
+- [Min Stack](/dsa/min-stack/): another stack with something extra.
+- [Stacks vs queues](/concepts/stacks-queues-monotonic/): which order each one gives back.
