@@ -1,0 +1,106 @@
+---
+title: Largest Rectangle in Histogram
+leetcode: { number: 84, url: "https://leetcode.com/problems/largest-rectangle-in-histogram/" }
+difficulty: Hard
+topics: [Stack, Array]
+added: 2026-11-22
+summary: Given bar heights, each bar 1 unit wide, find the area of the largest rectangle that fits under the bars. Goes from trying every pair of edges, to finding each bar's nearest shorter neighbours with two stack passes, to one pass where every pop measures a rectangle.
+insight: "The best rectangle is as tall as some bar and stretches until a shorter bar blocks each side. Keep bars on a stack with heights rising; when a bar is popped, the new bar blocks its right and the bar under it blocks its left."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `heights`: the heights of bars standing side by side, each 1 unit wide. Return the **area** of the
+largest rectangle that fits entirely under the bars.
+
+For `heights = [2, 4, 3, 5, 1, 3]` the answer is `9`: a rectangle of height 3 across the bars at positions 1, 2 and 3
+(heights 4, 3 and 5), so 3 × 3.
+
+## The key question
+
+> **For each bar, how far can a rectangle of exactly its height stretch left and right?**
+
+Until the nearest shorter bar on each side. The largest rectangle has the height of its shortest bar, so it is one
+of those `n` rectangles, one per bar. Finding the nearest shorter bars is a monotonic stack's job.
+
+## Approach 1: Try every left and right edge
+
+For every left edge `i`, move the right edge `j` from `i` to the end. The rectangle can be as tall as the shortest bar
+between them, so keep that minimum up to date as `j` moves.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Every pair `i ≤ j` is tried, each in O(1) thanks to the running minimum: `n(n + 1)/2` pairs, **O(n²)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** most pairs can't be the answer. Only the `n` rectangles that stretch as far as each bar's height
+allows matter.
+</Complexity>
+
+## Approach 2: Find each bar's shorter neighbours, then measure
+
+Find, for every bar, the nearest shorter bar on the left and on the right. One stack pass from the left gives the left
+ones: pop bars at least as tall, and whatever is left on top is the answer. A second pass from the right gives the
+right ones. Then each bar's rectangle is its height × (right − left − 1).
+
+<Viz client:visible approach="twoPass" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each pass pushes every bar once and pops it at most once, and the final loop is `n` steps: **O(n)**.
+
+**Space.** The `left` and `right` arrays and the stack: **O(n)**.
+
+**What it wastes:** two passes and two extra arrays, when one pass can find both neighbours at once.
+</Complexity>
+
+## Approach 3: One pass, where a pop knows both edges (optimal)
+
+Keep bars on a stack with heights rising toward the top. When a new bar is no taller than the top, pop the top: the
+new bar is the first shorter bar on its right, and the bar now under it is the first shorter bar on its left. So its
+rectangle is measured right there. To empty the stack at the end, treat the position after the last bar as a bar of
+height 0. [Monotonic stack patterns](/concepts/monotonic-stack-patterns/) walks through why the stack stays in order.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each bar is pushed once and popped once, and each pop measures one rectangle in O(1): **O(n)**.
+
+**Space.** If heights only rise, every bar waits on the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Every pair of edges | O(n²) | O(1) | Running minimum between the edges |
+| Two stack passes | **O(n)** | O(n) | Nearest shorter bar on each side, then measure |
+| One stack pass | **O(n)** | O(n) | Each pop knows both of its blockers |
+
+<GrowthChart client:visible series={growth} caption="Operations as the number of bars grows." />
+
+## Common mistakes
+
+- **Forgetting the bars left on the stack.** Bars that never meet a shorter bar still need measuring; the pretend bar
+  of height 0 at the end pops them all.
+- **Measuring the width from the popped bar.** The rectangle starts just after the bar *under* it on the stack, not at
+  the popped bar itself, because the bars popped earlier between them were all taller.
+- **Worrying about equal heights.** With `≥`, the first of two equal bars is measured too narrow, but the second
+  measures the full width, so the answer is still right.
+
+## Related problems
+
+- [Daily Temperatures](/dsa/daily-temperatures/). The basic monotonic stack.
+- [Online Stock Span](/dsa/online-stock-span/). Finds the previous higher price, one side only.
+- [Next Greater Element II](/dsa/next-greater-element-ii/). A monotonic stack on a circular array.
+- [Container With Most Water](/dsa/container-with-most-water/). A different "biggest area" problem, solved with two pointers.

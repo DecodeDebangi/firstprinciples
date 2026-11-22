@@ -1,0 +1,90 @@
+---
+title: Online Stock Span
+leetcode: { number: 901, url: "https://leetcode.com/problems/online-stock-span/" }
+difficulty: Medium
+topics: [Stack]
+added: 2026-11-22
+summary: Prices arrive one day at a time, and for each one you report how many days in a row, ending today, had a price no higher than today's. Goes from counting back over every stored price to a stack of (price, span) pairs that answers in O(1) on average.
+insight: "Keep a stack of (price, span) pairs. A new price pops every pair that's no higher and adds their spans to its own, because those days are covered by today's span too."
+best: { time: "O(1) per call on average", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a class whose method `next(price)` is called once per day with that day's price. Each call returns the
+**span**: the number of days in a row, counting back from today and including today, whose price was **no higher**
+than today's.
+
+Calling `next` with `52, 47, 49, 49, 50, 55, 48` returns `1, 1, 2, 3, 4, 6, 1`. For the 50, the days 47, 49, 49 and
+50 are all no higher, and the 52 before them is higher, so the span is 4.
+
+## The key question
+
+> **Once today's price is at least as high as an earlier one, can that earlier price ever stop a later span?**
+
+No. Any later day that looks back far enough to reach it must first pass today, which is at least as high. So it can
+be forgotten, as long as today remembers how many days it covered.
+
+## Approach 1: Keep every price and count back
+
+Store every price. For each call, walk back from today while prices are no higher, counting.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n) per call, O(n²) for n calls" space="O(n)">
+**Time.** If prices only rise, call `k` walks back over all `k` prices: `1 + 2 + … + n = n(n + 1)/2` reads for `n`
+calls, **O(n²)**, or O(n) for a single call.
+
+**Space.** Every price is stored: **O(n)**.
+
+**What it wastes:** a run of low prices is walked over again by every later day that's higher than all of them.
+</Complexity>
+
+## Approach 2: Monotonic stack of (price, span) pairs (optimal)
+
+Keep a stack of `(price, span)` pairs. A new price pops every pair on top that's no higher and adds their spans to its
+own, then pushes itself with the total. The prices on the stack fall toward the top, which makes it a **monotonic**
+stack. Storing the span with each price matters: the class never sees day numbers, and the span carries the count of
+the days that were popped. [Monotonic stack patterns](/concepts/monotonic-stack-patterns/) shows the same idea with
+positions instead of pairs.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(1) per call on average" space="O(n)">
+**Time.** One call can pop many pairs, but every price is pushed once and popped at most once. So `n` calls do at most
+`n` pushes and `n` pops in total: **O(n)** for all of them, O(1) per call on average (amortised). A single call can
+still take O(n) when it pops everything.
+
+**Space.** If prices only fall, nothing is ever popped: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same calls. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time for n calls | Space | Idea |
+|---|---|---|---|
+| Count back over every price | O(n²) | O(n) | Each call walks back from today |
+| Stack of (price, span) pairs | **O(n)** | O(n) | Popped prices hand over their spans |
+
+<GrowthChart client:visible series={growth} caption="Price reads for n calls when prices only rise, the worst case for counting back." />
+
+## Common mistakes
+
+- **Popping only strictly lower prices.** An equal price is "no higher", so it belongs to today's span: pop while the
+  top price is `≤` today's.
+- **Adding 1 per popped pair.** Each popped pair stands for its whole span of days, so add its span, not 1.
+- **Forgetting today.** The span starts at 1, because today always counts.
+
+## Related problems
+
+- [Daily Temperatures](/dsa/daily-temperatures/). The same stack looking forward instead of back.
+- [Next Greater Element II](/dsa/next-greater-element-ii/). A monotonic stack on an array that wraps round.
+- [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/). Finds the shorter bar on both sides at once.
+- [Monotonic stack patterns](/concepts/monotonic-stack-patterns/): next or previous, bigger or smaller.

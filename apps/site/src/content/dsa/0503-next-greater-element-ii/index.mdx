@@ -1,0 +1,87 @@
+---
+title: Next Greater Element II
+leetcode: { number: 503, url: "https://leetcode.com/problems/next-greater-element-ii/" }
+difficulty: Medium
+topics: [Stack, Array]
+added: 2026-11-22
+summary: The array is a circle, and for each value you find the first bigger value after it, wrapping past the end back to the start. Goes from walking round the circle from every value to a monotonic stack that walks the array twice.
+insight: "Walk the array twice with a stack of values still waiting for a bigger one. The second lap lets values near the end find answers near the start."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of numbers `nums` arranged in a circle: after the last number comes the first again. For each number,
+return the first number **bigger** than it that you meet walking forward round the circle. If there's none, return
+`-1` for it.
+
+For `nums = [4, 2, 5, 1, 3]` the answer is `[5, 5, -1, 3, 4]`. The 3 at the end wraps round to the start and finds 4.
+The 5 is the largest, so nothing anywhere is bigger.
+
+## The key question
+
+> **How do values near the end get answers from the start, without copying the array?**
+
+Walk the positions twice and read position `i mod n`. The first lap works exactly like [Next Greater Element
+I](/dsa/next-greater-element-i/); the second lap only answers values still waiting from the first.
+
+## Approach 1: Walk round the circle from each value
+
+From each value, step forward up to `n − 1` times, wrapping past the end, until a bigger value appears.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** If all values are equal, nothing is bigger, so every walk takes all `n − 1` steps: `n(n − 1)` checks,
+**O(n²)**.
+
+**Space.** Nothing beyond the answer: **O(1) extra**.
+
+**What it wastes:** the same stretch of small values is walked again by every value before it.
+</Complexity>
+
+## Approach 2: Monotonic stack, walking the circle twice (optimal)
+
+Keep a stack of positions still waiting for a bigger value; the values on it fall toward the top. Walk `i` from `0` to
+`2n − 1` and look at `a[i mod n]`. It pops and answers every waiting value smaller than it. On the first lap each
+position is pushed; on the second lap nothing is pushed, because every position is already waiting or answered.
+[Monotonic stack patterns](/concepts/monotonic-stack-patterns/) explains the four kinds of monotonic stack question.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Two laps of `n` steps, and each position is pushed once and popped at most once, so all the inner `while`
+loops together run at most `n` times: **O(n)**.
+
+**Space.** If the values only fall, every position waits on the stack: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Walk round from each value | O(n²) | O(1) | Each value searches forward on its own |
+| Stack, two laps | **O(n)** | O(n) | A bigger value answers everything smaller that's waiting |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when every value is equal, the worst case for walking round." />
+
+## Common mistakes
+
+- **Walking only once.** Values near the end then never see the start, and wrongly get `-1`.
+- **Pushing again on the second lap.** The stack would hold duplicates of the same position; push only while `i < n`.
+- **Using `≤` to pop.** Only a strictly bigger value is an answer; an equal one leaves the waiting value waiting.
+
+## Related problems
+
+- [Next Greater Element I](/dsa/next-greater-element-i/). The same stack without the wrap-round.
+- [Daily Temperatures](/dsa/daily-temperatures/). Returns the distance instead of the value.
+- [Online Stock Span](/dsa/online-stock-span/). Looks back instead of forward.
+- [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/). The hardest monotonic stack classic.

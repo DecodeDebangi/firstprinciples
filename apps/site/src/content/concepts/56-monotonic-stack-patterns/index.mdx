@@ -47,7 +47,8 @@ left is the previous higher day.
 
 Notice `≤` in the `while`: equal values are popped too, because a day equal to today doesn't stop today's span. Getting
 `<` and `≤` the right way round is the usual source of bugs. Ask yourself: should an equal value count as an answer, or
-be skipped? That's Online Stock Span (LeetCode 901).
+be skipped? That's [Online Stock Span](/dsa/online-stock-span/), which keeps
+(price, span) pairs because its prices arrive one at a time.
 
 ## Wrapping round: circular arrays
 
@@ -60,7 +61,8 @@ ones still waiting.
 <Viz client:visible approach="circular" />
 
 Two laps of `n` steps, and still at most `n` pushes and `n` pops: O(n). The items left at the end are equal to the
-largest value, which has nothing bigger anywhere on the circle. That's Next Greater Element II (LeetCode 503).
+largest value, which has nothing bigger anywhere on the circle. That's [Next Greater Element
+II](/dsa/next-greater-element-ii/).
 
 ## Largest rectangle in a histogram
 
@@ -78,7 +80,8 @@ everything in between. To pop whatever is left at the end, treat the position af
 
 Each bar is pushed once and popped once, and each pop measures one rectangle in O(1): O(n) in total, against O(n²) for
 trying every left and right edge. When two bars have the same height, the first one popped measures too narrow a
-rectangle, but the later one of the same height measures the full width, so the answer is still right.
+rectangle, but the later one of the same height measures the full width, so the answer is still right. That's [Largest Rectangle in
+Histogram](/dsa/largest-rectangle-in-histogram/).
 
 ## Interview theory
 
