@@ -1,0 +1,83 @@
+---
+title: Shortest Path in Binary Matrix
+leetcode: { number: 1091, url: "https://leetcode.com/problems/shortest-path-in-binary-matrix/" }
+difficulty: Medium
+topics: [BFS, Graph, Matrix]
+added: 2026-11-22
+summary: Find the length of the shortest clear path from the top-left to the bottom-right of a grid of open and blocked cells, moving in any of 8 directions. Goes from repeatedly improving every cell's distance until nothing changes, to one breadth-first search that reaches cells in order of distance.
+insight: "Every move costs the same, so BFS from the start reaches cells in order of path length, and the first time it reaches the bottom-right corner is the shortest path. Diagonal moves just mean 8 neighbours instead of 4."
+best: { time: "O(n²)", space: "O(n²)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an `n × n` grid of 0s (open) and 1s (blocked). A clear path goes from the top-left cell to the bottom-right cell
+through open cells only, each step moving to one of the 8 neighbouring cells (diagonals included). Return the number of
+cells on the shortest clear path, or -1 if there is none.
+
+For example, in the grid with rows `00010`, `11010`, `00000`, `01110` and `00010`, the shortest clear path uses 6 cells.
+
+## The key question
+
+> **When every step costs the same, which search finds the shortest path without trying them all?**
+
+Breadth-first search. See [Searching grids](/concepts/searching-grids/) and [Graphs](/concepts/graphs/).
+
+## Approach 1: Improve distances until nothing changes
+
+Start every open cell at `∞` and the start at 1. Sweep the grid, setting each cell to one more than its smallest
+neighbour, and repeat until a sweep changes nothing.
+
+<Viz client:visible approach="relax" />
+
+<Complexity time="O(n⁴)" space="O(n²)">
+**Time.** Each sweep looks at all `n²` cells, and a winding path can need up to `n²` sweeps before its far end settles:
+**O(n⁴)**.
+
+**Space.** The distances: **O(n²)**.
+
+**What it wastes:** a sweep revisits cells whose distance is already final. BFS settles each cell exactly once, in order
+of distance.
+</Complexity>
+
+## Approach 2: BFS with 8 neighbours (optimal)
+
+Queue the start with length 1. Take cells out in order; add each unseen open neighbour (all 8 directions) with length
+one more. The first time the bottom-right cell comes out, its length is the answer.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n²)" space="O(n²)">
+**Time.** Each cell is queued at most once and checks 8 neighbours: **O(n²)**.
+
+**Space.** The queue and the seen marks: **O(n²)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Improve until stable | O(n⁴) | O(n²) | repeated sweeps |
+| BFS | O(n²) | O(n²) | each cell once |
+
+<GrowthChart client:visible series={growth} caption="Steps for an n × n grid with a snaking corridor." />
+
+## Common mistakes
+
+- **Using depth-first search.** DFS finds *a* path, not the shortest; it would have to try every path.
+- **Only 4 directions.** Diagonal moves are allowed here.
+- **Forgetting the blocked start or end.** If either corner is 1, the answer is -1 immediately.
+
+## Related problems
+
+- [Searching grids](/concepts/searching-grids/): BFS on grids.
+- [Rotting Oranges](/dsa/rotting-oranges/): BFS from many starts at once.
+- [Find if Path Exists in Graph](/dsa/find-if-path-exists-in-graph/): reachability without distances.
