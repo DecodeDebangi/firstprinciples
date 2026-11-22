@@ -1,0 +1,81 @@
+---
+title: Maximum Average Subarray I
+leetcode: { number: 643, url: "https://leetcode.com/problems/maximum-average-subarray-i/" }
+difficulty: Easy
+topics: [Sliding window, Array]
+added: 2026-11-22
+summary: Find the largest average of any k neighbouring values in a list. Goes from adding up every window of k values from scratch, to sliding one running sum along the list, adding the value that enters and subtracting the one that leaves.
+insight: "Neighbouring windows share all but two values. Keep one running sum: each step adds the value entering on the right and subtracts the one leaving on the left, so every window costs O(1)."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of numbers `nums` and a length `k`. Among all stretches of exactly `k` neighbouring values, find the
+largest average, and return it.
+
+For example, in `[3, −2, 6, 1, −4, 8, 2]` with `k = 3`, the stretch `−4, 8, 2` has the largest total, 6, so the answer is
+an average of 2. Since every window has the same length, the largest average is just the largest total divided by `k`.
+
+## The key question
+
+> **When the window moves one place right, how much of its total actually changes?**
+
+See [Sliding window](/concepts/sliding-window/): only one value enters and one leaves.
+
+## Approach 1: Add up every window from scratch
+
+For each starting position, add up the next `k` values.
+
+<Viz client:visible approach="recompute" />
+
+<Complexity time="O(n · k)" space="O(1)">
+**Time.** `n − k + 1` windows, `k` additions each: **O(n · k)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** each window repeats `k − 1` of the additions the previous one already did.
+</Complexity>
+
+## Approach 2: Slide a running sum (optimal)
+
+Add up the first window. Then for each next position, add the value entering on the right and subtract the one leaving
+on the left, and keep the best total.
+
+<Viz client:visible approach="slide" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One addition and one subtraction per step: **O(n)**, whatever `k` is.
+
+**Space.** **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Every window from scratch | O(n · k) | O(1) | re-adds shared values |
+| Running sum | O(n) | O(1) | two updates per step |
+
+<GrowthChart client:visible series={growth} caption="Additions for n values and windows of length n / 2." />
+
+## Common mistakes
+
+- **Starting the best at 0.** With all-negative numbers every average is negative; start at the first window's total
+  (or `−∞`).
+- **Dividing inside the loop.** It works, but comparing totals is exact; divide once at the end.
+- **Using integer division.** The average can be a fraction: 7 / 2 is 3.5.
+
+## Related problems
+
+- [Sliding window](/concepts/sliding-window/): fixed and variable windows.
+- [Window budgets](/concepts/window-budgets/): windows whose length changes.
+- [Range Sum Query - Immutable](/dsa/range-sum-query-immutable/): sums of any range with prefix sums.
