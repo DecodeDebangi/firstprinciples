@@ -1,0 +1,92 @@
+---
+title: Balanced Binary Tree
+leetcode: { number: 110, url: "https://leetcode.com/problems/balanced-binary-tree/" }
+difficulty: Easy
+topics: [Tree, Binary tree, DFS]
+added: 2026-11-22
+summary: Decide whether a binary tree is height-balanced, meaning that at every node the two subtree heights differ by at most 1. Goes from checking each node with heights measured from scratch to one bottom-up walk that returns a height, or −1 as soon as anything below is unbalanced.
+insight: "Compute heights bottom-up once, and return −1 instead of a height the moment a node is unbalanced. The −1 travels straight to the root."
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+A binary tree is **height-balanced** if, at **every** node, the heights of its left and right subtrees differ by at
+most 1. (An empty subtree has height 0.) Given the root, return whether the tree is balanced.
+
+In the example, the root is fine (heights 3 and 4), but node 8 isn't: its left subtree has height 1 and its right
+has height 3. So the answer is `false`.
+
+h below is the tree's height.
+
+## The key question
+
+> **The check needs both subtree heights at every node, and heights are computed from the bottom up. Can one
+> bottom-up walk both compute the heights and do the check?**
+
+## Approach 1: Check each node, measuring heights from scratch
+
+At the root, measure both subtree heights and compare them. If they're fine, check the left and right subtrees the
+same way.
+
+<Viz client:visible approach="topDown" />
+
+<Complexity time="O(n log n)" space="O(h)">
+**Time.** Checking a node measures its whole subtree. The walk only keeps going through nodes that pass, and a part of
+the tree where every node passes is balanced, so it's only about log₂ n levels deep. Each node is then re-measured
+once per ancestor, about log₂ n times: **O(n log n)**.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** heights. A node's height is computed again for every ancestor above it, and it never changes.
+</Complexity>
+
+## Approach 2: Return the height, or −1 for unbalanced
+
+Do the check inside the height function. Each call gets its children's heights; if they differ by more than 1, it
+returns **−1** instead of a height. Any call that receives a −1 passes it straight up without comparing anything. At
+the end, the root returns either a height (balanced) or −1. This is "return a signal" from [Tree
+recursion](/concepts/tree-recursion/).
+
+<Viz client:visible approach="bottomUp" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** after finding a −1 it still visits the rest of the tree, unless the code stops early (returning
+−1 right after the left child fails, before visiting the right). That doesn't change the bound.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Top-down, fresh heights | O(n log n) | O(h) | Measure both sides at every node |
+| Bottom-up with −1 | **O(n)** | O(h) | One walk returns heights or a signal |
+
+<GrowthChart client:visible series={growth} caption="Operations for a perfect (fully balanced) tree of n nodes." />
+
+## Common mistakes
+
+- **Only checking the root.** A tree can be fine at the root and unbalanced lower down, as in the example.
+- **Forgetting to pass −1 up.** If a child returns −1, comparing it with the other height as if it were a real height
+  gives wrong answers.
+- **Using the wrong height for an empty child.** An empty subtree has height 0 and a leaf has height 1, or the
+  difference comes out wrong.
+- **Mixing up "balanced" with "complete" or "perfect".** Balanced only limits the height difference at each node.
+
+## Related problems
+
+- Maximum Depth of Binary Tree (LeetCode 104). The height function this extends.
+- Diameter of Binary Tree (LeetCode 543). Another answer computed while returning heights.
+- Convert Sorted Array to Binary Search Tree (LeetCode 108). Building a balanced tree from scratch.
