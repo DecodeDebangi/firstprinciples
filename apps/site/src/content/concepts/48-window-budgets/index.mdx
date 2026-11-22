@@ -1,0 +1,75 @@
+---
+title: "Window budgets: the longest that fits, the shortest that's enough"
+topic: Sliding window
+kind: Explainer
+order: 2
+summary: Most variable-window problems ask for one of two things - the longest window that stays within a budget, or the shortest window that reaches a target. They shrink at different moments. See both, then the "most common letter" trick for replacements and the fixed window that compares counts.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Sliding window](/concepts/sliding-window/) introduced windows that add one item on the right and drop items on the
+left. Variable-window questions come in two flavours, and the difference is **when you shrink**.
+
+## The longest window within a budget
+
+"Longest stretch with at most `k` zeros", "longest with at most two different letters", "longest without repeats": a
+window is allowed as long as it stays within some budget. Grow it to the right every step. Only when it goes **over**
+budget, shrink from the left until it's back within; then the window is a candidate, so compare its length with the
+best.
+
+<Viz client:visible approach="budget" />
+
+That's [Max Consecutive Ones III](/dsa/max-consecutive-ones-iii/) (the zeros are the ones you're allowed to flip) and
+[Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/).
+
+## The shortest window that's enough
+
+"Shortest stretch adding up to at least `target`": here a window is a candidate once it **meets** the target. So after
+adding each value, **while** the window still meets the target, record its length and drop its leftmost value to see if
+something shorter works too.
+
+<Viz client:visible approach="shortest" />
+
+That's [Minimum Size Subarray Sum](/dsa/minimum-size-subarray-sum/). It relies on the values being positive: adding a
+value can only raise the sum and dropping one can only lower it. With negatives, use [prefix
+sums](/concepts/prefix-sums/) instead.
+
+## The budget in disguise: replacements
+
+"Longest stretch you can make all one letter by changing at most `k` letters": the cheapest way to make a window all one
+letter is to keep its most common letter and change the rest. So the window's cost is
+`length − count of its most common letter`, and it's within budget while that's at most `k`. Keep a count per letter,
+and it's the longest-within-budget window again. That's [Longest Repeating Character
+Replacement](/dsa/longest-repeating-character-replacement/).
+
+## The fixed window with counts
+
+When the window's length is fixed, like "does some rearrangement of `p` appear in `s`?", slide a window of
+`length(p)` and keep its letter counts, updating two of them per step. That's [Permutation in
+String](/dsa/permutation-in-string/), a yes/no version of [Find All Anagrams in a
+String](/dsa/find-all-anagrams-in-a-string/). The plainest fixed window of all, a running sum, is [Maximum Average
+Subarray I](/dsa/maximum-average-subarray-i/).
+
+## Interview theory
+
+<QA q="How do the longest-window and shortest-window templates differ?">
+Longest: grow every step, shrink only while the window breaks the rule, then record. Shortest: grow every step, and while
+the window meets the target, record and shrink. Both are O(n) because each pointer only moves forward.
+</QA>
+
+<QA q="How do you decide whether a window of letters can be made all one letter with k changes?">
+Its length minus the count of its most common letter must be at most k: keep the most common letter, change the rest.
+</QA>
+
+<QA q="When doesn't a sliding window work for sums?">
+When values can be negative: a longer window can have a smaller sum, so shrinking or growing no longer moves the sum in
+a predictable direction. Prefix sums with a hash map handle that case.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

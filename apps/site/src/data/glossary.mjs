@@ -30,6 +30,8 @@ export const glossary = [
     def: "A run of neighbouring characters inside a string: \"nan\" is a substring of \"banana\". Skipping characters doesn't count." },
   { id: "subsequence", term: "Subsequence", match: ["subsequence", "subsequences"], read: "dp-on-two-strings",
     def: "Some of a string's letters, kept in their original order, with any others skipped: \"ct\" is a subsequence of \"cart\". Unlike a substring, the letters needn't be neighbours." },
+  { id: "permutation", term: "Permutation", match: ["permutation", "permutations"], read: "backtracking",
+    def: "A rearrangement of some items, using each exactly once: \"tac\" is a permutation of \"cat\". n different items have n! permutations." },
   { id: "anagram", term: "Anagram", match: ["anagram", "anagrams"], read: "strings-and-characters",
     def: "A word made from exactly the same letters as another, the same number of times, in any order: \"listen\" and \"silent\"." },
   { id: "palindrome", term: "Palindrome", match: ["palindrome", "palindromes", "palindromic"], read: "palindromes",
