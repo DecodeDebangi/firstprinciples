@@ -1,0 +1,81 @@
+---
+title: Insert Interval
+leetcode: { number: 57, url: "https://leetcode.com/problems/insert-interval/" }
+difficulty: Medium
+topics: [Intervals, Array]
+added: 2026-11-22
+summary: Insert a new interval into a sorted list of separate intervals, merging where it overlaps, and keep the list sorted and separate. Goes from adding it, re-sorting and merging everything, to one pass in three parts - copy what's before, merge what overlaps, copy what's after.
+insight: "The list is already sorted and separate, so it splits into three runs around the new interval: those that end before it, those that overlap it, and those that start after it. Copy, merge, copy: O(n)."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of intervals that don't overlap, sorted by start, and one new interval. Insert the new interval, merging
+it with any intervals it overlaps (touching counts as overlapping), so the result is still sorted and separate.
+
+For example, inserting `[4, 7]` into `[0, 1], [2, 3], [5, 6], [7, 8], [9, 10]` gives
+`[0, 1], [2, 3], [4, 8], [9, 10]`: it swallows `[5, 6]` and `[7, 8]`.
+
+## The key question
+
+> **The list is already in order. Which intervals can the new one even touch?**
+
+Only one unbroken run of them. See [Greedy in practice](/concepts/greedy-in-practice/).
+
+## Approach 1: Add it, sort, merge everything
+
+Append the new interval, sort by start, and run [Merge Intervals](/dsa/merge-intervals/).
+
+<Viz client:visible approach="sortAll" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** The sort is **O(n log n)**.
+
+**Space.** The result: **O(n)**.
+
+**What it wastes:** it re-sorts a list that was already sorted, apart from one interval.
+</Complexity>
+
+## Approach 2: One pass: before, overlapping, after (optimal)
+
+Copy every interval that ends before the new one starts. Then, while the next interval starts no later than the new one
+ends, merge it in (take the smaller start and the larger end). Add the merged interval, then copy the rest.
+
+<Viz client:visible approach="onePass" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each interval is looked at once: **O(n)**.
+
+**Space.** The result: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same intervals:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Add, sort, merge | O(n log n) | O(n) | ignores the existing order |
+| Before, overlap, after | O(n) | O(n) | one pass |
+
+<GrowthChart client:visible series={growth} caption="Steps for n separate intervals with the new one in the middle." />
+
+## Common mistakes
+
+- **Stopping the overlap run too early.** Keep merging while the next interval starts at or before the **grown** end.
+- **Forgetting to add the merged interval** when nothing overlaps it: it still goes between the two runs.
+- **Off-by-one on touching.** `[1, 3]` and `[3, 5]` overlap here, so "before" means ending strictly before the new
+  start.
+
+## Related problems
+
+- [Merge Intervals](/dsa/merge-intervals/): merging a whole unsorted list.
+- [Non-overlapping Intervals](/dsa/non-overlapping-intervals/): choosing which intervals to keep.
+- [Greedy and intervals](/concepts/greedy-intervals/): interval patterns.
