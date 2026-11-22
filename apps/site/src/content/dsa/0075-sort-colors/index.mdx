@@ -2,82 +2,84 @@
 title: Sort Colors
 leetcode: { number: 75, url: "https://leetcode.com/problems/sort-colors/" }
 difficulty: Medium
-topics: [Two pointers, Sorting, Array]
-added: 2026-11-13
-summary: Sort a list of 0s, 1s and 2s in place without a library sort. Goes from counting and rewriting in two passes to the one-pass Dutch national flag algorithm with three pointers.
-insight: "Three pointers split the list into 0s, unknowns and 2s. Each step takes one unknown and swaps it into its region."
+topics: [Sorting, Two pointers, Array]
+added: 2026-11-22
+summary: Sort a list that holds only 0s, 1s and 2s, in place, without a library sort. Goes from counting each value and writing them back to a one-pass three-way partition with three pointers.
+insight: "Keep three pointers: everything before lo is 0, everything after hi is 2, and mid walks between them, swapping 0s to the front and 2s to the back."
 best: { time: "O(n)", space: "O(1)" }
 ---
 import Viz, { Compare } from "./Viz.tsx";
-import { growth } from "./steps";
-import { GrowthChart } from "@firstprinciples/ui";
 import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
 
-You get a list `nums` containing only `0`, `1` and `2` (three colours). Sort it in place so all 0s come first,
-then 1s, then 2s, without using a library sort.
+A list holds only the values 0, 1 and 2 (think of three colours). Rearrange it **in place** so all the 0s come first,
+then the 1s, then the 2s, without calling a library sort. The follow-up asks for a single pass with O(1) extra space.
 
-`[2, 0, 1, 2, 1, 0, 0]` becomes `[0, 0, 0, 1, 1, 2, 2]`.
+For `[2, 0, 1, 2, 1, 0, 0, 2]` the result is `[0, 0, 0, 1, 1, 2, 2, 2]`.
 
 ## The key question
 
-> **With only three values, do I need comparisons at all?**
-
-No. Each value knows its zone: 0s at the front, 2s at the back, 1s in between. You can count them, or place each
-one directly into its zone as you meet it.
+> **With only three possible values, I don't need comparisons between items at all. Can I put each value in its
+> group the moment I see it?**
 
 ## Approach 1: Count, then overwrite
 
-Count the 0s, 1s and 2s in one pass, then write that many of each back in order.
+Count the 0s, 1s and 2s in one pass, then overwrite the list: that many 0s, then 1s, then 2s. This is counting sort
+with only three values.
 
 <Viz client:visible approach="count" />
 
 <Complexity time="O(n)" space="O(1)">
-**Time.** Two passes over `n` values: **O(n)**.
+**Time.** One pass to count, one pass to write: **O(n)**.
 
 **Space.** Three counters: **O(1)**.
 
-**What it wastes:** a second pass, and it only works because the values are small integers; it rewrites values
-instead of moving them, which matters if the items carry other data.
+**What it wastes:** a second pass. It also only works because the values are plain numbers: if each item were a
+record with a colour plus other data, overwriting would lose the data.
 </Complexity>
 
-## Approach 2: Dutch national flag, one pass (optimal)
+## Approach 2: One-pass three-way partition
 
-Keep three zones with three pointers: 0s before `lo`, 1s between `lo` and `mid`, 2s after `hi`. Look at
-`nums[mid]`: a 0 is swapped to `lo` (both move on), a 1 stays (`mid` moves on), a 2 is swapped to `hi` (only `hi`
-moves, because the value that comes back hasn't been checked yet).
+Walk the list once with three pointers. Before `lo` is all 0s, from `lo` to `mid` all 1s, after `hi` all 2s, and
+`mid` to `hi` is still to check. At each step look at `nums[mid]`: a 0 swaps to the front, a 2 swaps to the back,
+and a 1 stays where it is. This is the partition from [Sorting as a tool](/concepts/sorting-as-a-tool/), with 1 as
+the pivot. It's often called the **Dutch national flag** problem, after the flag's three stripes.
 
 <Viz client:visible approach="flag" />
 
 <Complexity time="O(n)" space="O(1)">
-**Time.** Every step either moves `mid` right or `hi` left, and the loop ends when they cross: at most `n` steps,
-**O(n)**, in a single pass.
+**Time.** Every step either moves `mid` forward or `hi` back, so the gap between them shrinks by one each time:
+at most n steps, **O(n)**.
 
 **Space.** Three pointers: **O(1)**.
+
+**What it wastes:** nothing. One pass, no extra memory, and it moves whole items, so it works for records too.
 </Complexity>
 
 ## Comparing the approaches
 
-Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind. Choose any pair, or type your own input.
+Step through both side by side. Both share one clock that ticks once per operation.
 
 <Compare client:visible />
 
-| Approach | Time | Space | Idea |
+| Approach | Time | Extra space | Passes |
 |---|---|---|---|
-| Count, then overwrite | O(n), two passes | O(1) | Tally, then rewrite |
-| Dutch national flag | **O(n), one pass** | **O(1)** | Swap each value straight into its zone |
+| Count and overwrite | O(n) | O(1) | 2 |
+| Three-way partition | O(n) | O(1) | **1** |
 
-<GrowthChart client:visible series={growth} caption="Operations for n values. Counting reads and rewrites every value; the flag algorithm looks at each once." />
+Both are O(n), so there's no growth chart: the lines would differ only by a constant factor.
 
 ## Common mistakes
 
-- **Moving `mid` after swapping a 2.** The value swapped in from `hi` is unchecked; `mid` must look at it next.
-- **`while mid < hi`.** The cell at `hi` still needs checking: loop while `mid ≤ hi`.
-- **Calling `sort()`.** Allowed in practice, but the problem asks you to do it yourself, and it's O(n log n).
+- **Moving `mid` after swapping with `hi`.** The value that came from the back hasn't been checked; it could be a 0
+  or a 2.
+- **Looping while `mid < hi`.** The cell at `hi` itself still needs checking: use `mid ≤ hi`.
+- **Calling a library sort.** It works, in O(n log n), but the problem rules it out.
+- **Swapping 0s with `mid` but forgetting to move `lo`.** Then the next 0 overwrites the last one's place.
 
 ## Related problems
 
-- Move Zeroes (LeetCode 283). The two-zone version of the same idea.
-- Sort Array By Parity (LeetCode 905). Two zones, even and odd.
-- Kth Largest Element in an Array (LeetCode 215). Quickselect uses the same three-way partition.
+- Move Zeroes (LeetCode 283). The two-group version: one pointer for where the next non-zero goes.
+- Sort an Array (LeetCode 912). A general sort, where quicksort uses this same three-way split.
+- Largest Number (LeetCode 179). Another problem where the order you need isn't the obvious one.

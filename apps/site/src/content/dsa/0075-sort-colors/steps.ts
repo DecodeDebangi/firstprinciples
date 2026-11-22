@@ -1,112 +1,70 @@
-import { measureGrowth, type Approach, type InputField, type Prepared, type Tone } from "@firstprinciples/ui";
+import { type Approach, type InputField, type Prepared, type Tone } from "@firstprinciples/ui";
+import { partitionSteps } from "../../concepts/53-sorting-as-a-tool/steps";
 
 export type Input = { nums: number[] };
-
-export const example: Input = { nums: [2, 0, 1, 2, 1, 0, 0] };
-
-export const fields: InputField[] = [{ key: "nums", label: "nums (0, 1 or 2)", kind: "numbers" }];
-
+export const example: Input = { nums: [2, 0, 1, 2, 1, 0, 0, 2] };
+export const fields: InputField[] = [{ key: "nums", label: "nums (each 0, 1 or 2)", kind: "numbers" }];
 export function prepare(raw: Input): Prepared<Input> {
-  if (raw.nums.some((x) => x < 0 || x > 2)) return { error: "Use only 0, 1 and 2 (the three colours)." };
+  if (!raw.nums.length || raw.nums.length > 10) return { error: "Use 1 to 10 values." };
+  if (raw.nums.some((x) => x !== 0 && x !== 1 && x !== 2)) return { error: "Every value must be 0, 1 or 2." };
   return { input: raw };
 }
 
-const counting: Approach<Input> = {
+const count: Approach<Input> = {
   id: "count",
   name: "Count, then overwrite",
   code: `function sortColors(nums)
-    count ← [0, 0, 0]
+    count ← array of 3, all 0
     for each x in nums
         count[x] += 1
     i ← 0
-    for color ← 0 to 2
-        repeat count[color] times
-            nums[i] ← color
+    for c ← 0 to 2
+        repeat count[c] times
+            nums[i] ← c
             i += 1
 `,
   run({ nums }, t) {
-    const a = [...nums];
-    const count = [0, 0, 0];
-    const grid = (tones: Record<string, Tone> = {}) => ({ title: "count of 0s · 1s · 2s", rows: [[...count]], tones });
-    t.step({ line: 2, array: [...a], grid: grid(), vars: { i: null }, message: "Pass 1: count how many 0s, 1s and 2s there are. Pass 2: write them back in order." });
-    a.forEach((x, k) => {
-      t.op();
-      count[x]++;
-      t.step({ line: 4, array: [...a], pointers: { x: k }, tones: { [k]: "compare" }, grid: grid({ [`0,${x}`]: "found" }), vars: { i: null }, message: `A ${x}: count[${x}] is now ${count[x]}.` });
-    });
+    const a = [...nums], cnt = [0, 0, 0];
+    t.step({ line: 2, array: [...a], grid: { title: "count", rows: [cnt.slice()], colLabels: [0, 1, 2] }, vars: {},
+      message: "There are only three values, so count them in one pass, then write them back in order in a second pass." });
+    a.forEach((x) => { t.op(); cnt[x]++; });
+    const ask = { ask: { q: `nums is ${a.join(", ")}. How many 0s does the count find?`, options: [...new Set([cnt[0], cnt[1], cnt[2], cnt[0] + 1].map(String))], answer: 0 } };
+    t.step({ ...(ask.ask.options.length > 1 ? ask : {}), line: 4, array: [...a], grid: { title: "count", rows: [cnt.slice()], colLabels: [0, 1, 2], tones: { "0,0": "found", "0,1": "found", "0,2": "found" } }, vars: { "0s": cnt[0], "1s": cnt[1], "2s": cnt[2] },
+      message: `First pass: ${cnt[0]} zero${cnt[0] === 1 ? "" : "s"}, ${cnt[1]} one${cnt[1] === 1 ? "" : "s"} and ${cnt[2]} two${cnt[2] === 1 ? "" : "s"}.` });
     let i = 0;
     for (let c = 0; c < 3; c++) {
-      for (let r = 0; r < count[c]; r++) {
-        t.op();
-        a[i] = c;
-        t.step({ line: 8, array: [...a], pointers: { i }, tones: { ...Object.fromEntries(Array.from({ length: i }, (_, k) => [k, "settled" as Tone])), [i]: "found" },
-          grid: grid({ [`0,${c}`]: "compare" }), vars: { i }, message: `Write ${c} into slot ${i}.` });
-        i++;
-      }
+      if (!cnt[c]) continue;
+      const from = i;
+      for (let k = 0; k < cnt[c]; k++) { t.op(); a[i++] = c; }
+      t.step({ line: 8, array: [...a], range: [from, i - 1], tones: Object.fromEntries(Array.from({ length: i - from }, (_, k) => [from + k, "found" as Tone])), grid: { title: "count", rows: [cnt.slice()], colLabels: [0, 1, 2], tones: { [`0,${c}`]: "active" } }, vars: { c, written: i },
+        message: cnt[c] === 1 ? `Write the one ${c} into position ${from}.` : `Write ${cnt[c]} copies of ${c} into positions ${from} to ${i - 1}.` });
     }
-    t.step({ line: 9, array: [...a], tones: Object.fromEntries(a.map((_, k) => [k, "settled" as Tone])), grid: grid(), vars: { i }, done: "found",
-      message: `Sorted in two passes: [${a.join(", ")}].` });
+    t.step({ line: 9, array: [...a], tones: Object.fromEntries(a.map((_, k) => [k, "settled" as Tone])), vars: {}, done: "found",
+      message: "Sorted in two passes with O(1) extra space: O(n). The problem asks for one pass, though, and the count only works because the values are known." });
   },
 };
 
-const dutchFlag: Approach<Input> = {
+const flag: Approach<Input> = {
   id: "flag",
-  name: "Dutch national flag (one pass)",
+  name: "One-pass three-way partition",
   code: `function sortColors(nums)
     lo, mid, hi ← 0, 0, length(nums) - 1
     while mid ≤ hi
         if nums[mid] = 0
             swap nums[lo] and nums[mid]
-            lo += 1
-            mid += 1
-        else if nums[mid] = 1
-            mid += 1
-        else
+            lo, mid ← lo + 1, mid + 1
+        else if nums[mid] = 2
             swap nums[mid] and nums[hi]
-            hi -= 1
+            hi -= 1  // recheck nums[mid]
+        else
+            mid += 1
 `,
   run({ nums }, t) {
-    const a = [...nums];
-    let lo = 0, mid = 0, hi = a.length - 1;
-    // Left of lo: 0s. lo..mid-1: 1s. right of hi: 2s. mid..hi: not looked at yet.
-    const zones = (): Record<number, Tone> => Object.fromEntries(a.map((_, k) => [k, k < lo ? "settled" : k < mid ? "side-a" : k > hi ? "settled" : undefined]).filter(([, v]) => v)) as Record<number, Tone>;
-    t.step({ line: 2, array: [...a], pointers: { lo, mid, hi }, range: [mid, hi], vars: { lo, mid, hi },
-      message: "Keep three zones: 0s before lo, 1s from lo up to mid, 2s after hi. The shelf is the part not sorted yet; mid looks at its first cell." });
-    while (mid <= hi) {
-      t.op();
-      const v = a[mid];
-      const opts = ["0: swap it to lo, move lo and mid", "1: leave it, move mid", "2: swap it to hi, move hi only"];
-      const ask = { q: `nums[mid] = ${v}. What happens?`, options: opts, answer: v };
-      if (v === 0) {
-        [a[lo], a[mid]] = [a[mid], a[lo]];
-        lo++; mid++;
-        t.step({ ask, line: 7, array: [...a], pointers: { lo, mid, hi }, range: mid <= hi ? [mid, hi] : null, tones: { ...zones(), [lo - 1]: "found" }, badge: { at: lo - 1, text: "0 → front" },
-          vars: { lo, mid, hi }, message: "A 0: swap it into the 0 zone at lo. What came back is a 1 (already checked), so mid moves on too." });
-      } else if (v === 1) {
-        mid++;
-        t.step({ ask, line: 9, array: [...a], pointers: { lo, mid, hi }, range: mid <= hi ? [mid, hi] : null, tones: { ...zones(), [mid - 1]: "compare" }, badge: { at: mid - 1, text: "1 stays" },
-          vars: { lo, mid, hi }, message: "A 1 is already in the middle zone. Move mid on." });
-      } else {
-        [a[mid], a[hi]] = [a[hi], a[mid]];
-        hi--;
-        t.step({ ask, line: 12, array: [...a], pointers: { lo, mid, hi }, range: mid <= hi ? [mid, hi] : null, tones: { ...zones(), [hi + 1]: "found" }, badge: { at: hi + 1, text: "2 → back" },
-          vars: { lo, mid, hi }, message: `A 2: swap it into the 2 zone at the back. The value that came back to mid hasn't been checked yet, so mid stays.` });
-      }
-    }
-    t.step({ line: 3, array: [...a], tones: Object.fromEntries(a.map((_, k) => [k, "settled" as Tone])), vars: { lo, mid, hi }, done: "found",
-      message: `mid passed hi: every cell is in its zone. Sorted in one pass with three pointers: [${a.join(", ")}].` });
+    t.step({ line: 2, array: [...nums], pointers: { lo: 0, mid: 0, hi: nums.length - 1 }, vars: {},
+      message: "Partition around 1 in a single pass: 0s to the front, 2s to the back, and 1s are left in the middle. Before lo: all 0s. lo to mid: all 1s. After hi: all 2s. mid to hi: not checked yet." });
+    partitionSteps(t, nums, 1, { less: 6, more: 9, equal: 11, end: 3 }, { less: "the 0s", equal: "the 1s", more: "the 2s" });
   },
 };
 
-export const approaches = { count: counting, flag: dutchFlag };
+export const approaches = { count, flag };
 
-const worstCase = (n: number): Input => ({ nums: Array.from({ length: n }, (_, i) => (i * 2) % 3) });
-
-export const growth = measureGrowth(
-  [
-    { approach: counting, slot: 1 },
-    { approach: dutchFlag, slot: 2 },
-  ],
-  worstCase,
-  [8, 16, 32, 48, 64, 96, 128],
-);
