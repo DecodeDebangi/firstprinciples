@@ -1,0 +1,83 @@
+---
+title: Evaluate Reverse Polish Notation
+leetcode: { number: 150, url: "https://leetcode.com/problems/evaluate-reverse-polish-notation/" }
+difficulty: Medium
+topics: [Stack, Array, Math]
+added: 2026-11-22
+summary: Work out the value of an arithmetic expression written in postfix, where each operator comes after its two numbers. Goes from repeatedly finding and collapsing the first operator, to one pass with a stack - push numbers, and let each operator combine the top two.
+insight: "In postfix, an operator always applies to the two most recent values not yet used, which is exactly the top of a stack. Push numbers; on an operator, pop two, combine, push the result."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an arithmetic expression as a list of tokens in **postfix** order (also called Reverse Polish notation): each
+operator, `+`, `-`, `*` or `/`, comes right after the two values it combines. Return its value. Division between whole
+numbers rounds towards zero, and the expression is always valid.
+
+For example, `3 4 2 * + 6 2 / -` means `(3 + 4 · 2) − 6 / 2`, which is 8.
+
+## The key question
+
+> **Which two values does each operator combine, without scanning back to find them?**
+
+See [Stack patterns](/concepts/stack-patterns/), which evaluates postfix step by step.
+
+## Approach 1: Collapse the first operator, repeat
+
+The first operator in the list always applies to the two tokens just before it. Work it out, replace the three tokens
+with the result, and repeat until one value is left.
+
+<Viz client:visible approach="collapse" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to `n / 2` operators, and each collapse scans from the left and shifts the rest of the list: **O(n²)**.
+
+**Space.** The list is changed in place: **O(1)** extra.
+
+**What it wastes:** every scan starts again from the beginning, passing the same numbers. The values waiting for an
+operator could simply be kept, most recent last.
+</Complexity>
+
+## Approach 2: Evaluate with a stack (optimal)
+
+Read left to right. Push each number. For an operator, pop `b` (the top) and then `a`, and push `a op b`. The last value
+on the stack is the answer.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One O(1) push or pop-and-push per token: **O(n)**.
+
+**Space.** The stack can hold about `n / 2` numbers: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same expression:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Collapse the first operator | O(n²) | O(1) | rescans from the left |
+| Stack | O(n) | O(n) | each token once |
+
+<GrowthChart client:visible series={growth} caption="Steps for n numbers followed by n − 1 pluses." />
+
+## Common mistakes
+
+- **Popping in the wrong order.** The first value popped is the right side: `a − b` and `a / b` need `a` popped second.
+- **Rounding division the wrong way.** `-7 / 2` must be `-3` (towards zero), but some languages' integer division gives
+  `-4`. Truncate explicitly.
+- **Treating "-3" as an operator.** A minus sign followed by digits is a negative number.
+
+## Related problems
+
+- [Stack patterns](/concepts/stack-patterns/): evaluating, minimums and queues.
+- [Valid Parentheses](/dsa/valid-parentheses/): the stack for matching brackets.
+- [Min Stack](/dsa/min-stack/): another stack with something extra on top.
