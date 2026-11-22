@@ -1,0 +1,83 @@
+---
+title: First Bad Version
+leetcode: { number: 278, url: "https://leetcode.com/problems/first-bad-version/" }
+difficulty: Easy
+topics: [Binary search]
+added: 2026-11-22
+summary: Versions 1 to n were released in order, and from some point on every version is bad. Using a function that says whether a version is bad, find the first bad one with as few calls as possible. Goes from testing versions in order to binary searching for the first bad.
+insight: "The answers run good, good, …, bad, bad. Test the middle: if it's bad, the first bad is there or earlier; if it's good, it's later. Each call halves the range."
+best: { time: "O(log n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` versions of a product, numbered 1 to `n`. At some version a bug was introduced, and every version after
+it is bad too. You can call `isBadVersion(v)`, which says whether version `v` is bad. Find the first bad version, calling
+`isBadVersion` as few times as possible. At least one version is bad.
+
+For example, with 9 versions where 7, 8 and 9 are bad, the answer is 7.
+
+## The key question
+
+> **What does one call tell me about all the other versions?**
+
+A bad version means everything after it is bad; a good one means everything before it is good. That's the "first yes"
+search from [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/).
+
+## Approach 1: Check every version from the first
+
+Call `isBadVersion(1)`, then 2, and so on, until one is bad.
+
+<Viz client:visible approach="linear" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Up to `n` calls when the bug is late: **O(n)**.
+
+**Space.** One counter: **O(1)**.
+
+**What it wastes:** each good answer only rules out one version, though it actually tells you every earlier version is
+good too.
+</Complexity>
+
+## Approach 2: Binary search for the first bad (optimal)
+
+Keep the first bad version inside `[lo, hi)`. Test the middle: if it's bad, set `hi = mid`, because the first bad is
+`mid` or earlier; if it's good, set `lo = mid + 1`. When `lo` meets `hi`, that's the answer.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(log n)" space="O(1)">
+**Time.** Each call halves the range: **O(log n)** calls, about 31 for two billion versions.
+
+**Space.** Two indices: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same versions:
+
+<Compare client:visible />
+
+| Approach | Calls | Extra space | |
+|---|---|---|---|
+| Every version in order | O(n) | O(1) | one version ruled out per call |
+| Binary search | O(log n) | O(1) | half the range ruled out per call |
+
+<GrowthChart client:visible series={growth} caption="Calls to isBadVersion when the last version is the first bad one." />
+
+## Common mistakes
+
+- **Setting hi = mid − 1 on a bad version.** That can skip over the first bad one; `mid` must stay in the range.
+- **Computing mid as (lo + hi) / 2 in a fixed-size integer.** With very large `n`, `lo + hi` can
+  [overflow](/concepts/numbers-and-remainders/); `lo + (hi − lo) / 2` can't.
+- **Stopping as soon as you find a bad version.** It might not be the first.
+
+## Related problems
+
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): the first-yes template.
+- [Search Insert Position](/dsa/search-insert-position/): the first position where the value is big enough.
+- [Koko Eating Bananas](/dsa/koko-eating-bananas/): the same search over possible answers.
