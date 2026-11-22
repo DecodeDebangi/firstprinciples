@@ -1,0 +1,100 @@
+---
+title: "Sorting as a tool: custom rules, counting and partitions"
+topic: Sorting
+kind: Explainer
+order: 2
+summary: Most sorting in real problems isn't about the algorithm; it's about what you sort by and whether you need a full sort at all. Sort by a key or by your own comparison rule, count instead of comparing when values are small, and split into groups in one pass when full order isn't needed.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## Sorting as a first step
+
+[The sorting read](/concepts/sorting-which-one-when/) compares the algorithms. In practice you almost always call
+your language's built-in sort, and the real decisions are different ones: **what** to sort by, and whether you need a
+full sort at all.
+
+Sorting is often the first line of a solution because order makes other things easy: equal values end up side by
+side, pairs can be found with [two pointers](/concepts/two-pointers/), and overlapping intervals touch their
+neighbours. It costs O(n log n), which is usually far less than what it saves.
+
+## Sort by a key
+
+Often you sort things by one property: people by age, points by distance, words by length. Built-in sorts take a
+**key**: a function that turns each item into the value to compare. Sort by `x² + y²` to order points by distance,
+or by `(length(w), w)` to order words by length and then alphabetically for ties.
+
+A **stable** sort keeps items with equal keys in their original order. That lets you sort by two things in two
+passes: sort by the less important key first, then stably by the more important one.
+
+## Sort by your own rule
+
+Some orders can't be written as a key. To glue numbers together into the largest possible number, should 8 come
+before 81? It depends on how they combine: `881` beats `818`, so 8 goes first. The rule compares **two items at a
+time**: `a` goes before `b` when `a` then `b` (as text) beats `b` then `a`.
+
+Every built-in sort accepts a rule like this, called a **comparator**. The sort only ever asks it about two items,
+O(n log n) times.
+
+<Viz client:visible approach="rule" />
+
+A rule must be **consistent**: if `a` goes before `b` and `b` before `c`, then `a` must go before `c`. A rule that
+breaks this (like "a before b if a is less than double b") can leave the list in a meaningless order, or crash some
+sorts. The gluing rule is consistent, which is why sorting by it works; [Largest
+Number](/dsa/largest-number/) uses it.
+
+## Count instead of comparing
+
+When the values are small whole numbers in a known range, you don't need comparisons at all. Count how many times
+each value appears, then read the counts back in order: **O(n + k)** for values from 0 to k − 1. This is counting
+sort from the sorting read, and it often answers a question **without building the sorted list**:
+
+- "How many numbers are smaller than this one?" is a running total of the counts below it
+  ([How Many Numbers Are Smaller Than the Current Number](/dsa/how-many-numbers-are-smaller-than-the-current-number/)).
+- "What's the largest h with at least h values ≥ h?" counts values capped at n
+  ([H-Index](/dsa/h-index/)).
+
+## Partition instead of sorting
+
+Sometimes you only need groups: smaller than a value, equal, bigger. That's a **partition**, and it takes one pass
+with O(1) extra space. Three pointers do it: everything before `lo` is smaller, `lo` to `mid` is equal, everything
+after `hi` is bigger, and `mid` to `hi` is still to check.
+
+<Viz client:visible approach="partition" />
+
+When `a[mid]` goes to the back, `mid` stays put: the value swapped in from `hi` hasn't been checked yet. When it goes
+to the front, `mid` moves on, because the value swapped in from `lo` is one already known to be equal.
+[Sort Colors](/dsa/sort-colors/) is exactly this with three values, and quicksort uses the same split.
+
+## Which tool?
+
+| You need | Use | Cost |
+|---|---|---|
+| Items in order of some property | Sort by a key | O(n log n) |
+| An order that depends on pairs | Sort with a comparator | O(n log n) |
+| Order or ranks of small whole numbers | Counting | O(n + k) |
+| Only groups (below, equal, above) | Partition | O(n), O(1) space |
+
+## Interview theory
+
+<QA q="What makes a comparator valid?">
+It must give a consistent order: never say both "a before b" and "b before a", and if a comes before b and b before
+c, a must come before c. Equal items must compare equal both ways. Break these and the result is unpredictable.
+</QA>
+
+<QA q="When does counting beat sorting?">
+When values are whole numbers in a small known range k. Counting is O(n + k), so it wins when k isn't much bigger
+than n. For values up to a billion, the count table alone would be enormous.
+</QA>
+
+<QA q="Why doesn't mid move after a swap with hi in the three-way partition?">
+The value swapped in from the back hasn't been looked at yet. Moving `mid` on would skip it. A swap with `lo` is
+different: everything between `lo` and `mid` is already known to equal the pivot.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

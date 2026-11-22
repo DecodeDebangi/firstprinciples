@@ -120,6 +120,7 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `s[i]`, `length(s)` | Strings work like lists of characters: `s[0]` is the first character. |
 | `code(c)` | The number a character is stored as: `code('a')` is 97 and `code('b')` is 98, so `code(c) - code('a')` is a letter's place in the alphabet, from 0. |
 | `join(parts)` | Glue a list of strings into one string, in order. `join(parts, " ")` puts a space between each pair. |
+| `text(x)` | The number `x` written as a string of digits: `text(81)` is `"81"`, so `text(8) + text(81)` is `"881"`. Strings of the same length compare like the numbers they spell. |
 
 ## Functions
 
