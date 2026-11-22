@@ -1,0 +1,92 @@
+---
+title: Path Sum
+leetcode: { number: 112, url: "https://leetcode.com/problems/path-sum/" }
+difficulty: Easy
+topics: [Tree, Binary tree, DFS]
+added: 2026-11-22
+summary: Decide whether some path from the root down to a leaf has values that add up to a target. Goes from listing every root-to-leaf path and adding each one up to passing the amount still needed down the tree, so each node does one subtraction.
+insight: "Pass down how much is still needed. Each node subtracts its own value; a leaf left needing exactly 0 ends a matching path."
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given the root of a binary tree and a whole number `targetSum`, return `true` if there's a path from the root down to
+a **leaf** (a node with no children) whose values add up to `targetSum`. Values can be negative. An empty tree has no
+paths, so the answer is `false`.
+
+In the example, the path `7 → 6 → 4 → −2` adds up to 15, so for a target of 15 the answer is `true`.
+
+h below is the tree's height.
+
+## The key question
+
+> **A path's sum depends only on the nodes above each point, which is exactly what a parent knows and a child
+> doesn't. What should travel down with each call?**
+
+## Approach 1: List every path, then add each up
+
+Walk the tree, and each time you reach a leaf, save a copy of the path that led there. Then add up each saved path and
+compare with the target.
+
+<Viz client:visible approach="allPaths" />
+
+<Complexity time="O(n · h)" space="O(n · h)">
+**Time.** There can be up to about n / 2 leaves, each with a path of up to h nodes to copy and add up: **O(n · h)**,
+which is O(n²) for a long spine with a leaf hanging off each step.
+
+**Space.** All the saved paths: **O(n · h)** in the worst case.
+
+**What it wastes:** paths share their top nodes, yet each one re-adds them from scratch, and every path is copied
+just to be added up once.
+</Complexity>
+
+## Approach 2: Pass the amount still needed down
+
+Instead of carrying the whole path, carry one number: how much is still needed. The root starts with `targetSum`; each
+node subtracts its own value and hands what's left to its children. At a leaf, the path matches exactly when nothing
+is left. This is "pass information down" from [Tree recursion](/concepts/tree-recursion/).
+
+<Viz client:visible approach="carry" />
+
+Because the number is an argument, each call has its own copy: nothing needs undoing when the search backs up to try
+the other child. And the search can stop the moment a leaf matches.
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node does one subtraction: **O(n)**, and often less, because it stops at the first match.
+
+**Space.** The recursion is as deep as the tree: **O(h)**.
+
+**What it wastes:** nothing. In the worst case (no match) every node must be checked.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| List every path | O(n · h) | O(n · h) | Copy each root-to-leaf path, add it up |
+| Pass the remainder down | **O(n)** | O(h) | One subtraction per node |
+
+<GrowthChart client:visible series={growth} caption="Operations for a spine of n nodes with a leaf hanging off each one, and no match." />
+
+## Common mistakes
+
+- **Checking at any node instead of only leaves.** A path must end at a leaf; a node with one child isn't one.
+- **Stopping early because the sum went over.** Values can be negative, so a sum that's too big can still come back
+  down.
+- **Returning `true` for an empty tree when the target is 0.** There's no path at all.
+- **Treating a missing child as a leaf.** Only a node with **no** children ends a path.
+
+## Related problems
+
+- Path Sum II (LeetCode 113). Return every matching path, which needs a shared path list with undo.
+- Path Sum III (LeetCode 437). Paths may start and end anywhere going down, solved with prefix sums.
+- Binary Tree Paths (LeetCode 257). List every root-to-leaf path as text.
