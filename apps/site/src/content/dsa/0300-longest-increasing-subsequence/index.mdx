@@ -1,0 +1,105 @@
+---
+title: Longest Increasing Subsequence
+leetcode: { number: 300, url: "https://leetcode.com/problems/longest-increasing-subsequence/" }
+difficulty: Medium
+topics: [Dynamic programming, Binary search, Array]
+added: 2026-11-22
+summary: Find the length of the longest subsequence whose values strictly increase. Goes from checking every subsequence, to a DP table of the best run ending at each position, to keeping the smallest possible ending for each run length and placing each number with binary search.
+insight: "Let dp[i] be the longest increasing run ending exactly at i: one more than the best dp[j] over earlier, smaller nums[j]. Faster still, keep the smallest ending for each length and binary search into it."
+best: { time: "O(n log n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+A **subsequence** keeps some of a list's numbers, in their original order, possibly with gaps. Given a list of whole
+numbers, return the length of the longest subsequence whose values **strictly** increase.
+
+For `[3, 8, 4, 9, 5, 6, 2]` the answer is **4**: `3, 4, 5, 6`.
+
+## The key question
+
+> **Whether a number can extend a run depends on what the run ends with. What should I remember about the runs so
+> far, so each new number knows what it can extend?**
+
+## Approach 1: Try every subsequence
+
+Each number is either in or out, so there are 2ⁿ subsequences. Check each one for increasing, and keep the longest.
+
+<Viz client:visible approach="everySub" />
+
+<Complexity time="O(n · 2ⁿ)" space="O(n)">
+**Time.** 2ⁿ subsequences, each checked in up to n steps: **O(n · 2ⁿ)**.
+
+**Space.** One subsequence at a time: **O(n)**.
+
+**What it wastes:** every subsequence is checked from scratch, though most share their beginnings with others.
+</Complexity>
+
+## Approach 2: The best run ending at each position
+
+Let `dp[i]` be the length of the longest increasing run that **ends exactly at position i**. To end at `i`, the number
+before it must be an earlier, smaller one, so `dp[i]` is one more than the best `dp[j]` among those. The answer is the
+largest `dp` value. This is the "best ending here" shape from [Designing a 1D DP](/concepts/one-dimensional-dp/).
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each position looks back at every earlier one: **O(n²)**.
+
+**Space.** The table: **O(n)**.
+
+**What it wastes:** to find the best run to extend, it scans every earlier position, even though only one fact
+matters: for each possible length, how small can a run of that length end?
+</Complexity>
+
+## Approach 3: The smallest ending for each length
+
+Keep a list `tails`, where `tails[k]` is the **smallest** number an increasing run of length `k + 1` can end with so
+far. A smaller ending is always better, because more numbers can follow it. The list is always increasing, so each new
+number `x` can find its place with [binary search](/concepts/binary-search-invariants/): the first entry that's at
+least `x`. If there's none, `x` extends the longest run; otherwise `x` becomes a smaller ending for that length.
+
+<Viz client:visible approach="tails" />
+
+The length of `tails` is the answer. The list itself isn't necessarily a real subsequence (its entries can come from
+different runs), but its length is always right.
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** One binary search per number: **O(n log n)**.
+
+**Space.** `tails` holds at most n numbers: **O(n)**.
+
+**What it wastes:** nothing significant. It can't easily rebuild the subsequence itself without extra bookkeeping.
+</Complexity>
+
+## Comparing the approaches
+
+Step through all three side by side. They share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Every subsequence | O(n · 2ⁿ) | O(n) | Check them all |
+| Best run ending here | O(n²) | O(n) | dp[i] = 1 + best dp[j] over smaller earlier values |
+| Smallest ending per length | **O(n log n)** | O(n) | Binary search into an increasing list |
+
+<GrowthChart client:visible series={growth} caption="Operations for n numbers." />
+
+## Common mistakes
+
+- **Returning `dp[n − 1]`.** The longest run can end anywhere; take the largest dp value.
+- **Allowing equal values.** Strictly increasing means `nums[j] < nums[i]`, and in the binary search the first entry
+  `≥ x`, not `> x`.
+- **Reading `tails` as the answer subsequence.** Only its length is meaningful.
+- **Confusing subsequence with subarray.** A subsequence may skip numbers; a subarray may not.
+
+## Related problems
+
+- Number of Longest Increasing Subsequence (LeetCode 673). Count how many runs reach each length, as well as the length.
+- Russian Doll Envelopes (LeetCode 354). Sort the envelopes cleverly, then this problem.
+- Longest Common Subsequence (LeetCode 1143). A two-sequence DP with a 2D table.
