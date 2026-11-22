@@ -1,0 +1,92 @@
+---
+title: "Heaps in practice: top k, merging sorted lists and running medians"
+topic: Heaps
+kind: Explainer
+order: 2
+summary: Three patterns that cover most heap problems. Keep a heap of size k to track the k best items in O(n log k). Merge k sorted lists by keeping only their heads in a heap. And split a stream into two halves, a max-heap and a min-heap, so the median is always at the tops.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## What a heap is good at
+
+[The first heap read](/concepts/heaps/) shows how a heap keeps its smallest (or largest) item on top, with O(log n)
+push and pop. That's the whole tool: a heap answers "what's the best item **right now**?" while items keep arriving
+and leaving. Sorting answers the same question once, for a list that never changes. Three patterns turn that one
+ability into answers to very different problems.
+
+## Pattern 1: a heap of size k for "top k"
+
+To find the k largest of n items, you don't need them all in order. Keep a **min-heap of at most k items**: push
+each new item, and if the heap grows past k, pop its smallest. The heap always holds the k largest seen so far, and
+its top is the **kth largest**.
+
+It feels backwards that a min-heap finds the *largest* items. The reason: the item you need to throw away is the
+weakest of the current top k, and a min-heap keeps exactly that one on top, ready to pop.
+
+Each item costs O(log k), so the whole pass is **O(n log k)** instead of O(n log n) for sorting, and it only ever
+stores k items, which matters when the data arrives as a stream. [Kth Largest Element in an
+Array](/dsa/kth-largest-element-in-an-array/) and [K Closest Points to Origin](/dsa/k-closest-points-to-origin/)
+are this pattern exactly.
+
+## Pattern 2: merge k sorted lists with a heap of heads
+
+Each sorted list's smallest value is its first one, its **head**. So the smallest value not yet taken is the
+smallest of the k heads. Put the heads in a min-heap; pop the smallest, append it to the output, and push the next
+value from the same list.
+
+<Viz client:visible approach="merge" />
+
+The heap never holds more than k items, one per list, so each of the n values costs O(log k): **O(n log k)** in
+all. [Merge k Sorted Lists](/dsa/merge-k-sorted-lists/) does this with linked lists.
+
+## Pattern 3: two heaps for a running median
+
+The **median** is the middle value once the numbers are sorted (or the average of the two middle values when there
+are an even number). To keep it up to date while numbers arrive, split them into two halves:
+
+- a **max-heap** for the smaller half, so its top is the biggest of the small numbers,
+- a **min-heap** for the larger half, so its top is the smallest of the big numbers.
+
+Keep the halves the same size, or let the smaller half hold one extra. Then the median is always at the tops: the
+smaller half's top for an odd count, the average of both tops for an even count.
+
+<Viz client:visible approach="median" />
+
+Each new number is one push, plus at most one move from one heap to the other to restore the sizes:
+**O(log n)** per number, and reading the median is O(1). [Find Median from Data
+Stream](/dsa/find-median-from-data-stream/) is this pattern.
+
+## Which pattern?
+
+| The question sounds like | Pattern | Cost |
+|---|---|---|
+| "kth largest", "k most frequent", "k closest" | Heap of size k | O(n log k) |
+| "merge k sorted …", "smallest across k streams" | Heap of heads | O(n log k) |
+| "median of a stream", "balance two halves" | Two heaps | O(log n) per item |
+| "repeatedly take the best remaining" | One heap of everything | O(log n) per step |
+
+## Interview theory
+
+<QA q="Why a min-heap to find the k largest items?">
+The heap holds the best k so far. When a new item arrives and the heap grows to k + 1, the one to drop is the
+smallest of them, and a min-heap keeps exactly that item on top. Its top is also the answer: the kth largest.
+</QA>
+
+<QA q="Heap of size k or sort: when does the heap win?">
+Sorting costs O(n log n) and needs everything in memory. The heap costs O(n log k) and stores k items, so it wins
+when k is much smaller than n, or when the items arrive one at a time and you can't keep them all.
+</QA>
+
+<QA q="In the two-heaps median, why must every new number be compared with a top?">
+Each heap must hold only its own half: everything in the smaller half must be at most everything in the larger
+half. Comparing the new number with the smaller half's top decides which half it belongs to; the rebalancing move
+then only fixes the sizes.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
