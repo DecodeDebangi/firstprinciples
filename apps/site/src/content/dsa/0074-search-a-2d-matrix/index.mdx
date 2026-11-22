@@ -1,0 +1,83 @@
+---
+title: Search a 2D Matrix
+leetcode: { number: 74, url: "https://leetcode.com/problems/search-a-2d-matrix/" }
+difficulty: Medium
+topics: [Binary search, Matrix]
+added: 2026-11-22
+summary: Decide whether a target appears in a grid whose rows are sorted and where each row starts after the previous one ends. Goes from checking every cell to treating the grid as one long sorted list and binary searching it, turning each position back into a row and a column.
+insight: "Read row by row, the grid is a single sorted list of m · n values. Binary search positions 0 to m · n − 1, and find position i at row floor(i / n), column i % n."
+best: { time: "O(log(m · n))", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of whole numbers with `m` rows and `n` columns. Each row is sorted from left to right, and the first value
+of each row is bigger than the last value of the row before it. Return whether a target value appears in the grid.
+
+For example, the grid with rows `1 4 6 9`, `11 13 17 20` and `24 28 31 35` contains 17 but not 12.
+
+## The key question
+
+> **The grid has two dimensions. Is it secretly just one sorted list?**
+
+Reading row after row never goes down, so yes. [Grids](/concepts/grids/) shows how to number the cells.
+
+## Approach 1: Check every cell
+
+Compare every cell with the target.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(m · n)" space="O(1)">
+**Time.** **O(m · n)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** all of the ordering. Each comparison could rule out half the grid.
+</Complexity>
+
+## Approach 2: Binary search as one long list (optimal)
+
+Number the cells 0 to `m · n − 1` in reading order. Cell `i` is at row `floor(i / n)`, column `i % n`. Run an ordinary
+[binary search](/dsa/binary-search/) over those numbers, looking each one up in the grid.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(log(m · n))" space="O(1)">
+**Time.** **O(log(m · n))**, which is the same as `O(log m + log n)`.
+
+**Space.** **O(1)**: the list is never built, only its positions are converted.
+</Complexity>
+
+Two searches also work: binary search the first column for the right row, then binary search inside that row. Same
+O(log m + log n), with a little more code.
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every cell | O(m · n) | O(1) | ignores the order |
+| Binary search as one list | O(log(m · n)) | O(1) | halves the grid each time |
+
+<GrowthChart client:visible series={growth} caption="Comparisons in an n × n grid when the target is the last cell." />
+
+## Common mistakes
+
+- **Dividing by the number of rows.** Row is `floor(i / n)` where `n` is the number of **columns** (the row length).
+- **Copying the grid into a list first.** It works but costs O(m · n) time and space, losing the point.
+- **Using this on a grid that's only sorted along rows and columns separately.** Then reading row by row isn't sorted,
+  and a different method (starting from a corner) is needed.
+
+## Related problems
+
+- [Binary Search](/dsa/binary-search/): the search itself.
+- [Grids](/concepts/grids/): turning a cell number into a row and column.
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): other disguised sorted lists.
