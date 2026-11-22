@@ -1,0 +1,83 @@
+---
+title: Jump Game
+leetcode: { number: 55, url: "https://leetcode.com/problems/jump-game/" }
+difficulty: Medium
+topics: [Greedy, Array, Dynamic programming]
+added: 2026-11-22
+summary: Each value in a list is the longest jump you may make from that position. Starting at the first position, decide whether you can reach the last. Goes from marking every reachable position, to walking once while tracking the farthest position reachable so far.
+insight: "Every position up to the farthest reach is reachable, so walk forward extending that reach. You're stuck exactly when you stand beyond it; you've won as soon as it covers the last position."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` of non-negative whole numbers. You start at position 0, and from position `i` you may jump forward
+any distance from 1 up to `nums[i]`. Return whether you can reach the last position.
+
+For example, `[2, 3, 1, 1, 0, 2, 1]`: from 0 jump to 1, from 1 jump 3 to 4… but 4 holds 0. From 3 you can only reach 4
+too, and nothing gets past position 4, so the answer is false. `[2, 3, 1, 1, 4]` would be true.
+
+## The key question
+
+> **Do I need to know the route, or just how far I can possibly get?**
+
+Only how far. See [Greedy in practice](/concepts/greedy-in-practice/): keep the farthest reach.
+
+## Approach 1: Mark every reachable position
+
+Mark position 0. From each marked position, mark every position its jump can land on. The answer is whether the last
+position gets marked.
+
+<Viz client:visible approach="mark" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each position can mark up to `n` others: **O(n²)**.
+
+**Space.** The marks: **O(n)**.
+
+**What it wastes:** the reachable positions always form one unbroken stretch from 0, so a single number, its far end,
+says everything the marks do.
+</Complexity>
+
+## Approach 2: Keep the farthest reach (optimal)
+
+Walk forward with `far`, the farthest reachable position. At each position `i ≤ far`, update
+`far = max(far, i + nums[i])`. If `i` ever passes `far`, you're stuck; if `far` reaches the last position, you're done.
+
+<Viz client:visible approach="reach" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass: **O(n)**.
+
+**Space.** One number: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Mark every reachable position | O(n²) | O(n) | re-marks the same positions |
+| Farthest reach | O(n) | O(1) | one number |
+
+<GrowthChart client:visible series={growth} caption="Steps when every value is n." />
+
+## Common mistakes
+
+- **Always jumping the full distance.** A shorter jump can land somewhere with a longer jump; the farthest reach covers
+  every choice at once.
+- **Treating every 0 as a dead end.** A 0 only matters if nothing before it can jump over it.
+- **Forgetting a one-element list.** You're already at the last position: true.
+
+## Related problems
+
+- [Greedy in practice](/concepts/greedy-in-practice/): the farthest reach and other greedy patterns.
+- [Gas Station](/dsa/gas-station/): another one-pass greedy with a running quantity.
+- [Maximum Subarray](/dsa/maximum-subarray/): a running value that resets when it stops helping.
