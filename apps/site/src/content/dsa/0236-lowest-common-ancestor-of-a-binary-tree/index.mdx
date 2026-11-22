@@ -1,0 +1,94 @@
+---
+title: Lowest Common Ancestor of a Binary Tree
+leetcode: { number: 236, url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/" }
+difficulty: Medium
+topics: [Tree, Binary tree, DFS]
+added: 2026-11-22
+summary: Find the lowest node that has two given nodes, p and q, both somewhere beneath it (a node counts as beneath itself). Goes from finding both root-to-node paths and comparing them to one walk where each call reports what it found below.
+insight: "Each call reports p, q, the answer, or nothing. The first node that hears about a target from both sides is the lowest common ancestor."
+best: { time: "O(n)", space: "O(h)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given a binary tree and two different nodes in it, `p` and `q`, return their **lowest common ancestor**: the lowest
+(deepest) node that has both `p` and `q` in its subtree. A node counts as part of its own subtree, so if `p` is
+above `q`, the answer is `p` itself. Every value in the tree is different.
+
+In the example, for `p = 1` and `q = 7` the answer is **3**: 3 has 1 on its left and 7 below its right, and no lower
+node has both.
+
+h below is the tree's height.
+
+## The key question
+
+> **A node is a common ancestor when p and q are both below it. How can each node learn, from its children alone,
+> whether that's true, and whether it's the lowest one?**
+
+## Approach 1: Find both paths, compare them
+
+A node's ancestors are exactly the nodes on its path from the root. So search for `p` and record its path, search
+again for `q`, then walk both paths together from the root: the last node they share is the answer.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each search can visit every node: two searches are **O(n)**, and comparing the paths is O(h).
+
+**Space.** Two paths of up to h nodes, plus the search recursion: **O(h)**.
+
+**What it wastes:** the second search walks much of the tree again, and both paths are stored just to compare them.
+</Complexity>
+
+## Approach 2: One pass, report what's found below
+
+Make each call report up what its subtree contains:
+
+- If the node **is** `p` or `q`, report it immediately. Nothing below can be a lower answer: if the other target is
+  below, this node is the answer anyway.
+- Otherwise ask both children. If **both** report something, `p` and `q` are on different sides, so this node is
+  the answer: report it. If only one side reports something, pass that up.
+
+The root's report is the answer. This is "return a signal" from [Tree recursion](/concepts/tree-recursion/), where
+the signal is a node.
+
+<Viz client:visible approach="onePass" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited at most once: **O(n)**.
+
+**Space.** Only the recursion: **O(h)**. No paths are stored.
+
+**What it wastes:** it can't stop early, since the root only knows the answer once both sides have reported. That
+doesn't change the O(n) bound.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Two paths | O(n) | O(h) | Search twice, compare the paths |
+| One pass | O(n) | O(h) | Report p, q, the answer or nothing |
+
+Both are O(n), so there's no growth chart; the one-pass version does a single walk instead of two and stores no
+paths.
+
+## Common mistakes
+
+- **Searching below a node that is p or q.** It's not wrong, but it's wasted work: report the node right away.
+- **Assuming p and q are on different sides.** One can be the other's ancestor, as when `p = 3` and `q = 7` here.
+- **Using the BST shortcut on an ordinary tree.** Comparing values with the node's value only works in a binary search
+  tree.
+- **Returning a value instead of the node.** The problem asks for the node itself.
+
+## Related problems
+
+- Lowest Common Ancestor of a Binary Search Tree (LeetCode 235). Values point the way, so no full search is needed.
+- Diameter of Binary Tree (LeetCode 543). Another answer built from what each side reports.
+- Path Sum (LeetCode 112). Information passed down instead of up.
