@@ -1,0 +1,105 @@
+---
+title: H-Index
+leetcode: { number: 274, url: "https://leetcode.com/problems/h-index/" }
+difficulty: Medium
+topics: [Sorting, Array]
+added: 2026-11-22
+summary: Given how many times each of a researcher's papers was cited, find their h-index, the largest h such that h papers have at least h citations each. Goes from trying every h, to sorting and scanning, to counting papers per citation level in O(n).
+insight: "The answer is at most n, so any citation count above n can be treated as n. Count papers per level from 0 to n, then add up from the top until the total reaches the level."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+A researcher has `n` papers, and `citations[i]` is how many times paper `i` has been cited. Their **h-index** is the
+largest number `h` such that at least `h` of their papers have **at least** `h` citations each.
+
+For `[4, 0, 6, 1, 5, 3]` the h-index is **3**: four papers have at least 3 citations (4, 6, 5 and 3), but only three
+have at least 4.
+
+## The key question
+
+> **h can't be more than n, the number of papers. For a given h, how quickly can I count the papers with at least h
+> citations?**
+
+## Approach 1: Try each h, counting every time
+
+Try h = n, then n − 1, and so on. For each one, scan every paper and count those with at least h citations. The first
+h that has enough is the answer.
+
+<Viz client:visible approach="tryEach" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to n + 1 guesses, each scanning n papers: **O(n²)**.
+
+**Space.** One counter: **O(1)**.
+
+**What it wastes:** each guess recounts from scratch, though the papers with at least h citations are exactly those
+with at least h + 1, plus the ones with exactly h.
+</Complexity>
+
+## Approach 2: Sort from most cited, then scan
+
+Sort the citations from largest to smallest. The paper at index `i` is then the (i + 1)th most cited, so if it has more
+than `i` citations, the top i + 1 papers all have at least i + 1. Walk forward while that holds.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(1) to O(n)">
+**Time.** The sort is **O(n log n)**; the scan is O(n).
+
+**Space.** Depends on the sort: **O(1)** in place, up to **O(n)** for many built-in sorts.
+
+**What it wastes:** it fully orders papers with 500 and 600 citations, when, for a researcher with 10 papers, any
+count of 10 or more counts the same.
+</Complexity>
+
+## Approach 3: Count papers per citation level
+
+Since h is at most n, a paper with more than n citations helps exactly as much as one with n. So make n + 1 buckets,
+count the papers at each level (anything above n goes in bucket n), then walk down from h = n, adding each bucket to
+a running total of papers with **at least** h citations. Stop at the first h where the total reaches h. This is the
+counting idea from [Sorting as a tool](/concepts/sorting-as-a-tool/).
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to fill the buckets and at most one pass down them: **O(n)**.
+
+**Space.** n + 1 buckets: **O(n)**.
+
+**What it wastes:** extra memory, compared with sorting in place. It's the fastest possible, since every paper
+must be looked at once.
+</Complexity>
+
+## Comparing the approaches
+
+Step through all three side by side. They share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Try each h | O(n²) | O(1) | Recount for every guess |
+| Sort, then scan | O(n log n) | O(1) to O(n) | Index i has the (i + 1)th most citations |
+| Count per level | **O(n)** | O(n) | Cap at n, total from the top |
+
+<GrowthChart client:visible series={growth} caption="Operations for n papers with 0 to 2 citations each." />
+
+## Common mistakes
+
+- **Returning a citation count instead of a paper count.** For `[100]` the answer is 1, not 100.
+- **Making a bucket per citation value.** Counts can be huge; cap them at n.
+- **Using ≥ instead of > in the sorted scan.** With 0-based indexes, index i needs **more than** i citations for
+  h to reach i + 1.
+- **Forgetting papers with zero citations.** For `[0, 0]` the answer is 0.
+
+## Related problems
+
+- H-Index II (LeetCode 275). The citations come sorted, so binary search finds h in O(log n).
+- How Many Numbers Are Smaller Than the Current Number (LeetCode 1365). Counting with running totals again.
+- Sort Colors (LeetCode 75). Counting sort with only three values.
