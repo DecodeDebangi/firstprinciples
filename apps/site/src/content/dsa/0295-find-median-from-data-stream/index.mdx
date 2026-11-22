@@ -1,0 +1,91 @@
+---
+title: Find Median from Data Stream
+leetcode: { number: 295, url: "https://leetcode.com/problems/find-median-from-data-stream/" }
+difficulty: Hard
+topics: [Heap, Sorting]
+added: 2026-11-22
+summary: Build a class that takes numbers one at a time and can report the median of everything so far at any moment. Goes from keeping one sorted list, where every insert shifts values, to two heaps holding the smaller and larger halves, so the median is always at their tops.
+insight: "Keep the smaller half in a max-heap and the larger half in a min-heap, the same size or one apart. The median is the top of the bigger heap, or the average of both tops."
+best: { time: "O(log n) per add, O(1) per median", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Design a class with two operations: `addNum(x)` takes in one more whole number, and `findMedian()` returns the
+**median** of every number added so far. The median is the middle value once the numbers are sorted; with an even
+count it's the average of the two middle values.
+
+Adding 6, 3, 9, 4, 1 and 7 one by one, the medians after each add are 6, 4.5, 6, 5, 4 and 5.
+
+## The key question
+
+> **The median only needs the one or two values in the middle of the sorted order. Can I keep just the middle
+> handy, without keeping everything in order?**
+
+## Approach 1: Keep every number sorted
+
+Store the numbers in a list kept sorted. Binary search finds where each new number goes, and the median is the middle
+of the list.
+
+<Viz client:visible approach="sorted" />
+
+<Complexity time="O(n) per add, O(1) per median" space="O(n)">
+**Time.** Binary search finds the spot in O(log n), but inserting into a list shifts every larger value one place:
+**O(n)** per add, so O(n²) for a stream of n. Reading the median is **O(1)**.
+
+**Space.** Every number is stored: **O(n)**.
+
+**What it wastes:** it keeps the whole list in order, when the median only ever looks at the middle.
+</Complexity>
+
+## Approach 2: Two heaps, the smaller and larger halves
+
+Split the numbers into two halves. A **max-heap** holds the smaller half, so its top is the biggest of the small
+numbers; a **min-heap** holds the larger half, so its top is the smallest of the big numbers. Those two tops sit
+right at the middle of the sorted order. The third pattern in [Heaps in practice](/concepts/heaps-in-practice/).
+
+To add a number, compare it with the smaller half's top to pick its half. Then, if the sizes drift more than one
+apart (the smaller half may hold one extra), move one top across.
+
+<Viz client:visible approach="heaps" />
+
+<Complexity time="O(log n) per add, O(1) per median" space="O(n)">
+**Time.** An add is one push plus at most one pop and one push to rebalance, each **O(log n)**. The median reads
+one or two tops: **O(1)**.
+
+**Space.** Every number sits in one of the heaps: **O(n)**.
+
+**What it wastes:** nothing for a general stream. If every number is known to be small (say 0 to 100), a count per
+value gives O(1) adds and O(100) medians.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | addNum | findMedian | Space |
+|---|---|---|---|
+| Sorted list | O(n) | O(1) | O(n) |
+| Two heaps | **O(log n)** | O(1) | O(n) |
+
+<GrowthChart client:visible series={growth} caption="Operations to add n numbers arriving largest first." />
+
+## Common mistakes
+
+- **Sorting on every `findMedian()` call.** That's O(n log n) per call.
+- **Putting the new number in the smaller heap no matter what.** Every number in the smaller half must be at most
+  every number in the larger half; compare with the top first.
+- **Letting the halves drift apart.** After each add, the sizes must be equal or the smaller half one ahead.
+- **Integer division for the even case.** `(4 + 5) / 2` must give 4.5, not 4.
+
+## Related problems
+
+- Kth Largest Element in a Stream (LeetCode 703). One heap of size k on a stream.
+- Sliding Window Median (LeetCode 480). The same two heaps, with numbers also leaving the window.
+- Merge k Sorted Lists (LeetCode 23). Another heap pattern from the same read.
