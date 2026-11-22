@@ -116,6 +116,8 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `queue.push(x)`, `queue.popFront()` | Join at the back, leave from the front. First in, first out. |
 | `heap.push(x)`, `heap.popMin()`, `heap.min()` | A heap always knows its smallest value (or largest, with `popMax`). |
 | `node.next`, `node.left` | Linked lists and trees: the node this one points to. |
+| `i mod n` | The remainder after dividing `i` by `n`: `7 mod 5` is 2. As `i` counts up, `i mod n` runs 0 to `n - 1` and wraps back to 0, which walks round an array like a circle. |
+| `h[i] if i < n, else 0` | Pick one of two values: `h[i]` when the condition holds, otherwise 0. Likewise `stack.top(), or -1 if empty`. |
 | `swap a[i] and a[j]` | Exchange the two values. |
 | `s[i]`, `length(s)` | Strings work like lists of characters: `s[0]` is the first character. |
 | `code(c)` | The number a character is stored as: `code('a')` is 97 and `code('b')` is 98, so `code(c) - code('a')` is a letter's place in the alphabet, from 0. |

@@ -1,0 +1,108 @@
+---
+title: "Monotonic stack patterns: looking back, wrapping round, histograms"
+topic: Stack
+kind: Explainer
+order: 3
+summary: One stack, four questions. Whether you want the next or the previous value that's bigger or smaller decides which way the stack is ordered and when you read the answer. Then two classic twists, an array that wraps round and the largest rectangle in a histogram, each solved in one O(n) pass.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Stacks vs queues](/concepts/stacks-queues-monotonic/) shows the basic monotonic stack: walk left to right, keep the
+items still waiting for a bigger item, and let each new item pop the smaller ones it answers. Because every item is
+pushed once and popped at most once, the whole walk is O(n). This read covers the variations you'll meet in interviews.
+
+## Four questions, one stack
+
+Every monotonic stack problem asks one of four things about each item: the **next** or the **previous** item that is
+**bigger** or **smaller**. Two choices decide the code:
+
+- **Bigger or smaller** sets when you pop. To find bigger items, pop while the top is smaller than the new item, so the
+  values on the stack fall toward the top. To find smaller items, pop while the top is bigger, so the values rise.
+- **Next or previous** sets when you read the answer. For the *next* item, the answer is written **while popping**:
+  the new item is the answer for each item it pops. For the *previous* item, the answer is read **after popping**:
+  whatever is left on top is the nearest earlier item that survived, so it's the answer for the new item.
+
+| Find | Pop while top is | Stack, upward | Answer comes |
+|---|---|---|---|
+| Next bigger | `<` new | falls | while popping |
+| Next smaller | `>` new | rises | while popping |
+| Previous bigger | `≤` new | falls | from the top after popping |
+| Previous smaller | `≥` new | rises | from the top after popping |
+
+Push **positions**, not values. The position gives you the value (`a[i]`) and also the distance between two items,
+which is what [Daily Temperatures](/dsa/daily-temperatures/) asks for.
+
+## Looking back: stock spans
+
+A classic "previous bigger" question: for each day, how many days in a row, ending today, had a value no higher than
+today's? That's the distance back to the previous day that was **higher**. Pop every day that's no higher than today.
+They can never matter again, because any later day that looks back past today also looks past them. The top that's
+left is the previous higher day.
+
+<Viz client:visible approach="span" />
+
+Notice `≤` in the `while`: equal values are popped too, because a day equal to today doesn't stop today's span. Getting
+`<` and `≤` the right way round is the usual source of bugs. Ask yourself: should an equal value count as an answer, or
+be skipped? That's Online Stock Span (LeetCode 901).
+
+## Wrapping round: circular arrays
+
+Sometimes the array is a circle, so after the last item comes the first again, and an item near the end can find its
+answer near the start. You could copy the array onto its own end, but there's no need. Walk the positions twice and
+read `a[i mod n]`, where `mod` gives the remainder after dividing by `n`, so the position wraps back to 0. On the
+second lap nothing new is pushed: every item is already waiting or answered, and the second lap only answers the
+ones still waiting.
+
+<Viz client:visible approach="circular" />
+
+Two laps of `n` steps, and still at most `n` pushes and `n` pops: O(n). The items left at the end are equal to the
+largest value, which has nothing bigger anywhere on the circle. That's Next Greater Element II (LeetCode 503).
+
+## Largest rectangle in a histogram
+
+The hardest classic. Each value is the height of a bar 1 unit wide, and you want the biggest rectangle that fits under
+the bars. The biggest rectangle is as tall as some bar and stretches sideways until a shorter bar blocks it on each
+side. So for each bar you need its **previous smaller** bar and its **next smaller** bar, and a single stack finds both
+at once.
+
+Keep the heights on the stack rising toward the top. When a new bar is no taller than the top, pop the top: the new
+bar is the first shorter bar to its right, and the bar now under it is the first shorter bar to its left. The width is
+everything in between. To pop whatever is left at the end, treat the position after the last bar as a bar of height
+0.
+
+<Viz client:visible approach="histogram" />
+
+Each bar is pushed once and popped once, and each pop measures one rectangle in O(1): O(n) in total, against O(n²) for
+trying every left and right edge. When two bars have the same height, the first one popped measures too narrow a
+rectangle, but the later one of the same height measures the full width, so the answer is still right.
+
+## Interview theory
+
+<QA q="How do you tell that a problem wants a monotonic stack?">
+It asks, for every item, about the nearest item to its left or right that is bigger or smaller: the next warmer day,
+the previous taller building, the first shorter bar. A nested loop that scans outward from each item is the brute force
+that a monotonic stack replaces.
+</QA>
+
+<QA q="Why is a monotonic stack O(n) when it has a loop inside a loop?">
+Count what happens to each item, not rounds of the loops: each position is pushed once and popped at most once, so all
+the inner loops together run at most n times.
+</QA>
+
+<QA q="How do you handle a circular array?">
+Walk positions 0 to 2n - 1 and use i mod n. Push only during the first lap; the second lap answers whatever is still
+waiting. It stays O(n).
+</QA>
+
+<QA q="In Largest Rectangle in Histogram, what does a pop tell you?">
+The popped bar's two blockers: the new bar is the first shorter bar to its right, and the bar under it on the stack is
+the first shorter bar to its left. So its rectangle's width is known, and its area is height times that width.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

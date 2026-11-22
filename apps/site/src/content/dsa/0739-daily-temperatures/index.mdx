@@ -45,7 +45,9 @@ For each day, scan forward until a warmer one appears.
 
 Walk forward once with a stack of days still waiting for a warmer day. Each new day pops every waiting day that's
 cooler, recording how long each waited, then pushes itself. Reading from bottom to top, the temperatures on the stack
-never rise, which is why it's called a **monotonic** stack.
+never rise, which is why it's called a **monotonic** stack. [Monotonic stack
+patterns](/concepts/monotonic-stack-patterns/) shows the same stack answering "previous" questions, wrapping round a
+circular array, and measuring the largest rectangle in a histogram.
 
 <Viz client:visible approach="stack" />
 
@@ -80,3 +82,5 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 - Next Greater Element I (LeetCode 496). The same stack, returning the value instead of the distance.
 - Online Stock Span (LeetCode 901). Look back instead of forward, still with a monotonic stack.
 - Largest Rectangle in Histogram (LeetCode 84). A harder monotonic-stack classic.
+- [Monotonic stack patterns](/concepts/monotonic-stack-patterns/): the four "next or previous, bigger or smaller"
+  variations, side by side.
