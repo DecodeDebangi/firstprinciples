@@ -1,0 +1,82 @@
+---
+title: Permutation in String
+leetcode: { number: 567, url: "https://leetcode.com/problems/permutation-in-string/" }
+difficulty: Medium
+topics: [Sliding window, String, Hash map]
+added: 2026-11-22
+summary: Decide whether some rearrangement of a short string appears as a stretch of a longer one. Goes from counting the letters of every window from scratch, to sliding one window of letter counts with two updates per step.
+insight: "A stretch is a rearrangement of s1 exactly when its letter counts equal s1's. All such stretches have s1's length, so slide a fixed window across s2, adding one letter and removing one each step."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two strings of lowercase letters, `s1` and `s2`. Return whether `s2` contains a **permutation** of `s1`: a
+stretch of neighbouring letters that uses exactly the letters of `s1`, the same number of times, in any order.
+
+For example, `s1 = cat` and `s2 = dogtacx` gives true: `tac` (positions 3 to 5) is a rearrangement of `cat`.
+
+Below, `m` is the length of `s1` and `n` of `s2`.
+
+## The key question
+
+> **Every candidate stretch has the same length. How much changes between neighbouring windows?**
+
+Only one letter leaves and one arrives. This is the yes/no version of [Find All Anagrams in a
+String](/dsa/find-all-anagrams-in-a-string/); see [Window budgets](/concepts/window-budgets/).
+
+## Approach 1: Count every window from scratch
+
+For each window of `m` letters, count its letters and compare with `s1`'s counts.
+
+<Viz client:visible approach="recount" />
+
+<Complexity time="O(n · m)" space="O(1)">
+**Time.** Up to `n − m + 1` windows, each counted in O(m): **O(n · m)**.
+
+**Space.** Two sets of 26 counts: **O(1)**.
+
+**What it wastes:** neighbouring windows share `m − 1` letters, all counted again.
+</Complexity>
+
+## Approach 2: Slide the counts (optimal)
+
+Count the first window once. For each next window, subtract the letter leaving on the left and add the one arriving on
+the right, then compare the 26 counts.
+
+<Viz client:visible approach="slide" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Two updates and a 26-count comparison per step: O(26 · n) = **O(n)**.
+
+**Space.** Two sets of 26 counts: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same strings:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Count every window | O(n · m) | O(1) | recounts shared letters |
+| Slide the counts | O(n) | O(1) | two updates per step |
+
+<GrowthChart client:visible series={growth} caption="Steps for s2 of length n with no match and s1 of length n / 2." />
+
+## Common mistakes
+
+- **Sorting every window.** It works, but costs O(m log m) per window.
+- **Forgetting to check the last window.** Compare before sliding, including after the final slide.
+- **Looking for s1 itself.** Any order counts; `tac` matches `cat`.
+
+## Related problems
+
+- [Find All Anagrams in a String](/dsa/find-all-anagrams-in-a-string/): every position, not just whether one exists.
+- [Valid Anagram](/dsa/valid-anagram/): comparing two strings' counts once.
+- [Window budgets](/concepts/window-budgets/): fixed windows with counts.
