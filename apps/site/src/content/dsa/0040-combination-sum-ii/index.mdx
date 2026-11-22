@@ -1,0 +1,103 @@
+---
+title: Combination Sum II
+leetcode: { number: 40, url: "https://leetcode.com/problems/combination-sum-ii/" }
+difficulty: Medium
+topics: [Backtracking, Array, Sorting]
+added: 2026-11-22
+summary: List every distinct way to pick numbers that add up to a target, using each number at most once, when the list may repeat values. Goes from searching every pick and dropping repeated answers to sorting and skipping equal numbers at the same depth, so no answer is ever built twice.
+insight: "Sort, then in each call's loop try only the first of a run of equal numbers: a second equal number would start exactly the same branches."
+best: { time: "O(n · 2ⁿ)", space: "O(n) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of positive whole numbers (some may repeat) and a target, return every way to pick some of them that
+adds up to the target. Each number in the list can be used at most once, though if a value appears twice you may use
+both copies. Two picks with the same values count as the same answer, so each answer appears once.
+
+For `[3, 1, 2, 1, 3]` and target 5, the answers are `1 + 1 + 3` and `2 + 3`. Using the first 3 or the second 3
+doesn't make a different answer.
+
+## The key question
+
+> **The list has equal values, so the search can build the same answer from different copies. How do I make sure
+> each answer is built only once, without searching the copies at all?**
+
+This is [Subsets II](/concepts/backtracking-with-rules/) with a running total. Read that page first if the skip
+rule is new.
+
+## Approach 1: Search every pick, drop repeated answers
+
+Sort the list so each answer comes out in the same order, and backtrack: each call adds one number from later in the
+list and recurses with what's still needed. Because the list is sorted, the loop can stop at the first number
+bigger than what's left. Equal values are treated as different numbers, so the same answer turns up more than once;
+a set of answers already found drops the repeats.
+
+<Viz client:visible approach="dedupe" />
+
+<Complexity time="O(n · 2ⁿ)" space="O(n · 2ⁿ)">
+**Time.** Every call picks a different set of positions, so there are at most 2ⁿ calls. Recording an answer copies
+up to n numbers: **O(n · 2ⁿ)**.
+
+**Space.** The recursion is at most n deep, but the set of seen answers can hold as many answers as there are:
+**O(n · 2ⁿ)** in the worst case.
+
+**What it wastes:** every repeated answer was reached through a whole branch that only rebuilt what an earlier
+branch already found. With n copies of 1 and a target of n / 2, there's one answer but thousands of calls.
+</Complexity>
+
+## Approach 2: Sort, then skip equal numbers at the same depth
+
+Repeats come from one place: a call's loop trying an equal value a second time. The first 1 and the second 1 both
+start from the same path with the same total still needed, so the second branch can only find what the first did.
+So within one loop, skip a number equal to the one before it:
+
+```text
+if i > start and c[i] = c[i - 1]
+    continue
+```
+
+`i > start` keeps it to the same depth: a deeper call may still use the second 1 after the first, which is how
+`1 + 1 + 3` is found.
+
+<Viz client:visible approach="skip" />
+
+<Complexity time="O(n · 2ⁿ)" space="O(n) extra">
+**Time.** The worst case is still exponential: with all-different numbers the skip rule never fires, and there can
+be up to 2ⁿ calls. Each recorded answer copies up to n numbers: **O(n · 2ⁿ)**. With many repeated values it's far
+faster, because the skipped branches are never started.
+
+**Space.** The current path and the recursion, both at most n deep: **O(n)** beyond the output. No seen set.
+
+**What it wastes:** nothing it can avoid. Every call is on a distinct path, and no answer is built twice.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Drop repeated answers | O(n · 2ⁿ) | O(n · 2ⁿ) | Search every copy, filter with a set |
+| Skip at the same depth | O(n · 2ⁿ), far less with repeats | **O(n)** | Never start a repeated branch |
+
+<GrowthChart client:visible series={growth} caption="Calls with n copies of the number 1 and a target of n / 2: one answer either way." />
+
+## Common mistakes
+
+- **Writing `i > 0` instead of `i > start`.** That forbids two equal numbers in one answer, losing `1 + 1 + 3`.
+- **Forgetting to sort.** The skip rule compares neighbours, so equal values must sit together.
+- **Recursing with `i` instead of `i + 1`.** That reuses the same number, which is [Combination Sum](/concepts/backtracking/), not this problem.
+- **Using `continue` where `break` belongs.** Once a sorted number is too big, every later one is too: stop the loop.
+
+## Related problems
+
+- Combination Sum (LeetCode 39). Each number may be reused, and there are no repeats in the list.
+- Subsets II (LeetCode 90). The same skip rule without a target.
+- Permutations II (LeetCode 47). Repeated values again, with a `used` list instead of a start index.
