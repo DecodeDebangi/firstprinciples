@@ -1,0 +1,86 @@
+---
+title: Search in Rotated Sorted Array
+leetcode: { number: 33, url: "https://leetcode.com/problems/search-in-rotated-sorted-array/" }
+difficulty: Medium
+topics: [Binary search, Array]
+added: 2026-11-22
+summary: Find a target in a sorted list of different values that has been rotated, in O(log n). Goes from checking every position to a binary search that, at each step, finds which half is still sorted and checks whether the target lies within it.
+insight: "Cut a rotated sorted list anywhere and at least one half is plain sorted. If the target falls inside that half's first-to-last range, search there; otherwise it can only be in the other half."
+best: { time: "O(log n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+A sorted list of different numbers has been rotated (some values from the end moved to the front, keeping their order).
+Given a target, return its position, or -1 if it isn't there, in O(log n) time.
+
+For example, in `[7, 9, 12, 15, 1, 3, 5]` the target 3 is at position 5, and 8 isn't there.
+
+## The key question
+
+> **Ordinary binary search compares the target with the middle. Which half can I trust when the list has a drop in it?**
+
+There's only one drop, so whichever side of the middle doesn't contain it is sorted. See [Find Minimum in Rotated Sorted
+Array](/dsa/find-minimum-in-rotated-sorted-array/) for the two runs.
+
+## Approach 1: Check every position
+
+Compare each value with the target.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** **O(n)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** the list is almost sorted. Every comparison could rule out half of what's left, as in plain
+[binary search](/dsa/binary-search/).
+</Complexity>
+
+## Approach 2: Binary search on the sorted half (optimal)
+
+Look at the middle. If `nums[lo] ≤ nums[mid]`, the left half is sorted; otherwise the right half is. For the sorted half
+you know its smallest and largest values (its two ends), so you can tell at once whether the target could be in it.
+Search that half if so, and the other half if not.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(log n)" space="O(1)">
+**Time.** Each step discards half: **O(log n)**.
+
+**Space.** **O(1)**.
+</Complexity>
+
+Another way: first find the minimum's position with [the drop search](/dsa/find-minimum-in-rotated-sorted-array/), then
+do an ordinary binary search in whichever run could hold the target. Also O(log n), with two searches instead of one.
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Check every position | O(n) | O(1) | ignores the order |
+| Binary search on the sorted half | O(log n) | O(1) | trusts only the sorted side |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when the target is the last value of a rotated list of n." />
+
+## Common mistakes
+
+- **Using `<` instead of `≤` in `nums[lo] ≤ nums[mid]`.** When `lo = mid` (two values left), the left "half" is one
+  value and is sorted; `<` would wrongly call it unsorted.
+- **Checking the range of the unsorted half.** Its ends don't bound its values; only the sorted half's do.
+- **Mixing up inclusive and exclusive ends** in `nums[lo] ≤ target < nums[mid]`: `mid` itself was already checked.
+
+## Related problems
+
+- [Find Minimum in Rotated Sorted Array](/dsa/find-minimum-in-rotated-sorted-array/): the same list, finding the drop.
+- [Binary Search](/dsa/binary-search/): the plain version.
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/): what binary search really needs.
