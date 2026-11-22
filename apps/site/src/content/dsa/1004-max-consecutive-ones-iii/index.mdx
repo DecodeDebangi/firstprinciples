@@ -1,0 +1,81 @@
+---
+title: Max Consecutive Ones III
+leetcode: { number: 1004, url: "https://leetcode.com/problems/max-consecutive-ones-iii/" }
+difficulty: Medium
+topics: [Sliding window, Array]
+added: 2026-11-22
+summary: In a list of 0s and 1s, find the longest run of 1s you can make by flipping at most k zeros. Goes from extending from every start while the zeros stay within budget, to one window that grows every step and shrinks only when it holds too many zeros.
+insight: "Flipping at most k zeros means: the longest window containing at most k zeros. Grow the window every step; when it holds k + 1 zeros, move its left end past a zero. Its best length is the answer."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` of 0s and 1s and a number `k`. You may flip at most `k` of the 0s to 1s. Return the length of the
+longest run of consecutive 1s you can make.
+
+For example, `[1, 1, 0, 1, 0, 0, 1, 1, 1]` with `k = 2`: flipping the zeros at positions 4 and 5 gives the run from 3 to 8,
+length 6.
+
+## The key question
+
+> **What does "flip at most k zeros" mean for a window?**
+
+A window can become all 1s exactly when it contains at most `k` zeros. So this is "the longest window within a budget"
+from [Window budgets](/concepts/window-budgets/).
+
+## Approach 1: From every start, extend while within budget
+
+For each start, extend to the right, counting zeros, until one more zero would go over `k`.
+
+<Viz client:visible approach="everyStart" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each start can scan to the end: **O(n²)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** the window from the next start mostly overlaps this one, and its zeros are counted again.
+</Complexity>
+
+## Approach 2: Grow, and shrink only when over budget (optimal)
+
+Move `right` along, counting zeros in the window. When the count goes over `k`, move `left` forward until a zero leaves.
+After each step the window is within budget, so compare its length with the best.
+
+<Viz client:visible approach="window" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** `left` and `right` each move forward at most `n` times: **O(n)**.
+
+**Space.** A few numbers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same list:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Extend from every start | O(n²) | O(1) | recounts zeros |
+| Grow and shrink | O(n) | O(1) | each value in and out once |
+
+<GrowthChart client:visible series={growth} caption="Steps for n ones (every start runs to the end)." />
+
+## Common mistakes
+
+- **Actually flipping values.** There's no need to change the list; counting zeros in the window is enough.
+- **Shrinking too far.** Move `left` only until the zero count is back to `k`.
+- **Forgetting k = 0.** Then it's the longest run of 1s already there, and the window can be empty at a 0.
+
+## Related problems
+
+- [Window budgets](/concepts/window-budgets/): the longest-within-budget template.
+- [Longest Repeating Character Replacement](/dsa/longest-repeating-character-replacement/): the same idea with letters.
+- [Minimum Size Subarray Sum](/dsa/minimum-size-subarray-sum/): the shortest-window version.
