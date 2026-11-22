@@ -48,6 +48,8 @@ distinct characters that's still quadratic.)
 Keep a window `[left, right]` with no repeats. Move `right` forward one character at a time. If the new character
 is already in the window, drop characters from the left until it isn't, then add it.
 
+This is the "longest window within a budget" shape from [Window budgets](/concepts/window-budgets/), where the budget is "no repeated letter".
+
 <Viz client:visible approach="window" />
 
 <Complexity time="O(n)" space="O(k)">

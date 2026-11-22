@@ -50,6 +50,8 @@ For each start `i`, count the letters of `s[i..i+m-1]` and compare the 26 counts
 Count the first window once. Then, to move one place right, subtract one for the letter leaving on the left and add one
 for the letter arriving on the right. This is a fixed-size [sliding window](/concepts/sliding-window/).
 
+This is the fixed window with counts from [Window budgets](/concepts/window-budgets/).
+
 <Viz client:visible approach="sliding" />
 
 <Complexity time="O(n)" space="O(1)">

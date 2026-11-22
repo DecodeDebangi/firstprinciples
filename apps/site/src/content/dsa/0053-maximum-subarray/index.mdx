@@ -50,6 +50,8 @@ Keep `cur`, the best sum of a run ending at the current number, and `best`, the 
 `x`: `cur ← max(x, cur + x)`, then `best ← max(best, cur)`. The shelf shows the current run; watch it restart
 whenever carrying the old run would hurt.
 
+Restarting when the running sum turns negative is the running-balance pattern from [Greedy in practice](/concepts/greedy-in-practice/). It's also a 1D DP: `cur` is the best sum ending at each position, the "best ending here" shape from [Designing a 1D DP](/concepts/one-dimensional-dp/).
+
 <Viz client:visible approach="kadane" />
 
 <Complexity time="O(n)" space="O(1)">

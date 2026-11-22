@@ -47,6 +47,8 @@ without them, different shapes can produce the same list of values.
 Walk both trees at once. At each pair of positions: both empty is a match; one empty or different values is a
 mismatch; otherwise compare the left children, then the right children.
 
+Recursing on a pair of nodes is one of the shapes in [Tree recursion](/concepts/tree-recursion/); [Symmetric Tree](/dsa/symmetric-tree/) uses it with left and right swapped.
+
 <Viz client:visible approach="dfs" />
 
 <Complexity time="O(n)" space="O(h)">

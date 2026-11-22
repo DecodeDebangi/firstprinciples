@@ -29,6 +29,8 @@ moves an entire subtree, and the subtree's own insides get swapped when you reac
 
 At each node, swap `left` and `right`, then invert both children. Watch whole subtrees slide across with each swap.
 
+Each call fixes its own node, then trusts the calls on its children to fix their subtrees: the recursive habit that [Tree recursion](/concepts/tree-recursion/) builds on.
+
 <Viz client:visible approach="dfs" />
 
 <Complexity time="O(n)" space="O(h)">

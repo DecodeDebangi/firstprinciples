@@ -51,6 +51,8 @@ Build one subset at a time in a single `path` list. Each call:
 Only numbers **after** the last one chosen may be added. That's what stops `[1, 2]` and `[2, 1]` from both
 appearing. The tree below has one node per call; the note under each node is its subset.
 
+If the input can repeat a value, this builds the same subset more than once. [Backtracking with rules](/concepts/backtracking-with-rules/) shows the one-line fix: sort, then skip equal values at the same depth.
+
 <Viz client:visible approach="backtrack" />
 
 <Complexity time="O(n · 2ⁿ)" space="O(n) extra">

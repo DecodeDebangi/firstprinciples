@@ -46,6 +46,8 @@ Fill the positions one at a time. Each call tries every number that isn't **used
 Unlike [subsets](/dsa/subsets/), order matters, so a call may pick an **earlier** number too, as long as it's unused.
 Only the leaves are answers here.
 
+If the input repeats a value, this builds the same permutation more than once. [Backtracking with rules](/concepts/backtracking-with-rules/) shows how to skip repeats before they're built.
+
 <Viz client:visible approach="backtrack" />
 
 <Complexity time="O(n · n!)" space="O(n) extra">

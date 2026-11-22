@@ -52,6 +52,8 @@ top of the heap is then the smallest of the k largest: the kth largest.
 It feels backwards at first: we want the *largest* numbers, so why a *min*-heap? Because the number we need to
 look at, and the one we need to throw away, are both the **smallest of the ones we keep**.
 
+This is the "top k" pattern from [Heaps in practice](/concepts/heaps-in-practice/), which also covers merging sorted lists and keeping a running median.
+
 <Viz client:visible approach="heap" />
 
 <Complexity time="O(log k) per add" space="O(k)">

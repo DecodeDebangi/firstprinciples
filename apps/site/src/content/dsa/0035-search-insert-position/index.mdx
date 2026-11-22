@@ -45,6 +45,8 @@ Walk from the left and stop at the first number that's at least `target`.
 
 Run an ordinary binary search. If it finds the target, return `mid`. If the window empties, return `lo`.
 
+When the target is missing, the final `lo` is the first index where `nums[i] ≥ target`, which is exactly where the target belongs. Finding that first "yes" directly is the template in [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/).
+
 <Viz client:visible approach="binary" />
 
 <Complexity time="O(log n)" space="O(1)">

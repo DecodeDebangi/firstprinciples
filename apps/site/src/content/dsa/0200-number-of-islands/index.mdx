@@ -53,6 +53,8 @@ would recurse rows × cols deep: **O(rows × cols)** in the worst case (deep eno
 Same scan, but flood each island with a queue: mark the first cell and queue it; then repeatedly take a cell and
 mark-and-queue its unmarked land neighbours. The island fills outward ring by ring.
 
+[Searching grids](/concepts/searching-grids/) takes this further: measuring each island's area, spreading from many starting cells at once, and searching backwards from the targets.
+
 <Viz client:visible approach="bfs" />
 
 <Complexity time="O(rows × cols)" space="O(rows × cols) worst case">

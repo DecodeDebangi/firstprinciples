@@ -31,6 +31,8 @@ pattern behind most tree problems: solve the left, solve the right, combine.
 Ask the left subtree for its depth, ask the right subtree, and return `1 + max(left, right)`. An empty subtree has
 depth 0. The label under each node shows the depth it returned.
 
+Asking each subtree for an answer and combining the two is the "return answers up" shape from [Tree recursion](/concepts/tree-recursion/).
+
 <Viz client:visible approach="dfs" />
 
 <Complexity time="O(n)" space="O(h)">

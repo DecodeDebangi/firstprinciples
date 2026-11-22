@@ -68,6 +68,8 @@ Visit every tree node as a possible start, with a [depth-first](/concepts/tree-t
 - the tree has run out, or the values differ: this branch fails;
 - otherwise, the next list node must match the left child **or** the right child.
 
+Walking two structures together, one step in each per call, is the "recurse on two nodes at once" shape from [Tree recursion](/concepts/tree-recursion/).
+
 <Viz client:visible approach="tryEach" />
 
 <Complexity time="O(n · m)" space="O(h)">

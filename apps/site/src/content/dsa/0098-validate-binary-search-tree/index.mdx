@@ -61,6 +61,8 @@ order and check that each value beats the one before it. The `#` labels show the
 Give each node the range its value must fall in. The root allows anything. Going left caps the maximum at the
 parent's value; going right raises the minimum to it. Each node checks only its own range, shown under it.
 
+Handing each child the range it must fit in is the "pass information down" shape from [Tree recursion](/concepts/tree-recursion/).
+
 <Viz client:visible approach="bounds" />
 
 <Complexity time="O(n)" space="O(h)">
