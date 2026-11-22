@@ -1,0 +1,97 @@
+---
+title: Generate Parentheses
+leetcode: { number: 22, url: "https://leetcode.com/problems/generate-parentheses/" }
+difficulty: Medium
+topics: [Backtracking, String]
+added: 2026-11-22
+summary: List every correctly matched string of n pairs of brackets. Goes from building all 4ⁿ bracket strings and checking each to backtracking that only ever adds a bracket that can still lead to a valid string.
+insight: "Add \"(\" while you have some left, and \")\" only while there's an unmatched \"(\". Then every string you finish is valid."
+best: { time: "O(4ⁿ / √n)", space: "O(n) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given `n`, return every string of `n` opening brackets `(` and `n` closing brackets `)` that is **balanced**: read
+left to right, every `)` closes an earlier `(` that hasn't been closed yet, and nothing is left open at the end.
+
+For `n = 2` there are two: `(())` and `()()`. A string like `)(()` fails straight away, because its first `)` has
+nothing to close.
+
+## The key question
+
+> **A string of 2n brackets has 2ⁿ·2ⁿ = 4ⁿ possible spellings, and almost all are unbalanced. Can I tell, while
+> building one, that it can no longer become balanced?**
+
+Yes, with two counts: how many `(` are used and how many `)` are used. That decides everything.
+
+## Approach 1: Build every string, keep the valid ones
+
+Every position is `(` or `)`, so list all 2^(2n) strings and check each one. The check walks left to right keeping
+a **balance**: +1 for `(`, −1 for `)`. If it ever drops below 0, a `)` closed nothing. At the end it must be 0, or
+some `(` was never closed.
+
+<Viz client:visible approach="all" />
+
+<Complexity time="O(n · 4ⁿ)" space="O(n) extra">
+**Time.** There are 2^(2n) = 4ⁿ strings, and checking one walks up to 2n brackets: **O(n · 4ⁿ)**.
+
+**Space.** One string and one counter at a time: **O(n)** beyond the output.
+
+**What it wastes:** almost every string. For n = 3 only 5 of 64 survive, and the share keeps shrinking as n grows.
+A string starting with `)` is doomed after one character, yet all its endings are still built and checked.
+</Complexity>
+
+## Approach 2: Backtracking, only add a bracket that can still work
+
+Build the string one bracket at a time and refuse any bracket that would make it impossible to finish:
+
+- `(` is allowed while fewer than `n` have been used.
+- `)` is allowed only while it has a `(` to close: fewer `)` than `(` so far.
+
+Those two rules are exactly what the balance check tested, applied **before** each choice instead of after the
+whole string. So every string that reaches length 2n is valid, and nothing needs checking at the end. The counts go
+into each call as arguments, so undoing is automatic: the caller still has its own copies.
+
+<Viz client:visible approach="rules" />
+
+<Complexity time="O(4ⁿ / √n)" space="O(n) extra">
+**Time.** The number of answers is the **n-th Catalan number**, Cₙ: 1, 2, 5, 14, 42, 132, … It grows roughly like
+4ⁿ / (n · √n). Every call lies on the way to at least one answer, and each answer has 2n calls above it, so there
+are at most 2n · Cₙ calls. With one shared path and an undo, each call is O(1) work, and recording an answer
+copies 2n characters: **O(n · Cₙ)** in all. Since Cₙ is about 4ⁿ / (n · √n), that's roughly **O(4ⁿ / √n)**.
+
+**Space.** The recursion is 2n calls deep, each holding a string of up to 2n characters. Passing `s + "("` makes a new
+string each time; with one shared list and an undo it's **O(n)** beyond the output.
+
+**What it wastes:** nothing: every call leads to at least one answer. This is as fast as listing the answers can be.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Build all, check each | O(n · 4ⁿ) | O(n) | 4ⁿ strings, most rejected at the end |
+| Backtracking with rules | **O(4ⁿ / √n)** | O(n) | Reject a bracket before adding it |
+
+<GrowthChart client:visible series={growth} caption="Operations to list every balanced string of n pairs." />
+
+## Common mistakes
+
+- **Allowing `)` whenever `close < n`.** It must be `close < open`, or strings like `())(` sneak in.
+- **Checking validity only at the end.** It works, but that's Approach 1: the rules belong before each choice.
+- **Recording before the string is full.** Only strings of length 2n are answers.
+- **Sharing one list without undoing.** If the path is a shared list, remove the bracket after each call.
+
+## Related problems
+
+- Valid Parentheses (LeetCode 20). Checking one string with brackets of several kinds, using a stack.
+- Letter Combinations of a Phone Number (LeetCode 17). One character per depth, with no rule to break.
+- Subsets II (LeetCode 90). Another backtracking search that rejects branches before starting them.
