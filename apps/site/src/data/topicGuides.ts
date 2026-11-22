@@ -84,7 +84,8 @@ while lo < hi
     idea: "Keep unfinished items on a stack: the most recent one is always the next to be resolved.",
     signals: [
       "Matching pairs: brackets, tags, open and close",
-      "\"The next greater (or smaller) element\" for each position",
+      "\"The next or previous greater (or smaller) element\" for each position, even when the array wraps round",
+      "How far each item reaches before a bigger or smaller one blocks it: spans, widths, areas",
       "Undo, nested structure, or evaluating expressions",
       "Something waits until a later item settles it",
     ],
