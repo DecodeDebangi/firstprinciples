@@ -1,0 +1,82 @@
+---
+title: Gas Station
+leetcode: { number: 134, url: "https://leetcode.com/problems/gas-station/" }
+difficulty: Medium
+topics: [Greedy, Array]
+added: 2026-11-22
+summary: Gas stations stand in a loop; at each you collect some gas, then pay some to drive to the next. Find the station from which a full lap is possible, or -1. Goes from trying a lap from every station to one pass that restarts after any stretch where the tank runs dry.
+insight: "If the tank runs dry between start s and station i, every station from s to i fails too, so restart at i + 1. If total gas covers total cost, the last restart point completes the lap."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+There are `n` gas stations on a circular road. Station `i` gives `gas[i]` units, and driving from station `i` to the
+next costs `cost[i]`. You start with an empty tank at one station. Return the station from which you can drive a full
+lap without the tank going below 0, or -1 if there is none. (When an answer exists, it's unique.)
+
+For example, with `gas = [1, 4, 2, 5, 3]` and `cost = [3, 2, 4, 1, 4]`, starting at station 3 works, so the answer is 3.
+
+## The key question
+
+> **When a start fails partway, which other starts does that rule out?**
+
+See [Greedy in practice](/concepts/greedy-in-practice/): the running balance.
+
+## Approach 1: Try a lap from every station
+
+For each start, drive around, adding `gas − cost` at each station, and stop the lap as soon as the tank goes below 0.
+
+<Viz client:visible approach="everyStart" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Up to `n` starts, each driving up to `n` stations: **O(n²)**.
+
+**Space.** **O(1)**.
+
+**What it wastes:** a failed lap from `s` to `i` says more than "not `s`": every station between them fails at `i` too,
+yet each is tried separately.
+</Complexity>
+
+## Approach 2: One pass, restarting when the tank runs dry (optimal)
+
+Add `gas[i] − cost[i]` to a running tank. If it goes below 0, restart from `i + 1` with an empty tank. Also keep the
+total of `gas − cost` over the whole loop: if it's negative, no lap is possible; otherwise the last restart point is the
+answer.
+
+<Viz client:visible approach="tank" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass: **O(n)**.
+
+**Space.** Three numbers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same stations:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| A lap from every station | O(n²) | O(1) | retries ruled-out starts |
+| One pass with restarts | O(n) | O(1) | skips whole failed stretches |
+
+<GrowthChart client:visible series={growth} caption="Stations driven when only the last start works and earlier laps fail late." />
+
+## Common mistakes
+
+- **Restarting at s + 1 instead of i + 1.** Every station up to `i` is already ruled out.
+- **Forgetting the total check.** Without it, the last restart point might still fail to wrap around.
+- **Starting where gas is largest.** A big gas value can be followed by bigger costs; only the running balance tells.
+
+## Related problems
+
+- [Greedy in practice](/concepts/greedy-in-practice/): why restarting is safe.
+- [Jump Game](/dsa/jump-game/): another single running quantity.
+- [Maximum Subarray](/dsa/maximum-subarray/): drop the running sum when it goes negative.
