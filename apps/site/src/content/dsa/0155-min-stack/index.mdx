@@ -1,0 +1,87 @@
+---
+title: Min Stack
+leetcode: { number: 155, url: "https://leetcode.com/problems/min-stack/" }
+difficulty: Medium
+topics: [Stack]
+added: 2026-11-22
+summary: Design a stack that supports push, pop, top and getMin - the smallest value currently in it - all in O(1). Goes from a plain stack whose getMin searches every value, to a second stack that stores the minimum so far at every level.
+insight: "The minimum only changes when something is pushed or popped. Store, beside every value, the smallest value from the bottom up to it; the overall minimum is then always on top, and a pop restores the previous one."
+best: { time: "O(1)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a stack with four operations, each taking constant time:
+
+- `push(x)` puts `x` on top.
+- `pop()` removes the top value.
+- `top()` returns the top value.
+- `getMin()` returns the smallest value currently in the stack.
+
+For example, after `push 6, push 2, push 8`, `getMin` is 2. After `push 1`, it's 1; after a `pop`, it's 2 again.
+Operations are only called when they make sense (no `pop` on an empty stack).
+
+## The key question
+
+> **When the minimum is popped, how do I know the next smallest without searching?**
+
+See [Stack patterns](/concepts/stack-patterns/), which builds this step by step.
+
+## Approach 1: Plain stack, search for the minimum
+
+push, pop and top are a normal stack. getMin looks through every value.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n) per getMin" space="O(1)">
+**Time.** push, pop and top are O(1); getMin is **O(n)** each time.
+
+**Space.** Nothing beyond the stack itself: **O(1)** extra.
+
+**What it wastes:** the minimum below each level never changes while that level is in the stack, yet it's searched for
+again on every call.
+</Complexity>
+
+## Approach 2: A stack of minimums (optimal)
+
+Keep a second stack. Each push also pushes `min(x, current minimum)`; each pop removes from both. getMin reads the top
+of the second stack.
+
+<Viz client:visible approach="minStack" />
+
+<Complexity time="O(1)" space="O(n)">
+**Time.** Every operation is a constant number of stack steps: **O(1)**.
+
+**Space.** The second stack, one entry per value: **O(n)**. (A variant only pushes to it when the new value is a new
+minimum or equal to it, which saves space when minimums rarely change.)
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same operations:
+
+<Compare client:visible />
+
+| Approach | push / pop / top | getMin | Extra space |
+|---|---|---|---|
+| Plain stack | O(1) | O(n) | O(1) |
+| Stack of minimums | O(1) | O(1) | O(n) |
+
+<GrowthChart client:visible series={growth} caption="Steps for n pushes followed by n getMin calls." />
+
+## Common mistakes
+
+- **Keeping a single "minimum" variable.** After the minimum is popped, the previous one is lost.
+- **Only pushing strictly smaller values in the space-saving variant.** Equal values must be pushed too, or popping one
+  copy of the minimum loses it while another copy is still in the stack.
+- **Forgetting to pop the second stack.** Both stacks must always have the same height.
+
+## Related problems
+
+- [Stack patterns](/concepts/stack-patterns/): minimums, postfix and queues.
+- [Implement Queue using Stacks](/dsa/implement-queue-using-stacks/): another design with two stacks.
+- [Daily Temperatures](/dsa/daily-temperatures/): a stack that keeps values in order.
