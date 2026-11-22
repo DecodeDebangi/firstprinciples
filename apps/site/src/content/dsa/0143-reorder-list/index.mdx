@@ -1,0 +1,89 @@
+---
+title: Reorder List
+leetcode: { number: 143, url: "https://leetcode.com/problems/reorder-list/" }
+difficulty: Medium
+topics: [Linked list, Two pointers]
+added: 2026-11-22
+summary: Reorder a linked list to take nodes alternately from the front and the back (first, last, second, second to last, …), by changing links. Goes from an array of the nodes linked from both ends to three in-place steps - find the middle, reverse the back half, weave the halves together.
+insight: "Split at the middle with fast and slow pointers, reverse the back half, then take one node from each half in turn."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given the head of a linked list `L0 → L1 → … → Ln`, rearrange it in place to `L0 → Ln → L1 → Ln−1 → L2 → …`: first
+node, last node, second node, second to last, and so on. Move the nodes by changing links; don't change values.
+
+For `1 → 2 → 3 → 4 → 5 → 6` the result is `1 → 6 → 2 → 5 → 3 → 4`.
+
+## The key question
+
+> **The new order keeps reaching for the back of the list, but a linked list only walks forwards. How can the back
+> half be read from its end, without an array?**
+
+## Approach 1: An array of the nodes, linked from both ends
+
+Copy a reference to every node into an array. Then two indexes, one at each end, link front, back, front, back,
+moving inwards until they meet.
+
+<Viz client:visible approach="array" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass to fill the array, one to relink: **O(n)**.
+
+**Space.** The array: **O(n)**.
+
+**What it wastes:** the array exists only to walk the back half backwards. Reversing the back half's links does the
+same job with no extra memory.
+</Complexity>
+
+## Approach 2: Middle, reverse, weave
+
+Three steps, each one a pattern from the linked list reads:
+
+1. **Find the middle** with [fast and slow pointers](/concepts/fast-and-slow-pointers/): `fast` moves two nodes for
+   each one `slow` moves, so `slow` stops in the middle.
+2. **Reverse the back half** ([reversing a list](/concepts/reversing-a-list/)), cutting it off after the middle.
+   Now its last node comes first.
+3. **Weave** the two halves: take one node from the front half, one from the reversed back half, and repeat, as in
+   [merging lists](/concepts/merging-and-splitting/).
+
+<Viz client:visible approach="threeSteps" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each step walks at most the whole list once: **O(n)**.
+
+**Space.** A handful of pointers: **O(1)**.
+
+**What it wastes:** nothing. It's three passes instead of two, but no memory beyond pointers.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Array of nodes | O(n) | O(n) | Link from both ends of an array |
+| Middle, reverse, weave | O(n) | **O(1)** | Reverse the back half so it reads from the end |
+
+Both are O(n) time, so there's no growth chart: the difference is the array.
+
+## Common mistakes
+
+- **Not cutting after the middle.** If the front half's last node still points into the back half, the weave makes a
+  cycle.
+- **Getting the middle wrong for even lengths.** With `fast.next.next` as the check, `slow` stops at the end of the
+  front half, which is what the weave needs.
+- **Losing the rest of a half while weaving.** Save `first.next` and `second.next` before changing either link.
+- **Returning a new head.** The head doesn't change, and the problem expects the list to be reordered in place.
+
+## Related problems
+
+- Middle of the Linked List (LeetCode 876). Step 1 on its own.
+- Reverse Linked List (LeetCode 206). Step 2 on its own.
+- Palindrome Linked List (LeetCode 234). The same middle-and-reverse trick, comparing instead of weaving.
