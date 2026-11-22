@@ -1,0 +1,94 @@
+---
+title: Letter Combinations of a Phone Number
+leetcode: { number: 17, url: "https://leetcode.com/problems/letter-combinations-of-a-phone-number/" }
+difficulty: Medium
+topics: [Backtracking, String]
+added: 2026-11-22
+summary: List every string a digit sequence could spell on a phone keypad, where 2 is abc, 3 is def, and so on. Goes from growing a list of strings one digit at a time to backtracking, where each depth of the recursion picks the letter for one digit.
+insight: "Each digit is one choice from its key's letters, so the answers are every path through a tree whose depth is the number of digits."
+best: { time: "O(n · 4ⁿ)", space: "O(n) extra" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+On an old phone keypad, each digit from 2 to 9 stands for a few letters: 2 is `abc`, 3 is `def`, 4 is `ghi`, 5 is
+`jkl`, 6 is `mno`, 7 is `pqrs`, 8 is `tuv` and 9 is `wxyz`. Given a string of such digits, return every string of
+letters it could spell, one letter per digit, in any order. No digits means no strings.
+
+For `"58"`, 5 gives `j`, `k` or `l` and 8 gives `t`, `u` or `v`, so there are 3 × 3 = 9 answers: `jt`, `ju`, `jv`,
+`kt`, `ku`, `kv`, `lt`, `lu`, `lv`.
+
+## The key question
+
+> **Each digit is an independent choice from its own short list of letters. How do I walk every combination of
+> choices exactly once?**
+
+With n digits and up to 4 letters each, there can be 4ⁿ answers of length n, so nothing beats O(n · 4ⁿ): that's
+the size of the output. Both approaches below reach it. The difference is how much they hold in memory along the way.
+
+## Approach 1: Grow the list one digit at a time
+
+Start with a list holding one empty string. For each digit, build a new list: every string so far, extended by
+every letter on that digit's key.
+
+<Viz client:visible approach="expand" />
+
+<Complexity time="O(n · 4ⁿ)" space="O(n · 4ⁿ)">
+**Time.** The last round builds up to 4ⁿ strings of length n. Each earlier round is at most a quarter the size of
+the next, so together they add less than a third more: **O(n · 4ⁿ)**.
+
+**Space.** The final list holds up to 4ⁿ strings of length n, and the round before it is kept until the new one is
+built: **O(n · 4ⁿ)**, most of which is the output.
+
+**What it wastes:** every partial list is built in full and then thrown away. Nothing is wrong with that here, but
+the shape doesn't stretch to problems where some choices are forbidden: there's no clean place to reject a bad
+prefix before all its extensions are built.
+</Complexity>
+
+## Approach 2: Backtracking, one letter per depth
+
+Each call is responsible for one digit. It tries each letter on that digit's key: add it to the path, recurse to
+the next digit, then remove it. When every digit has a letter, the path is an answer.
+
+<Viz client:visible approach="backtrack" />
+
+Unlike most backtracking problems, the choices change with depth: depth 0 chooses from the first digit's letters,
+depth 1 from the second's. There's nothing to prune, because every path is a valid answer.
+
+<Complexity time="O(n · 4ⁿ)" space="O(n) extra">
+**Time.** The tree has up to 4ⁿ leaves, one per answer, and fewer calls above them than leaves. Recording each
+answer copies n letters: **O(n · 4ⁿ)**.
+
+**Space.** Besides the output, only the current path (n letters) and n nested calls: **O(n)**.
+
+**What it wastes:** nothing beyond the output. This is the shape to learn, because adding a rule (no repeated
+letter, say) is one `if` before the recursive call.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Grow the list | O(n · 4ⁿ) | O(n · 4ⁿ) | Extend every string by every letter, digit by digit |
+| Backtracking | O(n · 4ⁿ) | **O(n)** | One letter per depth; record full paths |
+
+Both build the same strings, so there's no growth chart: the lines would almost match.
+
+## Common mistakes
+
+- **Returning `[""]` for empty input.** No digits means no combinations: return an empty list.
+- **Forgetting that 7 and 9 have four letters.** Hard-coding three letters per key drops `s` and `z`.
+- **Recording before the path is full.** Only a path with one letter per digit is an answer.
+- **Using one shared string without undoing.** Add the letter, recurse, then remove it, or letters pile up.
+
+## Related problems
+
+- Subsets (LeetCode 78). The same backtracking, choosing in or out for each number.
+- Generate Parentheses (LeetCode 22). One character per depth too, but with a rule that rejects bad prefixes.
+- Permutations (LeetCode 46). Every depth chooses from the items not yet used.
