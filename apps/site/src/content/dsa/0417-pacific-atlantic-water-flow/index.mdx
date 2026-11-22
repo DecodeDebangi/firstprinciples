@@ -1,0 +1,83 @@
+---
+title: Pacific Atlantic Water Flow
+leetcode: { number: 417, url: "https://leetcode.com/problems/pacific-atlantic-water-flow/" }
+difficulty: Medium
+topics: [Graph, BFS, DFS, Matrix]
+added: 2026-11-22
+summary: Rain falls on a grid of heights, with the Pacific on the top and left edges and the Atlantic on the bottom and right. Water flows to neighbours that are no higher. Find every cell whose water can reach both oceans. Goes from following the water from every cell, to two searches that walk uphill from each ocean.
+insight: "Many cells share the same few destinations. Search backwards from each ocean - uphill, onto neighbours at least as high - and you find every cell that drains into it in one pass. Keep the cells both searches reach."
+best: { time: "O(m · n)", space: "O(m · n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get an `m × n` grid of heights. The Pacific Ocean touches the top and left edges; the Atlantic touches the bottom
+and right edges. Rain water flows from a cell to a neighbour (up, down, left or right) whose height is less than or
+equal to its own, and from an edge cell straight into the ocean beside it. Return every cell from which water can reach
+both oceans.
+
+For example, in the grid with rows `1 2 2 3 5`, `3 2 3 4 4`, `2 4 5 3 1` and `6 7 1 4 5`, six cells qualify:
+(0, 4), (1, 3), (1, 4), (2, 2), (3, 0) and (3, 1).
+
+## The key question
+
+> **Instead of asking where each cell's water goes, can I ask which cells drain into each ocean?**
+
+See [Searching grids](/concepts/searching-grids/): searching backwards from the targets.
+
+## Approach 1: From every cell, follow the water downhill
+
+For each cell, search every cell its water can flow to, and check whether that set touches both oceans' edges.
+
+<Viz client:visible approach="everyCell" />
+
+<Complexity time="O((m · n)²)" space="O(m · n)">
+**Time.** Each of the `m · n` cells runs a search over up to `m · n` cells: **O((m · n)²)**.
+
+**Space.** One search's seen set: **O(m · n)**.
+
+**What it wastes:** neighbouring cells' water usually follows the same paths, which are searched over and over.
+</Complexity>
+
+## Approach 2: Search uphill from each ocean (optimal)
+
+Water reaches the Pacific from a cell exactly when you can walk from the Pacific's edge to that cell moving only onto
+neighbours at least as high: the water's path, backwards. So run one search from all the Pacific-edge cells and one
+from all the Atlantic-edge cells, each climbing uphill, and return the cells both reach.
+
+<Viz client:visible approach="reverse" />
+
+<Complexity time="O(m · n)" space="O(m · n)">
+**Time.** Each search visits every cell at most once: **O(m · n)**.
+
+**Space.** Two seen sets and a queue: **O(m · n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Both on the same grid:
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | |
+|---|---|---|---|
+| Follow water from every cell | O((m · n)²) | O(m · n) | repeats shared paths |
+| Two uphill searches | O(m · n) | O(m · n) | each cell twice at most |
+
+<GrowthChart client:visible series={growth} caption="Steps for a flat n × n grid, where water can flow everywhere." />
+
+## Common mistakes
+
+- **Climbing to lower neighbours.** Backwards, the search moves onto cells **at least as high**, the reverse of water.
+- **Forgetting equal heights.** Water flows between equal heights, so the comparison is `≥`, not `>`.
+- **Missing the corners.** The top-right and bottom-left corners touch both oceans.
+
+## Related problems
+
+- [Searching grids](/concepts/searching-grids/): multi-source and reverse searches.
+- [Rotting Oranges](/dsa/rotting-oranges/): a search from many starts at once.
+- [Number of Islands](/dsa/number-of-islands/): searching connected cells.
