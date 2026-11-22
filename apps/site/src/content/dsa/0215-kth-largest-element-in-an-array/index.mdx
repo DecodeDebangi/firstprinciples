@@ -1,0 +1,91 @@
+---
+title: Kth Largest Element in an Array
+leetcode: { number: 215, url: "https://leetcode.com/problems/kth-largest-element-in-an-array/" }
+difficulty: Medium
+topics: [Heap, Array, Sorting]
+added: 2026-11-22
+summary: Find the kth largest number in an unsorted list. Goes from sorting everything to keeping a min-heap of only the k largest numbers seen so far, whose top is the answer.
+insight: "Keep the k largest numbers in a min-heap. Whenever it grows past k, pop the smallest. At the end the top is the kth largest."
+best: { time: "O(n log k)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of whole numbers and a number `k`, return the kth largest value: the value that would be at position
+k if the list were sorted from largest to smallest. Repeated values count separately, so in `[5, 5, 3]` the 2nd
+largest is 5.
+
+For `[7, 2, 9, 4, 6, 1, 8]` and `k = 3`, the largest three are 9, 8 and 7, so the answer is **7**.
+
+## The key question
+
+> **I only care about the top k numbers and which one is the smallest of them. Do I need to put the rest in order
+> at all?**
+
+No. Sorting orders all n numbers. A heap can track just the k that matter.
+
+## Approach 1: Sort, then count k from the end
+
+Sort the list from smallest to largest; the kth largest is k places from the end, at index `n − k`.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(1) to O(n)">
+**Time.** Sorting n numbers takes **O(n log n)**, and the lookup is O(1).
+
+**Space.** It depends on the sort: an in-place sort like heapsort needs **O(1)** extra, and many built-in sorts use
+up to **O(n)**.
+
+**What it wastes:** it orders all n numbers, including the n − k small ones, when only the top k matter, and only
+the smallest of those is the answer.
+</Complexity>
+
+## Approach 2: A min-heap of the k largest
+
+Walk the list once, keeping the k largest numbers seen so far in a **min-heap**. Push each number; if the heap
+grows to k + 1, pop its smallest, which can't be in the top k any more. The heap's top is always the smallest of
+the k kept: the kth largest so far. This is the first pattern in [Heaps in practice](/concepts/heaps-in-practice/).
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(n log k)" space="O(k)">
+**Time.** Each of the n numbers is one push and at most one pop, on a heap of at most k + 1 items: O(log k) each,
+**O(n log k)** in all.
+
+**Space.** The heap never holds more than k + 1 numbers: **O(k)**.
+
+**What it wastes:** for k close to n it's no better than sorting. An average-case O(n) method exists,
+**quickselect**: partition the list around a pivot as quicksort does, then keep only the side that holds the
+answer. Its worst case is O(n²), though, and the heap is simpler to get right in an interview.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Sort | O(n log n) | O(1) to O(n) | Order everything, count from the end |
+| Min-heap of size k | **O(n log k)** | O(k) | Keep only the top k; the top is the answer |
+
+<GrowthChart client:visible series={growth} caption="Operations to find the 3rd largest of n numbers." />
+
+## Common mistakes
+
+- **Using a max-heap of everything.** Popping k times works, but it stores all n numbers: O(n + k log n) time and
+  O(n) space.
+- **Popping before pushing.** Push first, then pop if the size passes k, or the new number never gets compared.
+- **Removing repeated values.** The kth largest counts repeats: `[5, 5, 3]` with k = 2 is 5, not 3.
+- **Counting from the wrong end.** After an ascending sort the answer is at `n − k`, not `k − 1`.
+
+## Related problems
+
+- Kth Largest Element in a Stream (LeetCode 703). The same heap, kept alive as numbers keep arriving.
+- K Closest Points to Origin (LeetCode 973). The same pattern with a max-heap of distances.
+- Top K Frequent Elements (LeetCode 347). Count first, then keep the k most frequent.
