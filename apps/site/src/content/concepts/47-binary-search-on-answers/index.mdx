@@ -1,0 +1,77 @@
+---
+title: "Binary search beyond sorted arrays: first yes, and searching the answers"
+topic: Binary search
+kind: Explainer
+order: 2
+summary: Binary search works on any yes/no question whose answers run no, no, …, yes, yes. Find the first "yes" with one template, then use the same template to search over possible answers - the slowest speed, the smallest capacity - instead of over a list. Plus how rotated arrays and grids fit the same idea.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Binary search invariants](/concepts/binary-search-invariants/) finds a value in a sorted array. This read widens it:
+binary search doesn't really need a sorted array, only a question whose answers are arranged a certain way.
+
+## The real requirement: no, no, …, yes, yes
+
+Suppose a yes/no question `ok(i)` about positions `0 … n − 1` has answers that start as "no" and, once they turn to
+"yes", stay "yes". Then checking the middle tells you which half the switch is in:
+
+- **yes** at `mid`: the first yes is at `mid` or to its left.
+- **no** at `mid`: the first yes is strictly to its right.
+
+One template finds it, keeping the first yes inside the half-open range `[lo, hi)`:
+
+<Viz client:visible approach="row" />
+
+Each check halves the range: **O(log n)** checks. A sorted array is just one case: "is `nums[i] ≥ target`?" runs no…no,
+yes…yes. [First Bad Version](/dsa/first-bad-version/) is this template exactly.
+
+## Searching the answers instead of a list
+
+Often there's no list at all, but the **answer** is a number in a known range, and you can check whether a candidate is
+good enough. If every candidate above a good one is also good, the checks run no…no, yes…yes over the candidates, so
+binary search finds the best one.
+
+Example: piles of items, eaten at `k` items an hour, one pile at a time. A pile of `p` takes `⌈p / k⌉` hours (divide and
+round up). What's the slowest speed that finishes everything within `h` hours? Faster always finishes sooner, so "is
+speed `k` fast enough?" is no for slow speeds and yes from some point on:
+
+<Viz client:visible approach="speed" />
+
+Checking a speed costs O(n) for `n` piles, and there are O(log max) checks: **O(n log max)**, instead of trying every
+speed in turn. That's [Koko Eating Bananas](/dsa/koko-eating-bananas/). The same shape solves "smallest capacity to
+ship everything in `d` days", "largest minimum distance between placements", and many more: whenever a problem asks for
+the smallest (or largest) value that makes something possible.
+
+## Two more disguises
+
+- **A rotated sorted array**, like `[5, 6, 7, 1, 2, 3, 4]`, isn't sorted, but "is `nums[i]` ≤ the last value?" runs
+  no…no, yes…yes, and the first yes is the minimum. That's [Find Minimum in Rotated Sorted
+  Array](/dsa/find-minimum-in-rotated-sorted-array/); [Search in Rotated Sorted
+  Array](/dsa/search-in-rotated-sorted-array/) adds a target.
+- **A grid sorted row after row** is one long sorted list in disguise: position `i` is row `floor(i / n)`, column
+  `i % n` (see [Grids](/concepts/grids/)). That's [Search a 2D Matrix](/dsa/search-a-2d-matrix/).
+
+## Interview theory
+
+<QA q="What does binary search actually require?">
+A question over a range whose answers are monotonic: no…no, yes…yes (or the reverse). A sorted array is one example,
+but the range can be positions, speeds, capacities or any other candidate answers.
+</QA>
+
+<QA q="How do you binary search on the answer?">
+Pick the range of possible answers, write a check "is this candidate good enough?", make sure every candidate beyond a
+good one is also good, then find the first good one with the first-yes template. Cost: O(log range) checks.
+</QA>
+
+<QA q="In the first-yes template, why hi ← mid but lo ← mid + 1?">
+A yes at mid might be the first yes, so mid must stay in the range [lo, hi). A no at mid can't be the answer, so the
+range starts after it.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
