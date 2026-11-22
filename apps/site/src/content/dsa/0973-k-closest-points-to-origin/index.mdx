@@ -1,0 +1,87 @@
+---
+title: K Closest Points to Origin
+leetcode: { number: 973, url: "https://leetcode.com/problems/k-closest-points-to-origin/" }
+difficulty: Medium
+topics: [Heap, Array, Math]
+added: 2026-11-22
+summary: Given points on a grid, return the k closest to (0, 0). Goes from sorting every point by distance to keeping a max-heap of the k closest so far, so the farthest of them is always ready to drop.
+insight: "Compare x² + y² instead of the true distance (same order, no square roots), and keep the k closest in a max-heap: its top is the one to throw out."
+best: { time: "O(n log k)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of points `(x, y)` with whole-number coordinates and a number `k`, return the `k` points closest to
+the origin `(0, 0)`, in any order. Distance is the usual straight-line distance, √(x² + y²).
+
+For `(3, 1)`, `(−1, 2)`, `(4, −3)`, `(0, 1)`, `(−2, −2)`, `(2, 0)` and `k = 3`, the closest three are `(0, 1)`,
+`(2, 0)` and `(−1, 2)`.
+
+## The key question
+
+> **I need the k smallest distances, not every distance in order. How do I track just those k while walking the
+> points once?**
+
+First, a shortcut: a bigger x² + y² always means a bigger √(x² + y²), so compare **x² + y²** and skip the square
+root. It's exact with whole numbers, and faster.
+
+## Approach 1: Sort every point by distance
+
+Sort the points by x² + y² and return the first `k`.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O(n log n)" space="O(1) to O(n)">
+**Time.** Sorting n points: **O(n log n)**.
+
+**Space.** Depends on the sort: **O(1)** in place, up to **O(n)** for many built-in sorts.
+
+**What it wastes:** it puts all n points in order, when only the k closest matter and their order doesn't.
+</Complexity>
+
+## Approach 2: A max-heap of the k closest
+
+Keep the k closest points seen so far in a **max-heap** ordered by x² + y². Push each point; if the heap holds
+k + 1, pop the top, the farthest of them. It's the [top-k pattern](/concepts/heaps-in-practice/) turned around:
+to keep the **smallest** distances, the heap keeps the **largest** of them on top, ready to drop.
+
+<Viz client:visible approach="heap" />
+
+<Complexity time="O(n log k)" space="O(k)">
+**Time.** One push and at most one pop per point, on a heap of at most k + 1: **O(n log k)**.
+
+**Space.** The heap holds at most k + 1 points: **O(k)**.
+
+**What it wastes:** when k is close to n, the heap saves little over sorting. Quickselect (partitioning by
+distance and keeping only the side with the boundary) is O(n) on average but O(n²) at worst.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Sort by distance | O(n log n) | O(1) to O(n) | Order every point, take k |
+| Max-heap of size k | **O(n log k)** | O(k) | Keep the k closest; drop the farthest |
+
+<GrowthChart client:visible series={growth} caption="Operations to find the 2 closest of n points." />
+
+## Common mistakes
+
+- **Using a min-heap of size k.** Its top is the closest point, but the one to drop is the farthest: use a max-heap.
+- **Taking square roots.** They're slower and can introduce rounding; x² + y² gives the same order.
+- **Sorting the answer.** The problem accepts any order; sorting the k results adds work for nothing.
+- **Comparing |x| + |y|.** That's a different distance: `(3, 0)` and `(2, 2)` disagree under the two measures.
+
+## Related problems
+
+- Kth Largest Element in an Array (LeetCode 215). The same pattern with a min-heap.
+- Top K Frequent Elements (LeetCode 347). Count, then keep the k most frequent.
+- Find K Closest Elements (LeetCode 658). Closest to a value in a sorted list, where binary search beats a heap.
