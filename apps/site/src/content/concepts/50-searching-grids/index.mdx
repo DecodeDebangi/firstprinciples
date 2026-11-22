@@ -1,0 +1,70 @@
+---
+title: "Searching grids: many starts, areas and reverse searches"
+topic: Graphs
+kind: Explainer
+order: 2
+summary: A grid is a graph in disguise - cells are nodes, and neighbours are joined. Spread a breadth-first search from many starting cells at once to get every cell's distance to the nearest one, flood-fill an island with depth-first search to measure it, and search backwards from the targets when there are many possible starts.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Graphs](/concepts/graphs/) introduced breadth-first and depth-first search. Many interview graph problems never
+mention a graph: they hand you a grid. Each cell is a node, and it's joined to its neighbours, usually the four up, down,
+left and right (see [Grids](/concepts/grids/) for neighbours and bounds). No adjacency list needs building: the
+neighbours are worked out on the spot.
+
+## Many starts at once (multi-source BFS)
+
+"Distance from every cell to the nearest exit", "minutes until every orange rots": the spread begins from several cells
+at once. Don't run one search per start. Put **all** the starts in the queue first, at distance 0, and run one BFS.
+It grows from all of them together, ring by ring, so each cell is first reached from its nearest start.
+
+<Viz client:visible approach="layers" />
+
+One BFS: **O(rows · columns)**, however many starts. That's [Rotting Oranges](/dsa/rotting-oranges/). With one start
+and diagonal moves allowed (8 neighbours), the same BFS gives [Shortest Path in Binary
+Matrix](/dsa/shortest-path-in-binary-matrix/).
+
+## Measuring a region (flood fill)
+
+To count the cells of an island, start anywhere on it and visit every land cell joined to it, with a stack (DFS) or a
+queue (BFS); both visit the same cells. Mark a cell as seen when you push it, so that two neighbours can't both add it.
+
+<Viz client:visible approach="area" />
+
+Run this from every unvisited land cell and keep the biggest: [Max Area of Island](/dsa/max-area-of-island/). It's the
+counting version of [Number of Islands](/dsa/number-of-islands/). The same "visit everything reachable" search works on
+any graph, such as rooms with keys to other rooms: [Keys and Rooms](/dsa/keys-and-rooms/).
+
+## Searching backwards from the targets
+
+"Which cells can reach the ocean?" Searching from every cell separately repeats work, since many paths overlap. Turn it
+round: start from the targets (the ocean's edge) and walk each move **backwards**. Water flows from high to low, so
+backwards means moving to cells at least as high. One search from the targets finds every cell that can reach them.
+[Pacific Atlantic Water Flow](/dsa/pacific-atlantic-water-flow/) does this for two oceans and keeps the cells both
+searches reach.
+
+## Interview theory
+
+<QA q="How do you find each cell's distance to the nearest of several sources?">
+Multi-source BFS: put every source in the queue at distance 0, then run an ordinary BFS. Each cell's first visit comes
+from its nearest source. O(rows · columns).
+</QA>
+
+<QA q="When should you search from the targets instead of from every start?">
+When many starts share the same few targets. Walking each rule backwards from the targets visits every cell once,
+instead of once per start.
+</QA>
+
+<QA q="BFS or DFS for flood fill?">
+Either: both visit exactly the cells joined to the start. BFS is needed when the order matters, such as shortest
+distances; for areas and counts, use whichever you like, preferring an explicit stack to avoid deep recursion on big
+grids.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
