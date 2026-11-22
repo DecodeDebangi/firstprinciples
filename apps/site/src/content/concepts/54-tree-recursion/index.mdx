@@ -1,0 +1,96 @@
+---
+title: "Tree recursion: pass information down, return answers up"
+topic: Trees
+kind: Explainer
+order: 2
+summary: Nearly every binary tree problem is one recursive function, and the design question is which way information flows. Return an answer up from the children (post-order), pass what you know down to them (pre-order), return one thing while tracking another, return a signal, or recurse on two nodes at once.
+added: 2026-11-22
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+## One function, two directions
+
+[The traversals read](/concepts/tree-traversals/) shows the order nodes are visited in. Solving a problem adds one
+more question: **what does each call need, and what does it give back?** Information can flow two ways:
+
+- **Up**: a call asks its children about their subtrees, then combines the two answers. Children finish first,
+  so this is **post-order**.
+- **Down**: a call receives something from its parent (a running total, a depth, an allowed range), uses it, and
+  hands an updated version to its children. The parent's work happens first, so this is **pre-order**.
+
+Decide the direction first, and the code almost writes itself.
+
+## Returning answers up
+
+"Sum of a subtree", "height", "number of nodes", "is it balanced?" are all questions a subtree can answer about
+itself. Each call trusts its children to answer correctly for their subtrees, then combines: here, its own value
+plus both children's sums. A missing child answers with a neutral value (0 for a sum, 0 for a height).
+
+<Viz client:visible approach="up" />
+
+[Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/) is this shape: return `1 + max(left, right)`.
+
+## Passing information down
+
+"Sum of the path from the root", "depth of this node", "the range a BST value must fall in" depend on what's
+**above** a node, which its children can't know. So the parent passes it down as an argument.
+
+<Viz client:visible approach="down" />
+
+Because the value is an argument, nothing needs undoing: each call has its own copy, and siblings never see each
+other's. [Path Sum](/dsa/path-sum/) passes the amount still needed down to the leaves, and [Validate Binary Search
+Tree](/dsa/validate-binary-search-tree/) passes down the range each value must fall in.
+
+## Three shapes built on these
+
+**Return one thing, track another.** The diameter of a tree (its longest path) isn't something a subtree can hand
+up directly, but a path through a node is its left height plus its right height. So each call **returns** its height,
+and along the way updates a **best-so-far** with left + right. [Diameter of Binary
+Tree](/dsa/diameter-of-binary-tree/) is exactly this.
+
+**Return a signal.** To check that every node is balanced, return the height, or **−1** to mean "something below me
+is already unbalanced". The −1 travels up and every caller passes it on, so the check never recomputes a height.
+See [Balanced Binary Tree](/dsa/balanced-binary-tree/). [Lowest Common Ancestor of a Binary
+Tree](/dsa/lowest-common-ancestor-of-a-binary-tree/) signals with a node: "here's what I found below me, or none".
+
+**Recurse on two nodes at once.** To compare a tree with its mirror image, the function takes a **pair** of nodes and
+checks they match, then recurses on the pairs that should match next. See [Symmetric Tree](/dsa/symmetric-tree/)
+and [Same Tree](/dsa/same-tree/).
+
+## Which shape?
+
+| The question | Flow | Example |
+|---|---|---|
+| Something about each subtree | Return up | Height, subtree sum |
+| Something about the path from the root | Pass down | Path sum, depth, allowed range |
+| Something spanning both sides of a node | Return up, track a best | Diameter |
+| "Is every subtree OK?" | Return up with a signal | Balanced |
+| "Do two trees match?" | Recurse on pairs | Symmetric, same tree |
+
+All of them visit each node once: **O(n)** time, and **O(h)** extra space for the recursion, where h is the tree's
+height (n for a tree that's one long chain, about log₂ n for a balanced one).
+
+## Interview theory
+
+<QA q="How do you decide between pre-order and post-order for a recursive solution?">
+Ask where the information a node needs comes from. If it comes from below (what the subtrees contain), the node must
+wait for its children: post-order, returning values up. If it comes from above (the path so far), the node works it
+out and passes it on before the children run: pre-order, with an argument.
+</QA>
+
+<QA q="Why is the diameter not just the root's left height plus right height?">
+The longest path may not pass through the root at all: it can sit entirely inside one big subtree. That's why every
+node's left + right is compared with a best-so-far, not just the root's.
+</QA>
+
+<QA q="What's the space cost of recursion on a tree?">
+The recursion holds one call per level of the current path, so O(h). That's O(log n) for a balanced tree but O(n)
+for a chain, which can overflow the call stack in some languages; an explicit stack avoids that.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
