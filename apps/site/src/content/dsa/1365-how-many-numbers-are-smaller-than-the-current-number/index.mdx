@@ -1,0 +1,88 @@
+---
+title: How Many Numbers Are Smaller Than the Current Number
+leetcode: { number: 1365, url: "https://leetcode.com/problems/how-many-numbers-are-smaller-than-the-current-number/" }
+difficulty: Easy
+topics: [Sorting, Array]
+added: 2026-11-22
+summary: For each number in a list, count how many other numbers are smaller than it. Goes from comparing every pair to counting each value and keeping running totals, which answers every number with one lookup.
+insight: "Values are small (0 to 100), so count each one. A running total of the counts gives, for every value, how many numbers are below it."
+best: { time: "O(n + k)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+Given a list of whole numbers from 0 to 100, return a list where position `i` holds how many numbers in the list are
+**strictly smaller** than `nums[i]`.
+
+For `[7, 2, 9, 2, 4]` the answer is `[3, 0, 4, 0, 2]`: three numbers (2, 2 and 4) are below 7, nothing is below 2,
+and so on. Equal numbers don't count.
+
+k below is how many different values are possible: 101 here.
+
+## The key question
+
+> **"How many are smaller than x" is the same question for every copy of x. Can I answer it once per value, instead
+> of once per number?**
+
+## Approach 1: Compare every pair
+
+For each number, scan the whole list and count the smaller values.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1) extra">
+**Time.** n numbers, each scanning n values: **O(n²)**.
+
+**Space.** Only the output: **O(1)** extra.
+
+**What it wastes:** every scan answers nearly the same question again. Two copies of 2 do two identical scans.
+</Complexity>
+
+## Approach 2: Count each value, then add up
+
+Count how many times each value from 0 to 100 appears. Then build running totals: `below[v]` is the number of values
+smaller than `v`, which is `below[v − 1]` plus however many `v − 1`s there are. Each answer is then one lookup. This is
+the counting idea from [Sorting as a tool](/concepts/sorting-as-a-tool/). (Sorting a copy of the list also works: a
+value's first position in sorted order is how many values are smaller, in O(n log n).)
+
+<Viz client:visible approach="counting" />
+
+<Complexity time="O(n + k)" space="O(k)">
+**Time.** One pass to count (O(n)), one over the k possible values for the totals (O(k)), and one lookup per
+number (O(n)): **O(n + k)**.
+
+**Space.** Two tables of k entries: **O(k)**.
+
+**What it wastes:** only works because k is small. With values up to a billion, sort a copy instead.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Every pair | O(n²) | O(1) | Scan the list for each number |
+| Sort a copy | O(n log n) | O(n) | First position in sorted order |
+| Count and add up | **O(n + k)** | O(k) | One running total per value |
+
+<GrowthChart client:visible series={growth} caption="Operations for n numbers from 0 to 9." />
+
+## Common mistakes
+
+- **Counting equal numbers as smaller.** It's strictly smaller: `below[v]` stops before `v` itself.
+- **Off by one in the running total.** `below[v]` adds `count[v − 1]`, not `count[v]`.
+- **Using the last sorted position for repeated values.** In the sorting version, use each value's **first**
+  position, or repeats get the wrong answer.
+
+## Related problems
+
+- H-Index (LeetCode 274). Counting with running totals, from the top down.
+- Count of Smaller Numbers After Self (LeetCode 315). Only numbers to the right count, which needs a smarter structure.
+- Sort Colors (LeetCode 75). Counting sort with three values.
