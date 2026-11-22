@@ -1,0 +1,88 @@
+---
+title: House Robber
+leetcode: { number: 198, url: "https://leetcode.com/problems/house-robber/" }
+difficulty: Medium
+topics: [Dynamic programming, Array]
+added: 2026-11-22
+summary: Pick values from a row to get the biggest total, never picking two neighbours. Goes from a recursion that tries robbing or skipping every house, which repeats the same questions exponentially often, to a table filled left to right in one pass.
+insight: "Let dp[i] be the most from the first i + 1 houses. House i is either skipped (dp[i − 1]) or robbed (its value plus dp[i − 2])."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import Complexity from "../../../components/Complexity.astro";
+import { GrowthChart } from "@firstprinciples/ui";
+
+## The problem
+
+A row of houses each holds some money, given as a list of whole numbers. Robbing two **neighbouring** houses sets
+off an alarm. Return the most money you can take without robbing any two neighbours.
+
+For `[3, 8, 2, 4, 7, 1]` the answer is **15**: rob the houses holding 8 and 7 (positions 1 and 4).
+
+## The key question
+
+> **For each house there are only two choices: rob it or skip it. But the best choice depends on the houses after
+> it. How do I avoid working out the same "best from here on" over and over?**
+
+## Approach 1: Plain recursion, rob it or skip it
+
+Let `best(i)` be the most you can take from houses `i` to the end. House `i` is either skipped, giving `best(i + 1)`,
+or robbed, giving its money plus `best(i + 2)` (the next house must be skipped). Try both and keep the bigger.
+
+<Viz client:visible approach="recurse" />
+
+<Complexity time="O(1.6ⁿ)" space="O(n)">
+**Time.** Each call makes two more, one for i + 1 and one for i + 2, so the number of calls grows like the Fibonacci
+numbers: roughly **1.6ⁿ**. At n = 40 that's hundreds of millions of calls.
+
+**Space.** The recursion goes up to n calls deep: **O(n)**.
+
+**What it wastes:** there are only n different questions, `best(0)` to `best(n − 1)`, but each is answered again
+every time it comes up.
+</Complexity>
+
+## Approach 2: Fill a table left to right
+
+Turn it around: let `dp[i]` be the most from houses 0 to `i`. House `i` is either skipped, keeping `dp[i − 1]`, or
+robbed, adding its money to `dp[i − 2]`. Each entry needs only the two before it, so fill the table from the left.
+This is the take-or-skip shape from [Designing a 1D DP](/concepts/one-dimensional-dp/).
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** One pass, O(1) work per house: **O(n)**.
+
+**Space.** The table as drawn is O(n), but each entry only reads the two before it, so two variables are enough:
+**O(1)**.
+
+**What it wastes:** nothing. Every house must be looked at once.
+</Complexity>
+
+## Comparing the approaches
+
+Step through both side by side. Both share one clock that ticks once per operation.
+
+<Compare client:visible />
+
+| Approach | Time | Extra space | Idea |
+|---|---|---|---|
+| Plain recursion | O(1.6ⁿ) | O(n) | Try robbing and skipping every house |
+| Table | **O(n)** | **O(1)** | dp[i] = max(dp[i − 1], dp[i − 2] + nums[i]) |
+
+Adding memoisation to the recursion (saving each `best(i)` the first time) also gives O(n), with O(n) space.
+
+<GrowthChart client:visible series={growth} caption="Operations for a row of n houses." />
+
+## Common mistakes
+
+- **Robbing every other house.** Alternating isn't always best: in `[2, 1, 1, 9]`, rob the first and last for 11.
+- **Forgetting one house or two.** With one house, rob it; with two, take the bigger. Handle these before the loop.
+- **Using `dp[i − 1] + nums[i]`.** That robs two neighbours; taking house i builds on `dp[i − 2]`.
+- **Keeping a greedy "take the biggest first".** The biggest house can block two neighbours worth more together.
+
+## Related problems
+
+- House Robber II (LeetCode 213). The houses form a circle, so the first and last are neighbours: run this twice.
+- Climbing Stairs (LeetCode 70). The same look-back-two-places table, counting instead of maximising.
+- Delete and Earn (LeetCode 740). Becomes this problem once the values are counted.
