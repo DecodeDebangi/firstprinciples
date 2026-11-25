@@ -1,0 +1,108 @@
+---
+title: Trapping Rain Water
+leetcode: { number: 42, url: "https://leetcode.com/problems/trapping-rain-water/" }
+difficulty: Hard
+topics: [Monotonic stack, Two pointers, Stack, Array]
+added: 2026-11-25
+summary: Bars of different heights stand side by side; work out how much rainwater collects between them. Goes from looking left and right from every bar, to a monotonic stack that fills the water one layer at a time, to two pointers that need no extra space.
+insight: "Water above a bar rises to the lower of the tallest bar on its left and the tallest on its right. Walking in from both ends, the lower side's answer is already decided."
+best: { time: "O(n)", space: "O(1)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `h` of bar heights, each bar 1 unit wide, standing side by side. Rain falls and fills every dip
+between the bars until it spills over the lower side. Return how many units of water stay trapped.
+
+For `h = [3, 0, 2, 0, 4, 1, 2]` the answer is `8`. Bars 1 to 3 sit between walls of 3 and 4, so water rises to 3
+above them: 3 + 1 + 3 = 7. Bar 5 sits between 4 and 2, so it holds 1 more.
+
+## The key question
+
+> **How high does water rise above one bar?**
+
+Up to the **lower** of two walls: the tallest bar on its left and the tallest bar on its right (each counting the bar
+itself). Above that, it would spill over the shorter wall. So the water above bar `i` is
+`min(tallest left, tallest right) − h[i]`. Every approach is a faster way to know those two walls.
+
+## Approach 1: Look left and right from every bar
+
+For each bar, scan left for the tallest bar and scan right for the tallest bar, then add the water above it.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each of the `n` bars scans all `n` bars for its two maximums: **O(n²)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** the tallest bar to the left of `i` and of `i + 1` differ by at most one bar, yet each is found
+from scratch.
+</Complexity>
+
+## Approach 2: Monotonic stack, filling layer by layer
+
+Instead of working out the water above each bar, fill it in horizontal layers. Keep bars on a stack with heights
+falling toward the top. When a taller bar arrives, the bar on top is the **floor** of a dip, the bar now under it is
+the **left wall**, and the new bar is the **right wall**. The layer between the walls is `min(left, right) − floor`
+deep and `i − left − 1` wide. Pop and repeat while the new bar is still taller. [Monotonic stack
+patterns](/concepts/monotonic-stack-patterns/) shows the same "a pop knows both of its walls" idea in the histogram
+problem.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each bar is pushed once and popped at most once, and each pop fills one layer in O(1): **O(n)**.
+
+**Space.** If heights only fall, every bar waits on the stack: **O(n)**.
+
+**What it wastes:** the stack itself. Only the two tallest walls matter, not every bar in between.
+</Complexity>
+
+## Approach 3: Two pointers (optimal)
+
+Walk `lo` in from the left and `hi` in from the right, tracking the tallest bar seen on each side. If `h[lo] < h[hi]`,
+the right side already has a wall at least as tall as `h[lo]`, so the water above `lo` is decided by the left side
+alone: `leftMax − h[lo]`. Settle it and move `lo`. Otherwise settle `hi` the same way from the right. This is the same
+idea as [Container With Most Water](/dsa/container-with-most-water/): the lower side is the one that can't do better.
+
+<Viz client:visible approach="twoPointers" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each step settles one bar and moves one pointer inward: **O(n)**.
+
+**Space.** Four numbers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Look left and right from every bar | O(n²) | O(1) | Find both walls from scratch |
+| Monotonic stack | **O(n)** | O(n) | Fill horizontal layers as each dip closes |
+| Two pointers | **O(n)** | **O(1)** | The lower side's water is already decided |
+
+<GrowthChart client:visible series={growth} caption="Operations as the number of bars grows." />
+
+## Common mistakes
+
+- **Using the taller wall.** Water spills over the *lower* of the two walls, so take the `min`.
+- **Popping the last bar and still adding water.** With nothing left under the floor there's no left wall, and the
+  water would spill out: stop.
+- **Moving the taller pointer.** In the two-pointer walk, settle and move the *lower* side; the taller side's water
+  still depends on bars not seen yet.
+
+## Related problems
+
+- [Largest Rectangle in Histogram](/dsa/largest-rectangle-in-histogram/). The same bars, asking for the biggest
+  rectangle under them instead of the water above.
+- [Container With Most Water](/dsa/container-with-most-water/). Two pointers that move the lower side.
+- [Daily Temperatures](/dsa/daily-temperatures/). The basic monotonic stack.
