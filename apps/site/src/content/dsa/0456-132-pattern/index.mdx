@@ -1,0 +1,95 @@
+---
+title: 132 Pattern
+leetcode: { number: 456, url: "https://leetcode.com/problems/132-pattern/" }
+difficulty: Medium
+topics: [Monotonic stack, Stack, Array]
+added: 2026-11-25
+summary: Decide whether a list has three values, in order, shaped low, high, middle. Goes from fixing the high value and scanning right for a middle one, to a single walk from the right with a monotonic stack and the best "middle" value so far.
+insight: "Walk from the right. Whenever a value pops smaller values off the stack, it's a \"3\" for them, and the biggest popped value is the best \"2\". Any later value below it is the \"1\"."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of numbers `a`. Return `true` if there are positions `i < j < k` with `a[i] < a[k] < a[j]`, and
+`false` otherwise. Read the values in order, and they go low, high, then somewhere in between, like the digits of
+1, 3, 2, which is where the name comes from.
+
+For `a = [2, 3, 1, 4, 0, 6, 5]` the answer is `true`: 0, 6, 5 at positions 4, 5 and 6 (so do 1, 6, 5 and 2, 6, 5).
+For `a = [1, 2, 3, 4]` it's `false`: the values only rise.
+
+## The key question
+
+> **Once you have a "3" and a "2" to its right, what's the best "2" to keep?**
+
+The **biggest** one, since a bigger "2" leaves more room for a "1" below it. Walking from the right, a monotonic stack
+finds, for each new value, the smaller values to its right that it can be the "3" for, and the biggest of those
+becomes the "2" to beat.
+
+## Approach 1: Smallest so far, then scan right
+
+Treat each position `j` as the "3". The best "1" for it is the smallest value before it, which a running minimum
+gives for free. Then scan everything after `j` for a value strictly between the two.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Each `j` can scan all the values after it: about `n²/2` checks when there's no pattern, **O(n²)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** the values to the right are scanned again for every `j`, even though the question asked of them
+barely changes.
+</Complexity>
+
+## Approach 2: Walk from the right with a monotonic stack (optimal)
+
+Walk from the right and keep `two`, the best "2" found so far: the biggest value that has a bigger value to its left.
+For each value:
+
+1. If it's below `two`, it's the "1": the pattern is complete.
+2. Otherwise, pop every smaller value off the stack. The new value is bigger and to their left, so it can be their
+   "3", and each popped value becomes `two`. The values on the stack fall toward the top, so the last one popped is
+   the biggest.
+3. Push the new value.
+
+`two` never goes down, so no better "2" is ever thrown away. [Monotonic stack
+patterns](/concepts/monotonic-stack-patterns/) covers walking in either direction.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each value is pushed once and popped at most once: **O(n)**.
+
+**Space.** If the values only rise, nothing is ever popped going right to left: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Smallest so far, then scan right | O(n²) | O(1) | Fix the "3", search for the "2" |
+| Monotonic stack from the right | **O(n)** | O(n) | Keep the biggest "2" that has a "3" before it |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when the values only rise and no pattern exists." />
+
+## Common mistakes
+
+- **Allowing equal values.** The pattern needs `a[i] < a[k] < a[j]`, all strict; `1, 3, 3` and `1, 3, 1` don't count.
+- **Walking from the left with the same stack.** The "2" must come after the "3", so the stack walk runs right to
+  left, where each pop pairs a "3" with a "2" already seen.
+- **Keeping the first popped value as `two`.** Keep the last, biggest one: it leaves the most room for a "1".
+
+## Related problems
+
+- [Online Stock Span](/dsa/online-stock-span/). Pops smaller values to look past them.
+- [Next Greater Element I](/dsa/next-greater-element-i/). The basic monotonic stack.
+- [Maximum Width Ramp](/dsa/maximum-width-ramp/). Another pair-of-positions question solved with a stack.
