@@ -1,0 +1,88 @@
+---
+title: Maximum Width Ramp
+leetcode: { number: 962, url: "https://leetcode.com/problems/maximum-width-ramp/" }
+difficulty: Medium
+topics: [Monotonic stack, Stack, Array]
+added: 2026-11-25
+summary: Find the widest pair of positions i < j where the value at i is no bigger than the value at j. Goes from scanning in from the end for every start to a stack of the only starts worth trying, swept from the right.
+insight: "Only a value smaller than everything before it can be the best start. Stack those, then sweep ends from the right, popping every start that fits: no end further left could do better for it."
+best: { time: "O(n)", space: "O(n)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of numbers `a`. A **ramp** is a pair of positions `i < j` with `a[i] ≤ a[j]`, and its width is
+`j − i`. Return the width of the widest ramp, or `0` if there isn't one.
+
+For `a = [6, 2, 7, 4, 1, 5, 3]` the answer is `5`: positions 1 and 6, holding 2 and 3. The 6 at position 0 only
+reaches the 7 at position 2.
+
+## The key question
+
+> **Which starts are worth trying at all?**
+
+Only a value that's **smaller than everything before it**. If some earlier value is no bigger, it makes a ramp with
+every end this one does, and a wider one. Those "new lows" fall from left to right, which is exactly a monotonic stack.
+
+## Approach 1: For each start, the furthest end that works
+
+For each start `i`, scan from the far end inward. The first `j` with `a[i] ≤ a[j]` is the widest ramp starting at `i`.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** When the values only fall there are no ramps, so every start scans everything after it: about `n²/2`
+checks, **O(n²)**.
+
+**Space.** A few variables: **O(1)**.
+
+**What it wastes:** it tries starts that can never win, and rescans the same ends for every start.
+</Complexity>
+
+## Approach 2: A stack of possible starts, then sweep from the right (optimal)
+
+First pass, left to right: push a position whenever its value is lower than the value on top. The stack now holds
+the new lows, falling toward the top.
+
+Second pass, ends `j` from right to left: while the start on top has a value no bigger than `a[j]`, it makes a ramp
+of width `j − start`. Pop it. Any end further left would only make that start's ramp narrower, so it's done. The
+start under it is smaller and further left, so it may still fit this same `j`: check again. [Monotonic stack
+patterns](/concepts/monotonic-stack-patterns/) covers the idea of popping exactly when an answer is final.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass pushes at most `n` starts; the sweep visits each end once and pops each start once: **O(n)**.
+
+**Space.** If the values only fall, every position is a new low: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Furthest end for each start | O(n²) | O(1) | Scan in from the end for every start |
+| Stack of starts, sweep ends | **O(n)** | O(n) | Only new lows can start the widest ramp |
+
+<GrowthChart client:visible series={growth} caption="Comparisons when the values only fall and there's no ramp." />
+
+## Common mistakes
+
+- **Pushing every position.** Only new lows belong on the stack; anything else is beaten by an earlier, smaller start.
+- **Sweeping ends from the left.** Ends must go right to left, so the first end that fits a start is its furthest one,
+  and the start can be popped for good.
+- **Using `<` instead of `≤`.** Equal values make a ramp: `[3, 3]` has width 1.
+
+## Related problems
+
+- [132 Pattern](/dsa/132-pattern/). Another question about pairs of positions answered with a stack.
+- [Online Stock Span](/dsa/online-stock-span/). Pops values that can never matter again.
+- [Daily Temperatures](/dsa/daily-temperatures/). The basic monotonic stack.
