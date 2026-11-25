@@ -1,0 +1,98 @@
+---
+title: Remove Duplicate Letters
+leetcode: { number: 316, url: "https://leetcode.com/problems/remove-duplicate-letters/" }
+difficulty: Medium
+topics: [Monotonic stack, Stack, Greedy, String]
+added: 2026-11-25
+summary: Keep exactly one copy of each letter in a string, in order, so the result comes first in alphabetical order. Goes from picking the smallest safe letter one at a time to a monotonic stack that pops a bigger letter only when it appears again later.
+insight: "Read left to right with a stack of kept letters. A smaller letter pops a bigger one before it, but only if that bigger letter comes again later; otherwise it has to stay."
+best: { time: "O(n)", space: "O(k)" }
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { GrowthChart } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` of lowercase letters. Remove letters so that every letter appears **exactly once**, keeping the
+survivors in their original order. Of all the ways to do that, return the one that comes **first alphabetically**
+(the one a dictionary would list first).
+
+For `s = "bdcadbc"` the answer is `"adbc"`. You'd like the `a` first, and it's possible: every other letter still
+appears after it. After that, `b` and `c` would be nicer than `d`, but the `d` at position 4 is the last `d`, so it has
+to come before them.
+
+## The key question
+
+> **When can a bigger letter that's already kept be thrown away?**
+
+Only when it **appears again later**. Then a smaller letter can go in front of it, and the bigger letter is picked up
+from its later copy. If this is its last copy, it must stay, however big it is. A stack of kept letters, plus each
+letter's last position, answers that in O(1).
+
+## Approach 1: Pick the smallest safe letter, one at a time
+
+Build the result one letter at a time. For the next letter, try the letters still needed from smallest to biggest, and
+take the first one whose first copy still has every other needed letter after it. Then drop everything before that
+copy, and every other copy of the chosen letter.
+
+<Viz client:visible approach="pick" />
+
+<Complexity time="O(k² · n)" space="O(n)">
+**Time.** With `k` different letters there are `k` picks; each can try up to `k` letters, and checking one reads the
+rest of the string: **O(k² · n)**. Since `k ≤ 26`, that's O(n) with a big constant.
+
+**Space.** The shrinking copy of the string: **O(n)**.
+
+**What it wastes:** every pick reads the rest of the string again for every letter it tries.
+</Complexity>
+
+## Approach 2: Monotonic stack, popping only letters that come again (optimal)
+
+First record each letter's last position. Then read the string once, keeping chosen letters on a stack:
+
+1. If the letter is already on the stack, skip it. Its kept copy is already in the best place it can be.
+2. Otherwise, while the top is **bigger** and **appears again later**, pop it: the new letter goes in front, and the
+   bigger letter comes back from a later copy.
+3. Push the letter.
+
+The kept letters rise toward the top, except where a letter had to stay because it was its last copy.
+[Monotonic stack patterns](/concepts/monotonic-stack-patterns/) explains the stack; [Remove K
+Digits](/dsa/remove-k-digits/) uses the same pop, with a budget of removals instead of "comes again later".
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(k)">
+**Time.** One pass for the last positions, then each letter is pushed and popped at most once: **O(n)**.
+
+**Space.** The stack, the set and the map hold at most one entry per different letter: **O(k)**, at most 26.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Pick the smallest safe letter | O(k² · n) | O(n) | Try letters in order, check what's left |
+| Monotonic stack | **O(n)** | O(k) | Pop a bigger letter only if it comes again |
+
+<GrowthChart client:visible series={growth} caption="Operations when the letters appear twice, in falling order." />
+
+## Common mistakes
+
+- **Popping a letter that won't come again.** Check its last position first; if it's behind you, it must stay.
+- **Pushing a letter that's already kept.** Skip it. Popping its kept copy to make room could only make the result
+  worse, because the letters after that copy were already chosen to suit it.
+- **Sorting the distinct letters.** `"abcd"` would come first alphabetically, but the letters must keep their order. In
+  `"bdcadbc"` the last `d` comes before the last `b` and `c`, so `d` has to come before them: `"adbc"`.
+
+## Related problems
+
+- [Remove K Digits](/dsa/remove-k-digits/). The same greedy stack with a fixed number of removals.
+- [Remove All Adjacent Duplicates in String](/dsa/remove-all-adjacent-duplicates-in-string/). A stack that builds a
+  string by cancelling with the top.
+- [132 Pattern](/dsa/132-pattern/). Another stack that decides what to keep by looking at what's left.
