@@ -39,7 +39,12 @@ which is what [Daily Temperatures](/dsa/daily-temperatures/) asks for.
 The pop test is the only thing to change between questions. [Final Prices With a Special Discount in a
 Shop](/dsa/final-prices-with-a-special-discount-in-a-shop/) wants the next price that's *no higher*, so it pops while
 the top is `≥` the new price. [Remove K Digits](/dsa/remove-k-digits/) uses the same pop to build the smallest number,
-letting each smaller digit push out bigger digits before it.
+letting each smaller digit push out bigger digits before it, and [Remove Duplicate
+Letters](/dsa/remove-duplicate-letters/) pops a bigger letter only if it comes again later.
+
+The walk can also run right to left. [132 Pattern](/dsa/132-pattern/) walks from the right so each pop pairs a "3"
+with a "2" already seen, and [Maximum Width Ramp](/dsa/maximum-width-ramp/) stacks the new lows from the left, then
+sweeps ends from the right.
 
 ## Looking back: stock spans
 
@@ -88,7 +93,8 @@ trying every left and right edge. When two bars have the same height, the first 
 rectangle, but the later one of the same height measures the full width, so the answer is still right. That's [Largest Rectangle in
 Histogram](/dsa/largest-rectangle-in-histogram/). Running it once per row of a grid solves [Maximal
 Rectangle](/dsa/maximal-rectangle/), and the same nearest-smaller boundaries count how many subarrays each value is
-the minimum of in [Sum of Subarray Minimums](/dsa/sum-of-subarray-minimums/).
+the minimum of in [Sum of Subarray Minimums](/dsa/sum-of-subarray-minimums/). Flip it to keep heights *falling*, and
+each pop closes a dip instead: [Trapping Rain Water](/dsa/trapping-rain-water/) fills the water one layer at a time.
 
 ## Interview theory
 
