@@ -1,0 +1,110 @@
+---
+title: Contains Duplicate III
+leetcode: { number: 220, url: "https://leetcode.com/problems/contains-duplicate-iii/" }
+difficulty: Hard
+topics: [Sliding window, BST, Hash map]
+added: 2026-11-26
+summary: Decide whether two values at most k positions apart differ by at most t. Goes from comparing each value with the next k, to a sorted window kept in an ordered set (a balanced BST), to buckets of width t + 1 that answer in O(1).
+insight: "Bucket every value by floor(x / (t + 1)). Two values in one bucket always match, and a match can otherwise only be in the bucket on either side, so three lookups settle each value."
+best: { time: "O(n)", space: "O(k)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` and two numbers, `k` and `t` (LeetCode calls them `indexDiff` and `valueDiff`). Return `true` if
+two different positions `i` and `j` are at most `k` apart and their values differ by at most `t`. Otherwise return
+`false`.
+
+For `nums = [9, 2, 15, 6, 13, 4, 11]`, `k = 2` and `t = 2`, the answer is `true`: 15 and 13 sit 2 positions apart and
+differ by 2.
+
+## The key question
+
+> **For each new value, what's the fastest way to ask "is anything in the last k values within t of me?"**
+
+The last `k` values are a [sliding window](/concepts/sliding-window/). The question is about nearby *values*, not
+positions, so the window needs to be searchable by value: sorted, or grouped into buckets.
+
+## Approach 1: Check the next k values from each one
+
+Compare every value with each of the next `k`.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n · k)" space="O(1)">
+**Time.** Up to `k` comparisons for each of the `n` values: **O(n · k)**, which is O(n²) when `k` is close to `n`.
+
+**Space.** Nothing extra: **O(1)**.
+
+**What it wastes:** each new value is compared with every value in the window, when only the ones near it in size could
+possibly match.
+</Complexity>
+
+## Approach 2: A sorted window (ordered set)
+
+Keep the last `k` values in an **ordered set**, which keeps them sorted (it's a balanced binary search tree inside). For
+each new `x`, find the smallest value at least `x − t`: if it exists and is at most `x + t`, it's a match. Then add `x`
+and remove the value that just fell out of the window. That lookup is the in-order successor search from [Binary search
+trees](/concepts/binary-search-trees/), and a [balanced tree](/concepts/balanced-trees/) keeps it O(log k).
+
+<Viz client:visible approach="ordered" />
+
+<Complexity time="O(n log k)" space="O(k)">
+**Time.** A lookup, an insert and a removal per value, each O(log k): **O(n log k)**.
+
+**Space.** The window: **O(k)**.
+
+**What it wastes:** the sorting. It only matters whether a value is *close* to `x`, not its exact rank.
+</Complexity>
+
+## Approach 3: Buckets of width t + 1 (optimal)
+
+Put each value in bucket `floor(x / (t + 1))`. Each bucket covers `t + 1` whole numbers, so two values in the same
+bucket always differ by at most `t`: a match. Otherwise a match can only be in the bucket just below or just above, so
+check those two. Each bucket holds at most one value from the window, because a second one would already have matched.
+Store buckets in a hash map and clear the bucket of the value leaving the window.
+
+<Viz client:visible approach="buckets" />
+
+<Complexity time="O(n)" space="O(k)">
+**Time.** Three map lookups, an insert and a removal per value: **O(n)**.
+
+**Space.** At most `k` buckets: **O(k)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Next k values | O(n · k) | O(1) | Compare with everything in the window |
+| Sorted window | O(n log k) | O(k) | One successor lookup per value |
+| Buckets | **O(n)** | O(k) | Same or neighbouring bucket |
+
+<GrowthChart client:visible series={growth} caption="Operations for n values far apart (no match), with k = n / 2." />
+
+## Common mistakes
+
+- **Using width t instead of t + 1.** With `t = 0` that divides by zero. Width `t + 1` is the widest bucket in which
+  any two values still match.
+- **Forgetting negative numbers.** Use `floor`, so −1 goes in bucket −1 and not bucket 0 with the positives.
+- **Removing the wrong value.** The value leaving the window is `nums[i − k]`, once `i ≥ k`.
+
+## Check yourself
+
+<Quiz client:visible title="Contains Duplicate III" questions={questions} />
+
+## Related problems
+
+- [Contains Duplicate](/dsa/contains-duplicate/). Any repeated value at all, with a set.
+- [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). The lookup an ordered set performs.
+- [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/). A window with a set inside.
