@@ -1,0 +1,85 @@
+---
+title: Binary Tree Postorder Traversal
+leetcode: { number: 145, url: "https://leetcode.com/problems/binary-tree-postorder-traversal/" }
+difficulty: Easy
+topics: [Binary tree, Tree, Stack, DFS]
+added: 2026-11-26
+summary: "Return a binary tree's values in post-order: each node after both of its subtrees. Goes from the natural recursive walk to a stack that writes node, right, left and then reverses the list."
+insight: "Post-order is left, right, node. Node, right, left is easy with a stack (pre-order with the children swapped), and reversing it gives exactly left, right, node."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Return its values in **post-order**: each node comes **after** both of its subtrees (everything on its left, then everything on its right, then the node).
+
+For the tree `[5, 3, 8, 1, 4, null, 9, null, 2]` the answer is `[2, 1, 4, 3, 9, 8, 5]`.
+
+## The key question
+
+> **A node must wait for both subtrees. Is there a simpler order that's post-order backwards?**
+
+Yes: node, right, left. It's pre-order with the children swapped, so a stack does it easily, and reversing it gives left, right, node. [Tree traversals](/concepts/tree-traversals/) compares all three depth-first orders.
+
+## Approach 1: Recursive
+
+Visit a node by visiting its left subtree, its right subtree and the node itself, in the order this traversal needs.
+The calls waiting to finish form a stack of their own.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** One waiting call per level of the current path: **O(h)**, which is O(n) for a chain.
+
+**What it wastes:** nothing in time. But the call stack is hidden, and a very tall tree can overflow it; interviewers
+often ask for the version without recursion.
+</Complexity>
+
+## Approach 2: Iterative, with an explicit stack
+
+Push the root. Repeatedly pop a node, write it down, and push its left child and then its right child, so the right comes out first. That writes node, right, left. Reverse the list at the end to get left, right, node.
+
+<Viz client:visible approach="iterative" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is pushed and popped once: **O(n)**.
+
+**Space.** The stack holds about one path's worth of nodes: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Recursive | O(n) | O(h) | The language keeps the stack |
+| Iterative | O(n) | O(h) | You keep the stack |
+
+Both visit every node once, so there's no growth chart: the iterative version only makes the stack visible and safe from
+running out of call depth.
+
+## Common mistakes
+
+- **Forgetting to reverse.** Without the final reverse, the list is node, right, left.
+- **Pushing right before left.** With the swap trick, the left child goes on the stack first so the right one comes out first.
+- **Confusing post-order with reversed pre-order.** Reversed pre-order is right, left, node, not the same.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Postorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Preorder Traversal](/dsa/binary-tree-preorder-traversal/). The same walk, writing each node before its subtrees.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The same walk, writing each node between its subtrees.
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). Breadth-first instead, with a queue.

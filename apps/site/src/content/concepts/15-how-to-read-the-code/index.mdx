@@ -41,6 +41,7 @@ the page.
 | `lo, hi ← 0, 9` | Two at once: `lo` gets 0 and `hi` gets 9. |
 | `count += 1` | Add 1 to `count`. `-=` subtracts, `*=` multiplies. |
 | `none` | "Nothing here yet", like an empty box. Other languages call it `null`, `None` or `nil`. |
+| `new node(val)` | A brand-new tree node holding `val`, with no children yet. |
 | `true`, `false` | Yes and no. |
 | `// a comment` | A note for you. It doesn't do anything. |
 
@@ -114,6 +115,7 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `empty set`, `seen.add(x)` | A collection of distinct values, for quick "have I seen this?" checks. |
 | `stack.push(x)`, `stack.pop()`, `stack.top()` | Add on top, take from the top, look at the top. Last in, first out. |
 | `queue.push(x)`, `queue.popFront()` | Join at the back, leave from the front. First in, first out. |
+| `empty ordered set`, `smallest value in s ≥ y` | A set that keeps its values sorted (a balanced binary search tree inside), so adding, removing, and finding the smallest value at least `y` each take O(log n). |
 | `heap.push(x)`, `heap.popMin()`, `heap.min()` | A heap always knows its smallest value (or largest, with `popMax`). |
 | `node.next`, `node.left` | Linked lists and trees: the node this one points to. |
 | `i mod n` | The remainder after dividing `i` by `n`: `7 mod 5` is 2. As `i` counts up, `i mod n` runs 0 to `n - 1` and wraps back to 0, which walks round an array like a circle. |
@@ -121,6 +123,7 @@ You'll occasionally see a one-line choice, `cond ? a : b`. It means "if `cond` i
 | `swap a[i] and a[j]` | Exchange the two values. |
 | `s[i]`, `length(s)` | Strings work like lists of characters: `s[0]` is the first character. |
 | `code(c)` | The number a character is stored as: `code('a')` is 97 and `code('b')` is 98, so `code(c) - code('a')` is a letter's place in the alphabet, from 0. |
+| `reverse(a)` | The same values in the opposite order: `reverse([1, 2, 3])` is `[3, 2, 1]`. |
 | `join(parts)` | Glue a list of strings into one string, in order. `join(parts, " ")` puts a space between each pair. |
 | `text(x)` | The number `x` written as a string of digits: `text(81)` is `"81"`, so `text(8) + text(81)` is `"881"`. Strings of the same length compare like the numbers they spell. |
 

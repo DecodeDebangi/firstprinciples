@@ -1,0 +1,86 @@
+---
+title: Binary Tree Inorder Traversal
+leetcode: { number: 94, url: "https://leetcode.com/problems/binary-tree-inorder-traversal/" }
+difficulty: Easy
+topics: [Binary tree, Tree, Stack, DFS]
+added: 2026-11-26
+summary: "Return a binary tree's values in in-order: each node's left subtree, then the node, then its right subtree. Goes from the natural recursive walk to an explicit stack that pushes the whole left path."
+insight: "Go left as far as possible, pushing each node. Pop one, write it down, and repeat from its right child."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Return its values in **in-order**: each node comes **between** its subtrees (everything on its left, then the node, then everything on its right).
+
+For the tree `[5, 3, 8, 1, 4, null, 9, null, 2]` the answer is `[1, 2, 3, 4, 5, 8, 9]`.
+
+## The key question
+
+> **When exactly is a node written down?**
+
+Only after its whole left subtree is done. So the walk has to remember every node it passed on the way down the left: exactly what a stack does. [Tree traversals](/concepts/tree-traversals/) compares all three depth-first orders.
+
+## Approach 1: Recursive
+
+Visit a node by visiting its left subtree, its right subtree and the node itself, in the order this traversal needs.
+The calls waiting to finish form a stack of their own.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** One waiting call per level of the current path: **O(h)**, which is O(n) for a chain.
+
+**What it wastes:** nothing in time. But the call stack is hidden, and a very tall tree can overflow it; interviewers
+often ask for the version without recursion.
+</Complexity>
+
+## Approach 2: Iterative, with an explicit stack
+
+Go left from the current node as far as possible, pushing every node on the way. Pop the top (it has no unwritten left subtree), write it down, then move to its right child and repeat. On a binary search tree this writes the values in sorted order.
+
+<Viz client:visible approach="iterative" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is pushed and popped once: **O(n)**.
+
+**Space.** The stack holds about one path's worth of nodes: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Recursive | O(n) | O(h) | The language keeps the stack |
+| Iterative | O(n) | O(h) | You keep the stack |
+
+Both visit every node once, so there's no growth chart: the iterative version only makes the stack visible and safe from
+running out of call depth.
+
+## Common mistakes
+
+- **Writing a node when it's pushed.** That's pre-order; in-order writes it when it's popped.
+- **Forgetting to move to the right child.** After popping, the right subtree still has to be walked.
+- **Stopping when the stack is empty.** The loop must also continue while the current node isn't none.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Inorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Preorder Traversal](/dsa/binary-tree-preorder-traversal/). The same walk, writing each node before its subtrees.
+- [Binary Tree Postorder Traversal](/dsa/binary-tree-postorder-traversal/). The same walk, writing each node after its subtrees.
+- [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/). This stack, paused between values.
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). Breadth-first instead, with a queue.
