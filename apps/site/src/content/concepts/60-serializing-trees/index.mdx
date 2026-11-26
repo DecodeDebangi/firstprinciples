@@ -1,0 +1,73 @@
+---
+title: "Saving and loading a tree: serialize and deserialize"
+topic: Trees
+kind: Explainer
+order: 6
+summary: To store a tree or send it somewhere, write it out as a list of values, then rebuild the same tree from that list. A marker for every missing child keeps the shape, written level by level or in pre-order. A binary search tree needs no markers at all, because the order rule says where each value goes.
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Building a tree from its traversals](/concepts/trees-from-traversals/) rebuilds a tree from two ordinary traversals. When
+you control how the tree is written down, one list is enough, as long as it records the shape.
+
+## Why markers
+
+The values `5, 3` could be a root 5 with 3 on its left or on its right. Writing a marker, here `#`, for every missing
+child removes the doubt: `5, 3, #, #, #` and `5, #, 3, #, #` are different trees. A tree with `n` nodes always writes
+`n + 1` markers, because its `2n` child slots hold `n − 1` real children.
+
+## Level by level
+
+Write the tree breadth-first, with `#` for each missing child. To read it back, take the first value as the root and
+let each node, in queue order, take the next two tokens as its children. This is the format LeetCode itself uses for
+tree inputs, with the trailing markers trimmed.
+
+<Viz client:visible approach="levels" />
+
+## Pre-order
+
+Write node, left subtree, right subtree, with `#` for every missing child. Reading back is the same recursion: take a
+token; if it's `#` return nothing, otherwise make a node and read its left subtree, then its right. No positions or
+queue are needed, because both directions follow the same path.
+
+<Viz client:visible approach="preorder" />
+
+Both formats are O(n) to write and to read. That's [Serialize and Deserialize Binary
+Tree](/dsa/serialize-and-deserialize-binary-tree/).
+
+## A binary search tree needs no markers
+
+In a BST, the order rule already decides where each value goes. Write the values in pre-order, nothing else. To read
+them back, pass down the range each subtree's values must fall in (as in [Validate Binary Search
+Tree](/dsa/validate-binary-search-tree/)): if the next value is outside the range, this subtree is empty and the value
+belongs to an ancestor.
+
+<Viz client:visible approach="compact" />
+
+That writes `n` tokens instead of `2n + 1`, still in O(n). That's [Serialize and Deserialize
+BST](/dsa/serialize-and-deserialize-bst/).
+
+## Interview theory
+
+<QA q="How do you serialize a binary tree?">
+Pre-order (or level order) with a marker for every missing child. Deserialize by reading tokens in the same order: a
+marker means "no node here". Both directions are O(n).
+</QA>
+
+<QA q="Why isn't in-order alone a valid serialization?">
+Many trees share an in-order list, and with markers it still can't tell which node is the root. Pre-order and level order
+put each parent before its children, so reading back always knows where to attach the next node.
+</QA>
+
+<QA q="How can a BST be serialized more compactly?">
+Write only the values in pre-order. On the way back, pass each subtree its allowed range; a value outside the range ends
+that subtree.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

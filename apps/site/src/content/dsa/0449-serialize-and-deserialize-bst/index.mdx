@@ -1,0 +1,83 @@
+---
+title: Serialize and Deserialize BST
+leetcode: { number: 449, url: "https://leetcode.com/problems/serialize-and-deserialize-bst/" }
+difficulty: Medium
+topics: [BST, Binary tree, DFS]
+added: 2026-11-26
+summary: Write a binary search tree out as compactly as possible and read it back. Goes from the general pre-order with a marker for each missing child to plain pre-order with no markers, rebuilt using the range each subtree's values must fall in.
+insight: "In a BST the order rule says where each value goes, so write just the values in pre-order. Reading back, a value outside the current subtree's range means that subtree is empty."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design `serialize` and `deserialize` for a **binary search tree**: turn it into a string and back into the same tree.
+Make the string as compact as you can.
+
+For the BST `[6, 3, 9, 1, 4, null, 12]`, the compact string is `6,3,1,4,9,12`: six values and nothing else.
+
+## The key question
+
+> **What does a BST already know about its shape that a general tree doesn't?**
+
+Where every value must go. Given the values in pre-order, the [order rule](/concepts/binary-search-trees/) leaves only one
+place for each, so the markers a general tree needs are redundant.
+
+## Approach 1: Pre-order with markers
+
+Treat it like any binary tree: pre-order, with `#` for every missing child, read back by the same recursion.
+
+<Viz client:visible approach="preorder" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass each way: **O(n)**.
+
+**Space.** `2n + 1` tokens and the recursion: **O(n)**.
+
+**What it wastes:** the `n + 1` markers, which carry no information a BST doesn't already have.
+</Complexity>
+
+## Approach 2: Pre-order with no markers (optimal)
+
+Write only the values, in pre-order. Read them back passing each subtree its allowed range (`−∞` to `∞` for the root, then
+narrowed at each step). If the next value is outside the range, this subtree is empty and an ancestor will place it.
+
+<Viz client:visible approach="compact" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each value is placed once, and each failed range check ends one call: **O(n)**.
+
+**Space.** `n` tokens and the recursion: **O(n)**, with less than half the string length.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Tokens for n nodes | Idea |
+|---|---|---|---|
+| Pre-order with markers | O(n) | 2n + 1 | Works for any tree |
+| Pre-order, no markers | O(n) | **n** | The order rule places each value |
+
+## Common mistakes
+
+- **Writing in-order.** In-order of a BST is just the sorted values, which every BST with those values shares.
+- **Forgetting to narrow the range.** Left children get `(lo, node)`, right children `(node, hi)`.
+- **Consuming a value that doesn't fit.** Check the range first; only take the value once it's placed.
+
+## Check yourself
+
+<Quiz client:visible title="Serialize and Deserialize BST" questions={questions} />
+
+## Related problems
+
+- [Serialize and Deserialize Binary Tree](/dsa/serialize-and-deserialize-binary-tree/). The general version, with markers.
+- [Validate Binary Search Tree](/dsa/validate-binary-search-tree/). The same allowed ranges, used to check instead of build.
+- [Convert Sorted Array to Binary Search Tree](/dsa/convert-sorted-array-to-binary-search-tree/). Building a BST from sorted values.

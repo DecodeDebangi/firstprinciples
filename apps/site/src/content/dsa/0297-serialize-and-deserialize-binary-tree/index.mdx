@@ -1,0 +1,87 @@
+---
+title: Serialize and Deserialize Binary Tree
+leetcode: { number: 297, url: "https://leetcode.com/problems/serialize-and-deserialize-binary-tree/" }
+difficulty: Hard
+topics: [Binary tree, Tree, BFS, DFS]
+added: 2026-11-26
+summary: Write a binary tree out as text and read it back into the same tree. Goes from writing it level by level with a marker for each missing child to the shorter recursive pre-order version, which needs no queue to read back.
+insight: "Write a # for every missing child, and both the values and the shape survive. Pre-order then reads back with the same recursion that wrote it."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design two functions. `serialize` turns a binary tree into a string; `deserialize` turns that string back into the same
+tree. Any format works, as long as the round trip gives back exactly the original tree.
+
+For the tree `[5, 3, 8, null, 4, 7]`, one string is `5,3,#,4,#,#,8,7,#,#,#` (pre-order with `#` for missing children).
+
+## The key question
+
+> **What must the string record so that the shape, not just the values, comes back?**
+
+Every missing child. With a `#` for each one, the shape is fully described; [Saving and loading a
+tree](/concepts/serializing-trees/) explains why.
+
+## Approach 1: Level by level
+
+Write the tree breadth-first with `#` for missing children. Read it back with a queue: each node, in turn, takes the next
+two tokens as its children.
+
+<Viz client:visible approach="levels" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node and marker is written once and read once: **O(n)**.
+
+**Space.** The tokens and the queue, which can hold a whole level: **O(n)**.
+
+**What it wastes:** nothing in time; reading back needs a queue and an index kept in step with it.
+</Complexity>
+
+## Approach 2: Pre-order
+
+Write node, left, right, with `#` for missing children. Read it back with the same recursion: take a token; `#` means
+no node, otherwise make one and read its left subtree, then its right.
+
+<Viz client:visible approach="preorder" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One pass each way: **O(n)**.
+
+**Space.** The tokens, plus recursion as deep as the tree: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Reading back needs |
+|---|---|---|---|
+| Level by level | O(n) | O(n) | A queue and an index |
+| Pre-order | O(n) | O(n) | Only the recursion |
+
+Both write `n` values and `n + 1` markers, so there's no growth chart. LeetCode's own format is the level-by-level one
+with trailing markers trimmed.
+
+## Common mistakes
+
+- **Skipping the markers.** Then `[1, 2]` with 2 on the left and with 2 on the right write the same string.
+- **Splitting on the wrong character.** Negative numbers contain `-`, so separate tokens with `,`.
+- **Reading pre-order back with a shared index that isn't shared.** Every call must move the same "next token" forward.
+
+## Check yourself
+
+<Quiz client:visible title="Serialize and Deserialize Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Serialize and Deserialize BST](/dsa/serialize-and-deserialize-bst/). No markers needed when the order rule decides placement.
+- [Construct Binary Tree from Preorder and Inorder Traversal](/dsa/construct-binary-tree-from-preorder-and-inorder-traversal/). Rebuilding from two lists without markers.
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The breadth-first walk the first format uses.
