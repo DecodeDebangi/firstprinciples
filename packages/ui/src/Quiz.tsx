@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./quiz.css";
 import { seededOrder } from "./shuffle";
 
@@ -20,9 +20,14 @@ export function Quiz({ title = "Check yourself", questions }: { title?: string; 
   const answered = picked.filter((p) => p !== null).length;
   const right = picked.filter((p, k) => p === questions[k].answer).length;
   const done = answered === questions.length;
+  const ref = useRef<HTMLElement>(null);
+  // Tell the page when every question is answered (the lesson path ticks the section off).
+  useEffect(() => {
+    if (done) ref.current?.dispatchEvent(new CustomEvent("fp:quizdone", { bubbles: true }));
+  }, [done]);
 
   return (
-    <section className="fp-quiz" aria-label={title}>
+    <section className="fp-quiz" aria-label={title} ref={ref}>
       <header className="fp-quiz__head">
         <h3>{title}</h3>
         <span className="fp-quiz__score" aria-live="polite">{answered ? `${right} / ${answered} right` : `${questions.length} questions`}</span>

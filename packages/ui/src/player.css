@@ -416,3 +416,49 @@
   100% { transform: translate(var(--dx), 0); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .fp-ghost { display: none; } .fp-move path:not(marker path) { animation: none; stroke-dashoffset: 0; } }
+
+/* ---------- Scene: bars sized by value, an answer row, and a pile of blocks ---------- */
+.fp-scene { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 4px;
+  background-color: var(--surface-2); background-image: radial-gradient(color-mix(in srgb, var(--muted) 22%, transparent) 1.1px, transparent 1.2px); background-size: 18px 18px; }
+.fp-scene__zone { position: absolute; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fp-scene__well { position: absolute; border: 2px solid var(--border); border-top: 0; border-radius: 0 0 14px 14px; }
+.fp-scene__bar { position: absolute; border-radius: 7px 7px 3px 3px; background: var(--surface); border: 1.5px solid var(--border);
+  transition: background .3s, border-color .3s, box-shadow .3s, opacity .3s; }
+.fp-scene__val { position: absolute; inset: 3px 0 auto; text-align: center; font: 600 12px var(--font-mono); color: var(--text-2); }
+.fp-scene__name { position: absolute; left: -8px; right: -8px; text-align: center; font: 11px var(--font-mono); color: var(--muted); white-space: nowrap; }
+.fp-scene__bar.is-waiting { border-color: var(--tone-compare-border); }
+.fp-scene__bar.is-active { background: var(--tone-active-bg); border-color: var(--tone-active-border); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone-active-border) 20%, transparent); }
+.fp-scene__bar.is-active .fp-scene__val, .fp-scene__bar.is-compare .fp-scene__val { color: var(--text); }
+.fp-scene__bar.is-compare { background: var(--tone-compare-bg); border-color: var(--tone-compare-border); }
+.fp-scene__bar.is-found { background: var(--tone-found-bg); border-color: var(--tone-found-border); }
+.fp-scene__bar.is-discard { opacity: .45; }
+.fp-scene__slot { position: absolute; border: 1.5px dashed var(--border); border-radius: 8px; display: grid; place-items: center; font: 600 13px var(--font-mono); color: var(--text); }
+.fp-scene__slot.is-filled { border-style: solid; background: var(--tone-found-bg); border-color: var(--tone-found-border); }
+.fp-scene__slot.is-filled.is-visited { background: var(--surface); border-color: var(--border); color: var(--muted); }
+.fp-scene__block { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 8px; overflow: hidden; white-space: nowrap;
+  border: 1.5px solid var(--tone-compare-border); background: var(--tone-compare-bg); color: var(--text); font: 600 12px var(--font-mono); box-shadow: var(--shadow);
+  transition: transform .55s cubic-bezier(.3,.7,.2,1), width .55s cubic-bezier(.3,.7,.2,1), height .55s cubic-bezier(.3,.7,.2,1), background .3s, border-color .3s, opacity .3s; }
+.fp-scene__block.is-active { background: var(--tone-active-bg); border-color: var(--tone-active-border); }
+.fp-scene__block.is-hidden { opacity: 0; }
+.fp-scene__block.is-landed { background: var(--tone-found-bg); border-color: var(--tone-found-border); box-shadow: none; font-size: 13px; }
+.fp-scene__block.is-landed.is-zero { background: var(--surface); border-color: var(--border); color: var(--muted); }
+.fp-scene__tag { position: absolute; left: 0; top: 0; font: 600 11px var(--font-mono); padding: 1px 7px; border-radius: 99px; background: var(--accent); color: var(--on-accent); transition: transform .45s cubic-bezier(.3,.7,.2,1); }
+.fp-scene__tag.is-alt { background: var(--tone-compare-border); color: var(--bg); }
+.fp-scene__say { position: absolute; left: 0; top: 0; padding: 4px 9px; border-radius: 8px; background: var(--text); color: var(--bg); font: 600 12px var(--font-mono); white-space: nowrap; z-index: 3; transition: transform .45s cubic-bezier(.3,.7,.2,1); }
+.fp-scene__ops { position: absolute; right: 10px; bottom: 6px; font: 12px var(--font-mono); color: var(--muted); }
+.fp-scene__ops b { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .fp-scene__block, .fp-scene__tag, .fp-scene__say, .fp-scene__bar { transition: none; } }
+
+/* ---------- Study mode controls: predict-first main button, key moments on the slider ---------- */
+.fp-player .fp-next { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; min-width: 172px; }
+.fp-player .fp-next:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.fp-player.is-study .fp-play { background: var(--surface); color: var(--text); border-color: var(--border); }
+.fp-scrubwrap { position: relative; flex: 1 1 140px; display: flex; align-items: center; min-width: 120px; }
+.fp-scrubwrap .fp-scrub { flex: 1; }
+.fp-marks { position: absolute; left: 8px; right: 8px; top: -7px; height: 6px; pointer-events: none; }
+.fp-marks i { position: absolute; top: 0; width: 3px; height: 6px; border-radius: 2px; background: var(--tone-found-border); transform: translateX(-1.5px); }
+.fp-controls--more { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+@media (max-width: 560px) { .fp-player .fp-next { flex: 1 1 auto; min-width: 0; } }
+/* Study mode gives the stage more of the width than the code. */
+.fp-player.is-study .fp-player__top { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+@media (max-width: 860px) { .fp-player.is-study .fp-player__top { grid-template-columns: minmax(0, 1fr); } }

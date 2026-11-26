@@ -60,6 +60,11 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
   const choose = (side: 0 | 1, p: number) => { setPick((cur) => (side === 0 ? [p, cur[1]] : [cur[0], p])); go(0); };
 
   const bothDone = traces.every((s) => stepAt(s, clock) === s.length - 1);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Tell the page when a race has been run to the end (the lesson path ticks the section off).
+  useEffect(() => {
+    if (bothDone && frame > 0) rootRef.current?.dispatchEvent(new CustomEvent("fp:finished", { bubbles: true, detail: { compare: true } }));
+  }, [bothDone, frame]);
 
   // The race only plays a sound as each lane finishes; two lanes ticking at once would just be noise.
   const lanesDone = traces.map((s) => stepAt(s, clock) === s.length - 1);
@@ -83,7 +88,7 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
   }
 
   return (
-    <div className="fp-player fp-compare-wrap">
+    <div className="fp-player fp-compare-wrap" ref={rootRef}>
       <p className="fp-compare__lead">
         Two approaches, same input, one shared clock that ticks once per operation. Pick any two.
       </p>

@@ -4,6 +4,7 @@ import { ArrayCells } from "./ArrayCells";
 import { ListView } from "./ListView";
 import { TreeView } from "./TreeView";
 import { GraphView, BoardView } from "./GraphView";
+import { SceneView } from "./SceneView";
 import { InputForm, parseDraft, toText, type InputField, type InputValues, type Prepared } from "./input";
 import { cueFor, playCue, useSound } from "./sound";
 import "./player.css";
@@ -30,6 +31,11 @@ export interface ArrayPlayerProps<I extends InputValues> {
   /** Validate / normalise a user's input before running it. */
   prepare?: (raw: I) => Prepared<I>;
   maxLength?: number;
+  /**
+   * Study mode: predict mode starts on, the main button asks "What happens next?", key moments are marked on the
+   * slider, and the less-used controls move to a second row.
+   */
+  study?: boolean;
 }
 
 export const SPEEDS = [
@@ -40,13 +46,13 @@ export const SPEEDS = [
 
 const show = (v: unknown) => (v === null || v === undefined ? "—" : String(v));
 
-export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fields, prepare, maxLength = 14 }: ArrayPlayerProps<I>) {
+export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fields, prepare, maxLength = 14, study = false }: ArrayPlayerProps<I>) {
   const [input, setInput] = useState<I>(initialInput);
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   // Predict mode
-  const [predict, setPredict] = useState(false);
+  const [predict, setPredict] = useState(study);
   const [asking, setAsking] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ ok: boolean; answer: string } | null>(null);
   const [score, setScore] = useState({ right: 0, total: 0 });
@@ -57,6 +63,8 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   // Optional sound cues (off until the reader switches them on; shared by every player on the page)
   const [sound, setSound] = useSound();
   const shownIdx = useRef<number | null>(null);
+  /** Set once the reader steps, plays or scrubs; a page opened at a step doesn't count as playing it. */
+  const moved = useRef(false);
 
   // Open at the step in the URL: ?approach=<id>&step=<n>[&<field>=<value>…]
   useEffect(() => {
@@ -110,6 +118,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
 
   /** Move forward one step, stopping first to ask if predict mode is on. */
   function next() {
+    moved.current = true;
     const target = idx + 1;
     if (target >= steps.length) return;
     if (predict && steps[target].ask && asking !== target) {
@@ -131,6 +140,12 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
     shownIdx.current = idx;
   }, [idx]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Tell the page when the reader reaches the end (the lesson path ticks the section off). Opening a shared link
+  // at the last step doesn't count: only steps the reader moved through.
+  useEffect(() => {
+    if (atEnd && idx > 0 && moved.current) rootRef.current?.dispatchEvent(new CustomEvent("fp:finished", { bubbles: true, detail: { approach: approach.id } }));
+  }, [atEnd, idx, approach.id]);
+
   useEffect(() => {
     if (!playing) return;
     if (atEnd) { setPlaying(false); return; }
@@ -139,6 +154,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   }, [playing, idx, atEnd, speed]);
 
   function go(i: number) {
+    moved.current = true;
     setShareMsg(null);
     setPlaying(false);
     setAsking(null);
@@ -162,6 +178,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
     } else {
       setFeedback(null);
     }
+    moved.current = true;
     setIdx(asking);
     setAsking(null);
   }
@@ -185,12 +202,12 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const opsChanged = prev !== undefined && prev.ops !== step.ops;
 
   return (
-    <div className={`fp-player${linked ? " is-linked" : ""}`} id={`viz-${approach.id}`} ref={rootRef} tabIndex={0} onKeyDown={onKey}
+    <div className={`fp-player${linked ? " is-linked" : ""}${study ? " is-study" : ""}`} id={`viz-${approach.id}`} ref={rootRef} tabIndex={0} onKeyDown={onKey}
       aria-label={`Animation: ${approach.name}. Use left and right arrow keys to step, space to play.`}>
       <div className="fp-player__top">
         <div className="fp-stage">
           {/* A tree can come with a list underneath (e.g. matching a list along a tree path). */}
-          {step.trees ? <>{<TreeView step={step} />}{step.lists && <ListView step={step} />}</> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : step.hideStage ? null : <ArrayCells step={step} />}
+          {step.scene ? <SceneView step={step} /> : step.trees ? <>{<TreeView step={step} />}{step.lists && <ListView step={step} />}</> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : step.hideStage ? null : <ArrayCells step={step} />}
 
           {question ? (
             <div className="fp-ask" role="group" aria-label="Predict the next step">
@@ -312,6 +329,51 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
         </pre>
       </div>
 
+      {study ? (
+        <>
+          <div className="fp-controls">
+            <button type="button" onClick={() => go(idx - 1)} disabled={idx === 0} aria-label="Previous step">◀</button>
+            <button type="button" className="fp-next" disabled={asking !== null}
+              onClick={() => (atEnd ? go(0) : next())}>
+              {asking !== null ? "Pick an answer above" : atEnd ? "Start again" : predict && steps[idx + 1]?.ask ? "What happens next?" : "Next step"}
+            </button>
+            <button type="button" className="fp-play" onClick={togglePlay} disabled={asking !== null}>
+              {playing ? "Pause" : "Play"}
+            </button>
+            <span className="fp-scrubwrap">
+              <input className="fp-scrub" type="range" min={0} max={steps.length - 1} value={idx}
+                onChange={(e) => go(Number(e.target.value))} aria-label="Step" />
+              <span className="fp-marks" aria-hidden="true">
+                {steps.map((s, k) => s.key ? <i key={k} style={{ left: `${(k / Math.max(1, steps.length - 1)) * 100}%` }} /> : null)}
+              </span>
+            </span>
+            <span className="fp-count">Step {idx + 1} / {steps.length}</span>
+          </div>
+          <div className="fp-controls fp-controls--more">
+            <button type="button" onClick={() => go(0)} disabled={idx === 0 && asking === null} aria-label="First step">⏮</button>
+            <div className="fp-speed" role="group" aria-label="Speed">
+              {SPEEDS.map((s, i) => (
+                <button type="button" key={s.label} className={i === speed ? "is-on" : ""}
+                  aria-pressed={i === speed} onClick={() => setSpeed(i)}>{s.label}</button>
+              ))}
+            </div>
+            <button type="button" className={`fp-sound${sound ? " is-on" : ""}`} aria-pressed={sound} onClick={() => setSound(!sound)}
+              title={sound ? "Sound is on: each step plays a short cue (S)" : "Turn on short sound cues for each step (S)"}>
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 9v6h4l5 4V5L8 9H4z" />
+                {sound ? <><path d="M16.5 8.5a5 5 0 0 1 0 7" /><path d="M19.5 5.5a9 9 0 0 1 0 13" /></> : <path d="M17 9l5 6M22 9l-5 6" />}
+              </svg>
+              Sound
+            </button>
+            <button type="button" className="fp-share" onClick={share} title="Copy a link that opens this exact step">
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+              </svg>
+              Link to this step
+            </button>
+          </div>
+        </>
+      ) : (
       <div className="fp-controls">
         <button type="button" onClick={() => go(0)} disabled={idx === 0 && asking === null} aria-label="First step">⏮</button>
         <button type="button" onClick={() => go(idx - 1)} disabled={idx === 0} aria-label="Previous step">◀</button>
@@ -343,6 +405,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
           Link to this step
         </button>
       </div>
+      )}
       {shareMsg && (
         <p className="fp-sharemsg" role="status">
           {shareMsg.text}
@@ -355,7 +418,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
           <label className="fp-toggle">
             <input type="checkbox" checked={predict} onChange={(e) => togglePredict(e.target.checked)} />
             <span className="fp-toggle__track" aria-hidden="true"><span /></span>
-            <span><strong>Predict mode</strong>: pause before each decision and guess what happens</span>
+            <span>{study ? <><strong>Guess first</strong>: before each key step, choose what happens</> : <><strong>Predict mode</strong>: pause before each decision and guess what happens</>}</span>
           </label>
           {predict && score.total > 0 && (
             <span className="fp-score">{score.right} / {score.total} right</span>

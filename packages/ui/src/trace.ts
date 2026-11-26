@@ -83,6 +83,34 @@ export function treeFromLevelOrder(vals: (number | null)[]): { root: string | nu
   return { root: "t0", nodes };
 }
 
+/**
+ * A picture of the values instead of a row of numbers: one bar per value (taller = bigger), an answer row under
+ * the bars, and optionally a pile, a stack drawn as blocks (wider = bigger). A bar's block keeps its identity
+ * across steps, so it slides from the bar into the pile and from the pile down to its answer.
+ */
+export interface SceneData {
+  /** The values, drawn as bars. */
+  bars: number[];
+  /** Appended to each bar's value, e.g. "°". */
+  unit?: string;
+  /** Text under each bar, e.g. "day 0". Defaults to the index. */
+  names?: string[];
+  /** Heading over the bars. */
+  title?: string;
+  tones?: Record<number, Tone>;
+  /** Small named pills over bars, e.g. { today: 3 } or { i: 0, j: 2 }. */
+  tags?: Record<string, number>;
+  /** A short note floated over one bar, e.g. { at: 4, text: "72 > 69" }. */
+  say?: { at: number; text: string };
+  /** One answer cell under each bar; null cells are still empty. */
+  answers?: { title: string; values: (number | string | null)[]; tones?: Record<number, Tone> };
+  /**
+   * A stack drawn as blocks, bottom first; each item is a bar index. When an item leaves the pile and its answer
+   * is filled in, its block slides down into the answer row.
+   */
+  pile?: { title: string; items: number[]; tones?: Record<number, Tone> };
+}
+
 export interface ArrayStep {
   /** 1-based line in the approach's `code` to highlight. */
   line: number;
@@ -118,6 +146,10 @@ export interface ArrayStep {
   vars?: Record<string, string | number | boolean | null>;
   /** A hash map / set panel. */
   map?: { title: string; entries: [string, string][]; highlight?: string };
+  /** Bars, answers and a pile drawn instead of the array (keep `array` for the side-by-side race lanes). */
+  scene?: SceneData;
+  /** A key moment: marked on the slider so readers can jump to it. */
+  key?: boolean;
   /** No main view at all: for steps whose whole story is in the panels (variables, memory grid…). */
   hideStage?: boolean;
   /** A stack panel, top (innermost) last. */
