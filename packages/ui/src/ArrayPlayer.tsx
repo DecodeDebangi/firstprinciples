@@ -114,6 +114,8 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
   const prev = idx > 0 ? steps[idx - 1] : undefined;
   const atEnd = idx >= steps.length - 1;
   const hasAsks = steps.some((s) => s.ask);
+  /** Key moments for the slider: the ones marked `key`, or else the steps that ask a question. */
+  const hasKeys = steps.some((s) => s.key);
   const question = asking !== null ? steps[asking].ask! : null;
 
   /** Move forward one step, stopping first to ask if predict mode is on. */
@@ -344,7 +346,7 @@ export function ArrayPlayer<I extends InputValues>({ approach, initialInput, fie
               <input className="fp-scrub" type="range" min={0} max={steps.length - 1} value={idx}
                 onChange={(e) => go(Number(e.target.value))} aria-label="Step" />
               <span className="fp-marks" aria-hidden="true">
-                {steps.map((s, k) => s.key ? <i key={k} style={{ left: `${(k / Math.max(1, steps.length - 1)) * 100}%` }} /> : null)}
+                {steps.map((s, k) => (hasKeys ? s.key : s.ask) ? <i key={k} style={{ left: `${(k / Math.max(1, steps.length - 1)) * 100}%` }} /> : null)}
               </span>
             </span>
             <span className="fp-count">Step {idx + 1} / {steps.length}</span>
