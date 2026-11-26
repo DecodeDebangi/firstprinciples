@@ -12,6 +12,7 @@ a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { color: var(--accent-hover); }
 ::selection { background: var(--accent-soft); }
 .wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+.wrap--wide { max-width: 1240px; }
 
 .site-header { border-bottom: 1px solid var(--border); background: var(--header-bg); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }

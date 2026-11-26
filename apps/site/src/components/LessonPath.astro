@@ -1,0 +1,139 @@
+---
+/**
+ * Study mode's lesson path: this page's sections as a checklist that ticks itself off.
+ * Reading sections tick after a moment on screen; a section with an animation ticks when one is played to the end
+ * (or a race is run), "Check yourself" when every question is answered, and "Your turn" when the problem is marked.
+ * Ticks are saved in this browser only.
+ */
+export interface Props { slug: string; sections: { slug: string; text: string }[] }
+const { slug, sections } = Astro.props;
+const short = (t: string) => t.replace(/\s*\((optimal|brute force)\)\s*$/i, "");
+---
+<nav class="lpath" aria-label="Your path through this problem" data-slug={slug}>
+  <div class="lpath__head">
+    <span class="lpath__title">Your path</span>
+    <span class="lpath__count" aria-live="polite"><b data-count>0</b> of {sections.length} done</span>
+  </div>
+  <div class="lpath__bar" aria-hidden="true"><span data-bar></span></div>
+  <ol>
+    {sections.map((s) => (
+      <li><a href={`#${s.slug}`} data-sec={s.slug}>
+        <span class="lpath__tick" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg></span>
+        <span class="lpath__text">{short(s.text)}</span><span class="sr-done">(done)</span>
+      </a></li>
+    ))}
+  </ol>
+  <p class="lpath__hint">Steps tick themselves off as you read, play an animation to the end, answer the questions and mark how it went. <button type="button" class="lpath__reset" data-reset>Start over</button></p>
+</nav>
+
+<script>
+import { load, onChange } from "../lib/progress";
+
+for (const nav of document.querySelectorAll<HTMLElement>(".lpath")) {
+  const slug = nav.dataset.slug!;
+  const KEY = `firstprinciples:path:${slug}`;
+  const links = [...nav.querySelectorAll<HTMLAnchorElement>("[data-sec]")];
+  const heads = links.map((a) => document.getElementById(a.dataset.sec!));
+  let done = new Set<string>();
+  try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch {}
+
+  const render = () => {
+    links.forEach((a) => a.classList.toggle("is-done", done.has(a.dataset.sec!)));
+    nav.querySelector("[data-count]")!.textContent = String(links.filter((a) => done.has(a.dataset.sec!)).length);
+    (nav.querySelector("[data-bar]") as HTMLElement).style.width = `${(links.filter((a) => done.has(a.dataset.sec!)).length / links.length) * 100}%`;
+  };
+  const tick = (k: number) => {
+    const id = links[k]?.dataset.sec;
+    if (!id || done.has(id)) return;
+    done.add(id);
+    try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch {}
+    render();
+  };
+  /** The section an element sits in: the last heading before it. */
+  const sectionOf = (el: Element) => {
+    let k = -1;
+    heads.forEach((h, i) => { if (h && h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) k = i; });
+    return k;
+  };
+
+  // What each section asks of the reader: read it, play something, answer the quiz, or mark the problem.
+  const kind = heads.map(() => "read");
+  document.querySelectorAll("astro-island").forEach((isl) => {
+    const k = sectionOf(isl);
+    if (k < 0) return;
+    const exp = isl.getAttribute("component-export") || "";
+    const url = isl.getAttribute("component-url") || "";
+    if (exp === "Quiz") kind[k] = "quiz";
+    else if (/ProgressToggle/.test(url)) kind[k] = "status";
+    else if (kind[k] === "read" && /Viz/.test(url)) kind[k] = "play";
+  });
+
+  document.addEventListener("fp:finished", (e) => { const k = sectionOf(e.target as Element); if (kind[k] === "play") tick(k); });
+  document.addEventListener("fp:quizdone", (e) => tick(sectionOf(e.target as Element)));
+  const status = () => { if (load().problems[slug]?.status) kind.forEach((kd, k) => kd === "status" && tick(k)); };
+  status();
+  onChange(status);
+
+  // The section being read is highlighted in the path.
+  const here = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
+      const k = heads.indexOf(en.target as HTMLElement);
+      links.forEach((a, i) => a.classList.toggle("is-here", i === k));
+      links[k]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }, { rootMargin: "-20% 0px -65% 0px" });
+  // A reading section ticks once its heading has stayed on screen for a few seconds.
+  const timers = new Map<number, ReturnType<typeof setTimeout>>();
+  const read = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      const k = heads.indexOf(en.target as HTMLElement);
+      if (kind[k] !== "read") continue;
+      clearTimeout(timers.get(k));
+      if (en.isIntersecting) timers.set(k, setTimeout(() => tick(k), 2500));
+    }
+  }, { rootMargin: "0px 0px -15% 0px" });
+  heads.forEach((h) => { if (h) { here.observe(h); read.observe(h); } });
+
+  // On narrow screens the path is a row stuck under the header, whose height changes when its links wrap.
+  const header = document.querySelector<HTMLElement>(".site-header");
+  const fit = () => header && nav.style.setProperty("--lpath-top", `${header.offsetHeight}px`);
+  fit();
+  addEventListener("resize", fit);
+
+  nav.querySelector("[data-reset]")!.addEventListener("click", () => {
+    done = new Set();
+    try { localStorage.removeItem(KEY); } catch {}
+    render();
+  });
+  render();
+}
+</script>
+
+<style>
+  .lpath { position: sticky; top: 84px; align-self: start; font-size: 14px; }
+  .lpath__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .lpath__title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .lpath__count { font-size: 13px; color: var(--text-2); }
+  .lpath__bar { height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 8px 0 12px; }
+  .lpath__bar span { display: block; height: 100%; width: 0; background: var(--tone-found-border); border-radius: inherit; transition: width .4s; }
+  .lpath ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .lpath a { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 8px; text-decoration: none; color: var(--text-2); line-height: 1.3; }
+  .lpath a:hover { background: var(--surface-2); }
+  .lpath a.is-here { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+  .lpath__tick { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1.5px solid var(--border); display: grid; place-items: center; color: var(--bg); transition: background .3s, border-color .3s; }
+  .lpath__tick svg { opacity: 0; transition: opacity .3s; }
+  .lpath a.is-done .lpath__tick { background: var(--tone-found-border); border-color: var(--tone-found-border); }
+  .lpath a.is-done .lpath__tick svg { opacity: 1; }
+  .sr-done { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .lpath a:not(.is-done) .sr-done { display: none; }
+  .lpath__hint { margin: 14px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .lpath__reset { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
+  @media (max-width: 1000px) {
+    .lpath { top: var(--lpath-top, 60px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border); padding: 8px 0; margin: 0 0 8px; }
+    .lpath__head, .lpath__bar, .lpath__hint { display: none; }
+    .lpath ol { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .lpath a { white-space: nowrap; font-size: 13px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); gap: 6px; }
+    .lpath__tick { width: 14px; height: 14px; }
+  }
+</style>

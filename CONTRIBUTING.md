@@ -100,6 +100,18 @@ as the main view, since the race lanes only draw the main view. Heaps: `Heap` (c
 `heapTree` turn a heap array into a tree. Recursion trees (backtracking, call trees): record calls with `CallTree`
 (`add`, `log`), then `replay` draws the whole tree faded and lights each call; nodes may have any number of `kids`.
 
+Values that are compared by size (temperatures, heights, prices) can be drawn as a **scene** instead of a row of cells:
+`scene: { bars, unit, names, tags, say, answers, pile }`. Bars are as tall as their value, `answers` is a row of cells
+under them, and `pile` is a stack drawn as blocks as wide as their value (bar indexes, bottom first). A block keeps its
+identity, so it slides from its bar into the pile and down into its answer. Keep `array` (and its tones) on the same
+step: the race lanes still draw cells. Mark key moments with `key: true`; study mode shows them on the slider.
+
+**Study mode (pilot, Daily Temperatures):** `study: true` in a problem's frontmatter adds the lesson path beside the
+article (sections that tick themselves off), and `<ArrayPlayer study … />` in its `Viz.tsx` starts with predict mode on
+and a "What happens next?" main button. A section ticks when its animation is played to the end (`fp:finished`), its
+race is run, its quiz is answered (`fp:quizdone`), or, for "Your turn", when the problem is marked. A problem page can
+have a `## Check yourself` section with `<Quiz client:visible … />` and a `quiz.ts` beside it.
+
 A new data structure needs a new renderer in `packages/ui` alongside `ArrayPlayer`, with its own step type in
 `trace.ts`.
 

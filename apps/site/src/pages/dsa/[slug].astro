@@ -4,6 +4,7 @@ import Base from "../../layouts/Base.astro";
 import { practisedTopics, homeTopic, topicSlug } from "../../data/roadmap";
 import ProblemH2 from "../../components/ProblemH2.astro";
 import ProgressToggle from "../../components/ProgressToggle.tsx";
+import LessonPath from "../../components/LessonPath.astro";
 
 export async function getStaticPaths() {
   const problems = await getCollection("dsa");
@@ -27,11 +28,15 @@ Astro.locals.tryFirst = {
 };
 /** "Find the two positions … target. Goes from …" → its first sentence: what the problem asks. */
 const firstSentence = (s: string) => s.split(/(?<=[.?!])\s/)[0];
+const study = p.data.study === true;
+const pathSections = [...toc.map((h) => ({ slug: h.slug, text: h.text })), { slug: "your-turn", text: "Your turn" }];
 const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 ---
 <Base title={p.data.title} description={p.data.summary} type="article"
   image={`/og/${p.id}.png`}
-  imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`}>
+  imageAlt={`${p.data.title}: from brute force to ${p.data.best.time}, with step-by-step animations`} wide={study}>
+  <div class:list={[{ study }]}>
+  {study && <LessonPath slug={p.id} sections={pathSections} />}
   <article class="prose">
     <script is:inline define:vars={{ slug: p.id }}>
       // Try it first: hide the solutions before they paint, unless the reader solved it or followed a deep link.
@@ -85,7 +90,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
     </nav>
     <Content components={{ h2: ProblemH2 }} />
     <aside class="your-turn" aria-label="Practice">
-      <h2>Your turn</h2>
+      <h2 id="your-turn">Your turn</h2>
       <p>You've seen every approach run. Now write the optimal one yourself, without looking, and check it against LeetCode's tests.</p>
       <a class="act act--primary" href={p.data.leetcode.url} target="_blank" rel="noopener">
         Solve {p.data.title} on LeetCode <span aria-hidden="true">↗</span>
@@ -93,6 +98,7 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
       <ProgressToggle client:visible slug={p.id} />
     </aside>
   </article>
+  </div>
 </Base>
 
 <style>
@@ -124,6 +130,10 @@ const added = p.data.added.toLocaleDateString("en-GB", { day: "numeric", month: 
   }
   .your-turn h2 { margin: 0 0 8px; }
   .your-turn p { margin: 0 auto 18px; max-width: 52ch; color: var(--text-2); }
+  .study { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; }
+  .study > .prose { min-width: 0; }
+  .study .toc { display: none; }
+  @media (max-width: 1000px) { .study { grid-template-columns: minmax(0, 1fr); gap: 0; } }
   .toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 20px 0 0; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 14px; }
   .toc a { text-decoration: none; }
 </style>

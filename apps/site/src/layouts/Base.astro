@@ -14,9 +14,11 @@ interface Props {
   /** Link preview image path; defaults to the site-wide card. */
   image?: string;
   imageAlt?: string;
+  /** A wider main column, for problem pages in study mode (lesson path beside the article). */
+  wide?: boolean;
 }
 const {
-  title, description, type = "website", noindex = false,
+  title, description, type = "website", noindex = false, wide = false,
   image = "/og.png",
   imageAlt = "firstprinciples: algorithms explained from brute force to optimal, with step-by-step animations",
 } = Astro.props;
@@ -82,7 +84,7 @@ const ogImage = new URL(image, Astro.site);
         </button>
       </div>
     </header>
-    <main class="wrap" id="main" tabindex="-1">
+    <main class:list={["wrap", { "wrap--wide": wide }]} id="main" tabindex="-1">
       <slot />
     </main>
     <footer class="site-footer">

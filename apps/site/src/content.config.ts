@@ -27,6 +27,8 @@ const dsa = defineCollection({
     /** Best time / space, shown on cards. */
     best: z.object({ time: z.string(), space: z.string() }),
     /** Clean Instagram reel URL for this problem (no ?share-tracking query). */
+    /** Study mode (pilot): lesson path beside the article, and predict-first players. */
+    study: z.boolean().optional(),
     reel: z.url().regex(/^https:\/\/www\.instagram\.com\/reel\/[\w-]+\/$/, "Use the clean form https://www.instagram.com/reel/<id>/ with no query string").optional(),
   }),
 });
