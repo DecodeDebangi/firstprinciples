@@ -114,5 +114,5 @@ export const approaches = { all, rules };
 export const growth = measureGrowth(
   [{ approach: all, slot: 1 }, { approach: rules, slot: 3 }],
   (n) => ({ n }),
-  [1, 2, 3, 4, 5, 6, 7],
+  [1, 2, 3, 4, 5, 6],
 );
