@@ -15,8 +15,14 @@ const { p } = Astro.props;
 const { Content, headings } = await render(p);
 const toc = headings.filter((h) => h.depth === 2);
 const topicNames = practisedTopics(p.data.topics).map((t) => t.name);
-const background = (await getCollection("concepts")).filter((c) => topicNames.includes(c.data.topic)).sort((a, b) => a.data.order - b.data.order);
 const home = homeTopic(p.data.topics);
+const allConcepts = await getCollection("concepts");
+// "New to this?": the problem's own list if it has one, otherwise a few reads from its topics (its main topic first).
+const background = p.data.reads
+  ? p.data.reads.map((id) => allConcepts.find((c) => c.id === id) ?? (() => { throw new Error(`${p.id}: unknown read "${id}"`); })())
+  : allConcepts.filter((c) => topicNames.includes(c.data.topic))
+      .sort((a, b) => Number(b.data.topic === home?.name) - Number(a.data.topic === home?.name) || a.data.order - b.data.order)
+      .slice(0, 3);
 // For the "try it first" box, which ProblemH2 places before the first solution section.
 Astro.locals.tryFirst = {
   slug: p.id,

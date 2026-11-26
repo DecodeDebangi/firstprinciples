@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, BFS, Graph, Hash map]
 added: 2026-11-26
 summary: "List every node exactly k edges away from a target node, in any direction. Goes from measuring each node's distance through their shared ancestor to adding parent links and spreading out from the target with a breadth-first search."
 insight: "Record each node's parent with one walk. Then the tree is a graph: search outward from the target over left, right and parent links, and return the nodes in ring k."
+reads: [trees-from-scratch, trees-as-graphs, tree-traversals]
 best: { time: "O(n)", space: "O(n)" }
 study: true
 ---

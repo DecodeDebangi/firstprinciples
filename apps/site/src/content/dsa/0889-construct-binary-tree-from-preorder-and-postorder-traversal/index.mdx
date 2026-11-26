@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Hash map, DFS]
 added: 2026-11-26
 summary: "Rebuild a binary tree from its pre-order and post-order lists, where any matching tree is accepted. Goes from scanning post-order for each left child to a map of positions."
 insight: "In pre-order the value after a root is its left child; in post-order a subtree ends with its own root. So that child's position in post-order says where the left subtree ends."
+reads: [trees-from-scratch, trees-from-traversals, tree-traversals]
 best: { time: "O(n)", space: "O(n)" }
 study: true
 ---

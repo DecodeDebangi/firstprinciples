@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Sorting, Hash map, DFS]
 added: 2026-11-26
 summary: "Group a binary tree's values by column, left to right, each column top to bottom with ties broken by value. Goes from walking the whole tree once per column to one walk followed by one sort."
 insight: "Record each node's column, row and value in one walk (left child: column − 1, right child: column + 1), then sort by column, row and value and group by column."
+reads: [trees-from-scratch, tree-traversals]
 best: { time: "O(n log n)", space: "O(n)" }
 study: true
 ---

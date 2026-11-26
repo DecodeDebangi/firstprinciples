@@ -6,6 +6,7 @@ topics: [Tree, Binary tree, DFS]
 added: 2026-11-22
 summary: Find the length of the longest path between any two nodes in a binary tree, counted in edges. Goes from measuring both subtree heights at every node from scratch to one post-order walk that returns each height and tracks the best path on the way.
 insight: "The longest path bends at some node and runs down both sides: left height + right height. One walk can return heights and check that sum at every node."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Linked list, DFS]
 added: 2026-11-26
 summary: "Rearrange a binary tree in place into a chain that follows pre-order, using only right pointers. Goes from writing out the nodes first to splicing each left subtree in with no extra memory."
 insight: "A node's left subtree comes before its right subtree in pre-order, and the left subtree ends at its rightmost node. Hang the right subtree there, move the left subtree to the right, and continue down."
+reads: [trees-from-scratch, tree-recursion, tree-traversals]
 best: { time: "O(n)", space: "O(1)" }
 study: true
 ---

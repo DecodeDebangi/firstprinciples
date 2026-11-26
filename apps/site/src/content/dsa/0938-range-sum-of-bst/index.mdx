@@ -6,6 +6,7 @@ topics: [BST, Binary tree, DFS]
 added: 2026-11-26
 summary: "Add up every value in a binary search tree that falls between two bounds. Goes from visiting every node to skipping the subtrees the order rules out."
 insight: "A node below the range has only smaller values on its left, so skip that side; a node above it can skip its right. Only paths that touch the range are walked."
+reads: [trees-from-scratch, binary-search-trees]
 best: { time: "O(h + m)", space: "O(h)" }
 study: true
 ---

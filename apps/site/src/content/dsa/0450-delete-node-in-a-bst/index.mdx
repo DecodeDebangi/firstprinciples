@@ -6,6 +6,7 @@ topics: [BST, Binary tree]
 added: 2026-11-26
 summary: Remove a value from a binary search tree so it stays a binary search tree, and return the root. Goes from rebuilding the whole tree without the value to finding the node and filling its hole in one of three ways.
 insight: "Find the node like a search. A leaf just goes, a node with one child is replaced by that child's subtree, and a node with two children takes the smallest value from its right subtree."
+reads: [trees-from-scratch, binary-search-trees]
 best: { time: "O(h)", space: "O(h)" }
 study: true
 ---

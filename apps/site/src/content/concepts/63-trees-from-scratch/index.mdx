@@ -1,0 +1,147 @@
+---
+title: "Trees from scratch: the words, height, and reading a tree from a list"
+topic: Trees
+kind: Explainer
+order: 1
+summary: Start here if trees are new. What a tree is, the words every tree problem uses (root, child, leaf, subtree, level), what height means and how it's measured, and how the lists that problems use to describe a tree, like [3, 9, 20, null, null, 15, 7], turn into a tree.
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+A list keeps things in a line: each item has one item after it. A **tree** lets an item have several items after it, and
+each of those can have several more. That's the shape of a lot of real things: folders inside folders on a computer,
+the sections and subsections of a book, a company's org chart, the elements of a web page.
+
+Every tree problem uses the same handful of words. This read goes through them one at a time, then shows how problems
+write a tree down as a list, since every tree page here takes its input that way.
+
+## The parts of a tree
+
+Step through the tree below. Each step introduces one word and highlights what it means.
+
+<Viz client:visible approach="parts" />
+
+| Word | Meaning |
+|---|---|
+| **Node** | One item in the tree. It holds a value and links to the nodes below it. |
+| **Root** | The node at the top. The only node with no parent; a program holds the whole tree by holding the root. |
+| **Child, parent** | The nodes one link below a node are its children; it is their parent. |
+| **Leaf** | A node with no children. |
+| **Subtree** | A node and everything below it. It's a tree in its own right. |
+| **Ancestor, descendant** | The nodes on the way up to the root, and everything below. |
+| **Level (depth)** | How far down a node is. The root is on level 1. |
+
+Two rules make something a tree: every node except the root has **exactly one parent**, and there are **no loops**
+(going down never brings you back up). So there's exactly one path from the root to each node.
+
+## Binary trees
+
+Most interview problems use **binary trees**: each node has at most two children, called **left** and **right**. Which
+side a child is on matters. A node with only a left child is a different tree from one with only a right child.
+
+In the code on this site, a node looks like this:
+
+```
+node
+    val    // the value it holds
+    left   // its left child, or none
+    right  // its right child, or none
+```
+
+`node.left` is the left child, and `none` means there isn't one. Every leaf has `none` on both sides.
+
+## Height: how tall a tree is
+
+A node's **height** is the number of nodes on the longest path from it down to a leaf. A leaf has height 1, and a
+missing child counts as 0. The height of the whole tree is the root's height, which is also its number of levels.
+
+You can't know a node's height until you know its children's: it's one more than the taller of the two. So heights are
+measured from the bottom up. Here the function calls itself on each child, and the answers come back up the tree:
+
+<Viz client:visible approach="height" />
+
+Height matters because many tree operations walk one path from the root down, so they cost as many steps as the tree
+is tall. The same 15 nodes can stand 4 levels tall or 15 levels tall (a chain), and that's the difference between fast
+and slow. [Balanced trees](/concepts/balanced-trees/) is about keeping trees short.
+
+Some books count **links** instead of nodes, which makes every height one less (a leaf has height 0). The problems on
+this site count nodes, and each problem says which it means.
+
+## Reading a tree from a list
+
+A tree can't be typed in as a picture, so problems write it as one list: the values **level by level, left to right**,
+with `null` wherever a child is missing. `[3, 9, 20, null, null, 15, 7]` means: 3 is the root; its children are 9 and
+20; 9 has no children (the two nulls); 20's children are 15 and 7.
+
+To turn the list into a tree, read it from the start and give each value to the next empty child spot. A queue keeps
+the nodes in the order their spots come up. Try your own list in the box under the animation.
+
+<Viz client:visible approach="list" />
+
+Two details trip people up:
+
+- **A missing node has no spots.** After a `null`, nothing is added for that node's children, so the list doesn't
+  contain "null, null" for them. `[1, null, 2, 3]` means 2 is the root's right child and 3 is **2's left child**.
+- **Trailing nulls are dropped.** Once the last real value is written, the empty spots after it say nothing new.
+
+Every "Try your own input" box on a tree page reads its tree this way.
+
+## Shapes worth knowing
+
+| Shape | What it means | Example list |
+|---|---|---|
+| **Perfect** | Every level completely full | `[1, 2, 3, 4, 5, 6, 7]` |
+| **Complete** | Every level full except maybe the last, which fills from the left | `[1, 2, 3, 4, 5]` |
+| **Full** | Every node has 0 or 2 children | `[1, 2, 3, null, null, 4, 5]` |
+| **Balanced** | At every node, the two sides' heights differ by at most 1 | `[1, 2, 3, 4]` |
+| **Chain** | Every node has one child: really a list, as tall as it is long | `[1, null, 2, null, 3]` |
+
+A perfect tree of height `h` holds `2ʰ − 1` nodes, since each level holds twice as many as the one above. Turned around,
+`n` nodes need at least about log₂ n levels. That's why a short tree is so much faster than a chain. A
+[heap](/concepts/heaps/) is a complete tree, and a [binary search tree](/concepts/binary-search-trees/) is a binary tree
+whose values are kept in order.
+
+## How tree code is shaped
+
+Because every subtree is a tree, most tree code has the same shape as the height function above: handle `none`, ask the
+left and right subtrees, combine the answers.
+
+```
+function solve(node)
+    if node = none
+        return the answer for an empty tree
+    left ← solve(node.left)
+    right ← solve(node.right)
+    return combine(node.val, left, right)
+```
+
+From here, read in this order:
+
+1. [Tree traversals](/concepts/tree-traversals/): the ways to visit every node, and which order a problem needs.
+2. [Tree recursion](/concepts/tree-recursion/): passing answers up and passing information down.
+3. [Binary search trees](/concepts/binary-search-trees/) and [Balanced trees](/concepts/balanced-trees/).
+
+Good first problems: [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/) (the height function above),
+[Invert Binary Tree](/dsa/invert-binary-tree/) and [Same Tree](/dsa/same-tree/).
+
+## Interview theory
+
+<QA q="How many edges does a tree with n nodes have?">
+n − 1. Every node except the root has exactly one link to its parent.
+</QA>
+
+<QA q="What's the most nodes a binary tree of height h can hold, and the least height for n nodes?">
+At most 2ʰ − 1 nodes (a perfect tree). So n nodes need a height of at least ⌈log₂(n + 1)⌉.
+</QA>
+
+<QA q="What's the difference between depth and height?">
+Depth is measured from the root down to a node; height from a node down to its deepest leaf. The root's height equals
+the depth of the deepest leaf.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

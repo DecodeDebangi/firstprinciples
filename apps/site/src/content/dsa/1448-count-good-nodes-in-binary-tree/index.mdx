@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Count the nodes that no value above them on the path from the root is bigger than. Goes from checking each node's whole root path to passing the largest value so far down the tree."
 insight: "A node only needs one fact about its path: the largest value above it. Pass that number down; a node is good when it's at least that big."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

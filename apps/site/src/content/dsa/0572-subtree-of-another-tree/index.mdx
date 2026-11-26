@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, DFS, Hashing]
 added: 2026-11-26
 summary: "Decide whether one tree appears inside another as some node's complete subtree. Goes from comparing the small tree against every node to naming every subtree with an id, so a match is one equal number."
 insight: "Give each distinct subtree an id built from (left child's id, value, right child's id), using one shared table for both trees. Two subtrees match exactly when their ids are equal, so you only compare numbers."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(m + n)", space: "O(m + n)" }
 study: true
 ---

@@ -6,6 +6,7 @@ topics: [BST, Binary tree]
 added: 2026-11-26
 summary: Find the node that comes right after a given node when a binary search tree is read in order. Goes from writing out the whole in-order list to one walk down that remembers the last left turn.
 insight: "Walk down from the root. Every node bigger than p is a candidate, and going left from it looks for a smaller candidate; the last one is the answer."
+reads: [trees-from-scratch, binary-search-trees]
 best: { time: "O(h)", space: "O(1)" }
 study: true
 ---

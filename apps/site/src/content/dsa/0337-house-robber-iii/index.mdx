@@ -6,6 +6,7 @@ topics: [Dynamic programming, Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Houses form a binary tree; robbing two houses joined directly sets off an alarm. Find the most money you can take. Goes from choosing rob or skip at every node while re-asking the grandchildren, to each node returning two answers at once."
 insight: "Each node returns two numbers: the best for its subtree if it's robbed (its value plus its children's not-robbed numbers) and if it isn't (each child's bigger number)."
+reads: [trees-from-scratch, dp-on-trees, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

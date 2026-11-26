@@ -6,6 +6,7 @@ topics: [BST, Binary tree, DFS]
 added: 2026-11-26
 summary: "Remove every value outside a range from a binary search tree, keeping the rest in the same shape. Goes from reinserting the kept values one by one to trimming recursively, dropping whole subtrees at once."
 insight: "A node below the range takes its whole left subtree with it, so only its trimmed right subtree survives in its place; a node above the range likewise keeps only its left."
+reads: [trees-from-scratch, binary-search-trees, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

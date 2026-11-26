@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "A binary tree with n nodes holds n coins spread unevenly; move one coin across one edge at a time until every node has exactly one. Find the fewest moves. Goes from counting the coins below every edge separately to one bottom-up walk that reports each subtree's excess."
 insight: "The coins crossing an edge are exactly the excess (or shortfall) of the subtree below it. Each node reports its coins plus its children's excess minus one; every report's size is the moves across that edge."
+reads: [trees-from-scratch, tree-recursion, dp-on-trees]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

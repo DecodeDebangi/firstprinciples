@@ -6,6 +6,7 @@ topics: [BST, Binary tree]
 added: 2026-11-26
 summary: Add a new value to a binary search tree so it stays a binary search tree, and return the root. Goes from a recursive walk down that relinks each subtree to a loop that only remembers the parent.
 insight: "Search for the new value as if it were already there. Where the search falls off the tree is the only spot that keeps the order: hang it there as a new leaf."
+reads: [trees-from-scratch, binary-search-trees]
 best: { time: "O(h)", space: "O(1)" }
 study: true
 ---

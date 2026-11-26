@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Linked list, BFS]
 added: 2026-11-26
 summary: "In any binary tree, point each node's next pointer at the node to its right on the same level. Goes from a level-by-level queue to walking each linked level and building the level below with a placeholder head, using no extra memory."
 insight: "Walk each linked level by its next pointers, appending its children to the level below with a tail pointer. A placeholder head means the first child needs no special case; its next is where the level below starts."
+reads: [trees-from-scratch, tree-traversals]
 best: { time: "O(n)", space: "O(1)" }
 study: true
 ---

@@ -6,6 +6,7 @@ topics: [Tree, Linked list, DFS]
 added: 2026-11-16
 summary: Decide whether a linked list's values appear, in order, along some downward path in a binary tree. Goes from writing out every root-to-leaf path and searching each one, to trying a match from every tree node and giving up at the first mismatch.
 insight: "Treat every tree node as a possible start. From a start, walk down the tree and along the list together, trying both children at each step, and stop as soon as a value differs."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n · m)", space: "O(h)" }
 study: true
 ---

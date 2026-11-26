@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Find the longest path in a binary tree, counted in edges, where every node has the same value. Goes from measuring both same-value arms from every node to one bottom-up walk that returns the longest arm and tracks the best bend."
 insight: "Each node returns its longest same-value arm going down, which only continues into a child with the same value. The best path bends at some node, using both arms."
+reads: [trees-from-scratch, tree-recursion, dp-on-trees]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

@@ -6,6 +6,7 @@ topics: [Tree, Binary tree, DFS]
 added: 2026-11-22
 summary: Find the lowest node that has two given nodes, p and q, both somewhere beneath it (a node counts as beneath itself). Goes from finding both root-to-node paths and comparing them to one walk where each call reports what it found below.
 insight: "Each call reports p, q, the answer, or nothing. The first node that hears about a target from both sides is the lowest common ancestor."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Stack, DFS]
 added: 2026-11-26
 summary: "Return a binary tree's values in post-order: each node after both of its subtrees. Goes from the natural recursive walk to a stack that writes node, right, left and then reverses the list."
 insight: "Post-order is left, right, node. Node, right, left is easy with a stack (pre-order with the children swapped), and reversing it gives exactly left, right, node."
+reads: [trees-from-scratch, tree-traversals]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

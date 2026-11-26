@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, BFS]
 added: 2026-11-26
 summary: "Return a binary tree's levels, reading the first left to right, the next right to left, and so on. Goes from reversing every other level after reading it to writing each value straight into its slot."
 insight: "Read every level left to right with a queue. On odd levels, put the k-th node at slot size − 1 − k, so the level comes out reversed without a second pass."
+reads: [trees-from-scratch, tree-traversals]
 best: { time: "O(n)", space: "O(w)" }
 study: true
 ---

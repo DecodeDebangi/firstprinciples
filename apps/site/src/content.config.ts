@@ -26,6 +26,8 @@ const dsa = defineCollection({
     insight: z.string().optional(),
     /** Best time / space, shown on cards. */
     best: z.object({ time: z.string(), space: z.string() }),
+    /** Reads to show under "New to this?", most useful first (concept ids, e.g. balanced-trees). Without it, the page picks a few from the problem's topics. */
+    reads: z.array(z.string()).optional(),
     /** Clean Instagram reel URL for this problem (no ?share-tracking query). */
     /** Study mode (pilot): lesson path beside the article, and predict-first players. */
     study: z.boolean().optional(),

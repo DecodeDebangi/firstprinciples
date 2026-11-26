@@ -6,6 +6,7 @@ topics: [BST, Stack, Binary tree]
 added: 2026-11-26
 summary: Build an iterator that hands out a binary search tree's values in increasing order, one per call. Goes from writing out every value up front to a stack that only holds the left path, using memory in proportion to the tree's height.
 insight: "Keep a stack of the nodes still waiting on the left path. The top is always the next smallest; after returning it, push the left path of its right subtree."
+reads: [trees-from-scratch, binary-search-trees, tree-traversals]
 best: { time: "O(1) average per call", space: "O(h)" }
 study: true
 ---

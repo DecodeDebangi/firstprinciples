@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Hash map, DFS]
 added: 2026-11-26
 summary: "Rebuild a binary tree from its in-order and post-order lists. Goes from scanning for each root to a map of positions, reading post-order from the end and building the right side first."
 insight: "Read the post-order list from the end: each value is the next root, and its in-order position splits the rest. Build the right subtree before the left."
+reads: [trees-from-scratch, trees-from-traversals, tree-traversals]
 best: { time: "O(n)", space: "O(n)" }
 study: true
 ---

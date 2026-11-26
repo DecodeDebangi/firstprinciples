@@ -6,6 +6,7 @@ topics: [Tree, Binary tree, DFS]
 added: 2026-11-22
 summary: Decide whether some path from the root down to a leaf has values that add up to a target. Goes from listing every root-to-leaf path and adding each one up to passing the amount still needed down the tree, so each node does one subtraction.
 insight: "Pass down how much is still needed. Each node subtracts its own value; a leaf left needing exactly 0 ends a matching path."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

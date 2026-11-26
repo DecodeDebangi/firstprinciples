@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, Backtracking, DFS]
 added: 2026-11-26
 summary: "List every path from the root down to a leaf, written like 5->3->1. Goes from handing each call a new copy of the path to one shared path that is undone on the way back up."
 insight: "Keep one list for the current path: push a node on the way down, write the path out at a leaf, and pop the node on the way back up."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n · h)", space: "O(h)" }
 study: true
 ---

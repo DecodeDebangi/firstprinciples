@@ -6,6 +6,7 @@ topics: [BST, Binary tree, DFS]
 added: 2026-11-26
 summary: "Replace each value in a binary search tree with itself plus every bigger value in the tree. Goes from adding up the bigger values separately for each node to one reverse in-order walk with a running total."
 insight: "Visit the nodes from largest to smallest (right, node, left). A running total then always holds the sum of everything bigger, so each node adds itself and takes the total."
+reads: [trees-from-scratch, binary-search-trees, tree-traversals]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

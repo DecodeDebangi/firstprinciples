@@ -6,6 +6,7 @@ topics: [Prefix sum, Binary tree, Tree, Hash map, DFS]
 added: 2026-11-26
 summary: "Count the downward paths, starting and ending at any nodes, whose values add up to a target. Goes from starting a new walk at every node to running sums from the root, counted in a map."
 insight: "A downward path ending at a node adds up to the target exactly when an earlier node on the same root path had a running sum of (this sum − target). Count running sums in a map, and remove each one on the way back up."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

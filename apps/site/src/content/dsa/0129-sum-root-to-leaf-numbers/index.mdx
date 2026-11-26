@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Each root-to-leaf path spells a number from its digits; add all those numbers up. Goes from collecting every path and reading it afterwards to carrying the number down as you go."
 insight: "Pass the number spelled so far down to each child, which appends its digit with num · 10 + digit. Leaves return the finished numbers, and parents add up what comes back."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---

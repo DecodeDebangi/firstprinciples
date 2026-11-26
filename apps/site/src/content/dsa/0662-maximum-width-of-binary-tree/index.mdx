@@ -6,6 +6,7 @@ topics: [Binary tree, Tree, BFS]
 added: 2026-11-26
 summary: "Find the widest level of a binary tree, counting every position between its leftmost and rightmost nodes, empty ones included. Goes from storing a slot for every missing node to numbering positions like a full tree."
 insight: "Number positions as if the tree were full: the root is 0 and a node at i has children at 2i and 2i + 1. A level's width is last − first + 1."
+reads: [trees-from-scratch, tree-traversals]
 best: { time: "O(n)", space: "O(w)" }
 study: true
 ---

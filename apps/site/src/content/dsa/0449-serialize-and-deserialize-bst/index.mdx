@@ -6,6 +6,7 @@ topics: [BST, Binary tree, DFS]
 added: 2026-11-26
 summary: Write a binary search tree out as compactly as possible and read it back. Goes from the general pre-order with a marker for each missing child to plain pre-order with no markers, rebuilt using the range each subtree's values must fall in.
 insight: "In a BST the order rule says where each value goes, so write just the values in pre-order. Reading back, a value outside the current subtree's range means that subtree is empty."
+reads: [trees-from-scratch, serializing-trees, binary-search-trees]
 best: { time: "O(n)", space: "O(n)" }
 study: true
 ---

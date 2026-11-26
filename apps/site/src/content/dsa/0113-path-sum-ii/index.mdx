@@ -6,6 +6,7 @@ topics: [Backtracking, Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Find every root-to-leaf path whose values add up to a target. Goes from copying the path at every node to one shared path, passing down how much is still needed and copying only the paths that match."
 insight: "Keep one shared path and pass down how much is still needed. At a leaf with nothing left, copy the path into the answer; pop each node on the way back up."
+reads: [trees-from-scratch, tree-recursion]
 best: { time: "O(n + k · h)", space: "O(h)" }
 study: true
 ---

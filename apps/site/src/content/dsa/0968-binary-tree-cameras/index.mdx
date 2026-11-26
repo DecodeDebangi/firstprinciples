@@ -6,6 +6,7 @@ topics: [Dynamic programming, Greedy, Binary tree, Tree, DFS]
 added: 2026-11-26
 summary: "Place as few cameras as possible on a binary tree's nodes so every node is watched; a camera watches its node, its parent and its children. Goes from trying every set of cameras to one bottom-up walk where each node reports needs, camera or covered."
 insight: "Never put a camera on a leaf: its parent covers more. Bottom-up, a node with a child that needs watching takes a camera; a node with a camera below it is covered; otherwise it needs watching."
+reads: [trees-from-scratch, dp-on-trees, tree-recursion]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---
