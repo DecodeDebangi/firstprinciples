@@ -1,0 +1,83 @@
+---
+title: House Robber III
+leetcode: { number: 337, url: "https://leetcode.com/problems/house-robber-iii/" }
+difficulty: Medium
+topics: [Dynamic programming, Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "Houses form a binary tree; robbing two houses joined directly sets off an alarm. Find the most money you can take. Goes from choosing rob or skip at every node while re-asking the grandchildren, to each node returning two answers at once."
+insight: "Each node returns two numbers: the best for its subtree if it's robbed (its value plus its children's not-robbed numbers) and if it isn't (each child's bigger number)."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree where each node is a house holding some money. You can't rob two houses joined directly by an edge (a parent and its child). Return the most money you can rob.
+
+For the tree `[2, 5, 3, 1, 6, null, 4]` the answer is `13`: rob the root 2 and the grandchildren 1, 6 and 4, no two of which are joined.
+
+## The key question
+
+> **What does a parent need to know about each child to decide?**
+
+Two things: the child's best if it's robbed, and if it isn't. One number can't tell the parent whether robbing itself is allowed. [DP on trees](/concepts/dp-on-trees/) explains the pattern.
+
+## Approach 1: Rob or skip, recomputing below
+
+At each node, compare robbing it (its value plus the best from its grandchildren) with skipping it (the best from its children).
+
+<Viz client:visible approach="plain" />
+
+<Complexity time="O(2^n)" space="O(h)">
+**Time.** Grandchildren are asked both by their grandparent and by their parent, and the repeats multiply down the tree: exponential on a long chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** every subtree's answer is worked out again by each path that reaches it.
+</Complexity>
+
+## Approach 2: Return two answers: robbed and skipped (optimal)
+
+Each node returns `(robbed, skipped)`: robbed is its value plus each child's skipped; skipped is the sum of each child's larger number. The answer is the larger of the root's two.
+
+<Viz client:visible approach="pair" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node, O(1) each: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Rob or skip, recomputing below | O(2^n) | O(h) | Re-ask the grandchildren |
+| Return two answers: robbed and skipped | **O(n)** | O(h) | Two numbers per node |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n houses: the repeats grow exponentially." />
+
+## Common mistakes
+
+- **Taking every other level.** The best choice can skip two levels in a row.
+- **Returning only the larger number.** The parent can't tell whether the child was robbed.
+- **Robbing a node and a child.** If a node is robbed, use its children's skipped numbers only.
+
+## Check yourself
+
+<Quiz client:visible title="House Robber III" questions={questions} />
+
+## Related problems
+
+- [House Robber](/dsa/house-robber/). The same choice along a street.
+- [Binary Tree Maximum Path Sum](/dsa/binary-tree-maximum-path-sum/). Another bottom-up tree answer.
+- [Binary Tree Cameras](/dsa/binary-tree-cameras/). A tree DP that returns a state.

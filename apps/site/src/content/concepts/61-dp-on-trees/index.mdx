@@ -1,0 +1,78 @@
+---
+title: "DP on trees: return a small summary from every node"
+topic: Dynamic programming
+kind: Explainer
+order: 5
+summary: "Many tree problems are dynamic programming in disguise. Each node solves the question for its own subtree from its children's answers, so every subtree is solved once. The trick is choosing what each node reports: sometimes two numbers (best if chosen, best if not), sometimes a state like needs, camera or covered."
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/) introduces dynamic programming: solve each smaller
+version of a problem once and reuse the answer. On a tree, the smaller versions are the **subtrees**, and a
+[bottom-up](/concepts/tree-recursion/) walk visits every subtree exactly once, so there's nothing to cache. The whole
+design question is: **what does each node report to its parent?**
+
+## When one number isn't enough
+
+House Robber on a tree: no two neighbouring nodes may both be chosen, and you want the largest total. A parent can't decide
+from its child's single "best" number, because it needs to know whether that best used the child. Plain recursion works
+around this by asking the grandchildren directly, which asks them again and again.
+
+Instead, let every node report **two** numbers: the best for its subtree if it's chosen, and if it isn't.
+
+- Chosen: its value plus each child's "not chosen" number.
+- Not chosen: for each child, whichever of its two numbers is bigger.
+
+<Viz client:visible approach="pair" />
+
+Every node does O(1) work: O(n) in total. That's [House Robber III](/dsa/house-robber-iii/), the tree version of
+[House Robber](/dsa/house-robber/).
+
+## When the answer is a state
+
+Binary Tree Cameras: a camera watches its node, its parent and its children; use as few as possible. Here each node
+reports one of three states, **needs** (nothing watches it yet), **camera**, or **covered**. Working up from the leaves:
+
+- If a child needs watching, this node must hold a camera.
+- Otherwise, if a child has a camera, this node is covered.
+- Otherwise it needs watching, and its parent will handle it.
+
+A leaf never holds a camera, because its parent's camera covers strictly more. This choice is greedy, but it's safe
+for exactly that reason.
+
+<Viz client:visible approach="states" />
+
+That's [Binary Tree Cameras](/dsa/binary-tree-cameras/).
+
+## Return one thing, track another
+
+Sometimes the parent needs one value while the answer is a different one. [Longest Univalue
+Path](/dsa/longest-univalue-path/) returns the longest same-value arm going down but tracks the best path bending at any
+node, the same shape as [Diameter of Binary Tree](/dsa/diameter-of-binary-tree/) and [Binary Tree Maximum Path
+Sum](/dsa/binary-tree-maximum-path-sum/). [Distribute Coins in Binary Tree](/dsa/distribute-coins-in-binary-tree/)
+returns each subtree's excess coins and adds up the moves on the side.
+
+## Interview theory
+
+<QA q="How do you recognise DP on a tree?">
+The answer for a subtree can be built from its children's answers, but one number per child isn't enough to decide. Find
+the few values (or states) a parent needs, and return those.
+</QA>
+
+<QA q="What's the time complexity, and is memoisation needed?">
+O(n) with one post-order walk, since each subtree is solved exactly once. Memoisation is only needed if the recursion
+asks for the same subtree more than once, as plain recursion on House Robber III does.
+</QA>
+
+<QA q="Why is the greedy camera placement correct?">
+Putting a camera on a leaf's parent instead of the leaf covers everything the leaf's camera would, and more. Working
+upward, each decision is the one that covers the most without leaving a node unwatched.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

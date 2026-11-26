@@ -1,0 +1,83 @@
+---
+title: Distribute Coins in Binary Tree
+leetcode: { number: 979, url: "https://leetcode.com/problems/distribute-coins-in-binary-tree/" }
+difficulty: Medium
+topics: [Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "A binary tree with n nodes holds n coins spread unevenly; move one coin across one edge at a time until every node has exactly one. Find the fewest moves. Goes from counting the coins below every edge separately to one bottom-up walk that reports each subtree's excess."
+insight: "The coins crossing an edge are exactly the excess (or shortfall) of the subtree below it. Each node reports its coins plus its children's excess minus one; every report's size is the moves across that edge."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree with `n` nodes, where `node.val` is that node's coins and the coins add up to `n`. A move takes one coin from a node to a neighbour (parent or child). Return the fewest moves so every node has exactly one coin.
+
+For the tree `[1, 0, 0, 3, null, 0, 2]` the answer is `6`.
+
+## The key question
+
+> **How many coins must cross each edge?**
+
+Exactly the subtree's excess: if the nodes below an edge hold 3 more coins than they need, 3 coins must leave across that edge; if they're 2 short, 2 must come in. It never helps to send a coin across an edge and back.
+
+## Approach 1: Count the coins below every edge
+
+For every node except the root, count the coins and nodes in its subtree from scratch; their difference crosses the edge above it.
+
+<Viz client:visible approach="each" />
+
+<Complexity time="O(n²)" space="O(h)">
+**Time.** Each subtree is counted once per edge above it: **O(n²)** on a chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** the same subtrees are counted again for every edge above them.
+</Complexity>
+
+## Approach 2: Each node reports its excess upward (optimal)
+
+Bottom-up, each node returns `coins + left excess + right excess − 1`. The size of each child's report is the moves across that child's edge.
+
+<Viz client:visible approach="once" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count the coins below every edge | O(n²) | O(h) | Count per edge |
+| Each node reports its excess upward | **O(n)** | O(h) | Excess flows up |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes with every coin at the bottom." />
+
+## Common mistakes
+
+- **Ignoring negative excess.** A shortfall also costs moves: add the absolute value.
+- **Forgetting the coin a node keeps.** Subtract 1 for the node itself.
+- **Counting the root's report as moves.** The root has no edge above it; it always reports 0.
+
+## Check yourself
+
+<Quiz client:visible title="Distribute Coins in Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Cameras](/dsa/binary-tree-cameras/). Another decision made bottom-up.
+- [House Robber III](/dsa/house-robber-iii/). Returning a summary per node.
+- [Path Sum III](/dsa/path-sum-iii/). Running totals on a tree.

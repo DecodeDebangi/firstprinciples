@@ -1,0 +1,83 @@
+---
+title: Binary Tree Cameras
+leetcode: { number: 968, url: "https://leetcode.com/problems/binary-tree-cameras/" }
+difficulty: Hard
+topics: [Dynamic programming, Greedy, Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "Place as few cameras as possible on a binary tree's nodes so every node is watched; a camera watches its node, its parent and its children. Goes from trying every set of cameras to one bottom-up walk where each node reports needs, camera or covered."
+insight: "Never put a camera on a leaf: its parent covers more. Bottom-up, a node with a child that needs watching takes a camera; a node with a camera below it is covered; otherwise it needs watching."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. A camera on a node watches that node, its parent and its children. Return the fewest cameras needed so every node is watched.
+
+For the tree `[0, 0, null, 0, null, 0, 0, null, null, 0]` (the values don't matter) the answer is `3`.
+
+## The key question
+
+> **Where should the first camera go?**
+
+Never on a leaf. A camera on the leaf's parent watches the leaf too, plus more. That one observation turns the search into a single bottom-up pass; see [DP on trees](/concepts/dp-on-trees/).
+
+## Approach 1: Try every set of cameras, smallest first
+
+Try every way to place 1 camera, then 2, and so on, until some set watches every node.
+
+<Viz client:visible approach="subsets" />
+
+<Complexity time="O(2^n · n)" space="O(n)">
+**Time.** Up to all 2^n sets, each checked in O(n): **exponential**.
+
+**Space.** The current set: **O(n)**.
+
+**What it wastes:** almost every set tried is obviously wasteful, like cameras on leaves.
+</Complexity>
+
+## Approach 2: Bottom-up: each node reports needs, camera or covered (optimal)
+
+Walk bottom-up. A node with a child that reports needs takes a camera; else a node with a camera child is covered; else it reports needs. If the root ends up needing, give it a camera.
+
+<Viz client:visible approach="states" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every set of cameras, smallest first | O(2^n · n) | O(n) | Search every set |
+| Bottom-up: each node reports needs, camera or covered | **O(n)** | O(h) | Three states, decided from below |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes: trying every set grows exponentially." />
+
+## Common mistakes
+
+- **Putting cameras on leaves.** The parent's camera always covers at least as much.
+- **Forgetting the root.** If the root still needs watching at the end, it gets a camera.
+- **Treating a missing child as needs.** A missing child doesn't need watching: count it as covered.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Cameras" questions={questions} />
+
+## Related problems
+
+- [House Robber III](/dsa/house-robber-iii/). A tree DP returning two numbers.
+- [Distribute Coins in Binary Tree](/dsa/distribute-coins-in-binary-tree/). Another bottom-up decision per node.
+- [Jump Game](/dsa/jump-game/). A greedy choice that's safe for a clear reason.
