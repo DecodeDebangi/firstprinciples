@@ -7,4 +7,6 @@ export const questions: QuizQuestion[] = [
   { q: "A node's left subtree has height 3 and its right has height 2. What's the longest path through that node, counted in edges?", options: ["5", "4", "3"], answer: 0, why: "The path goes down 3 edges on one side and 2 on the other: 3 + 2." },
   { q: "In the balanced-tree check, what does returning −1 mean?", options: ["Somewhere below is already unbalanced", "The subtree is empty", "The node is a leaf"], answer: 0, why: "It's a signal passed up unchanged, so no caller wastes time recomputing heights." },
   { q: "What's the extra space for recursion on a tree that is one long chain of n nodes?", options: ["O(n)", "O(log n)", "O(1)"], answer: 0, why: "The recursion goes n calls deep, one per node on the path." },
+  { q: "Which kind of recursion fits \"the depth of every node\"?", options: ["Top-down: the parent passes its depth + 1 down", "Bottom-up: each node returns its depth", "Neither"], answer: 0, why: "A node's depth depends on what's above it, which only its parent knows." },
+  { q: "Why is checking balance top-down slower than bottom-up?", options: ["Top-down measures subtree heights again at every ancestor", "Top-down visits fewer nodes", "Bottom-up skips leaves"], answer: 0, why: "Bottom-up returns each height once to its parent, so nothing is measured twice: O(n) instead of up to O(n²)." },
 ];

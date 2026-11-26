@@ -1,9 +1,9 @@
 ---
-title: "Tree recursion: pass information down, return answers up"
+title: "Tree recursion: top-down and bottom-up"
 topic: Trees
 kind: Explainer
 order: 2
-summary: Nearly every binary tree problem is one recursive function, and the design question is which way information flows. Return an answer up from the children (post-order), pass what you know down to them (pre-order), return one thing while tracking another, return a signal, or recurse on two nodes at once.
+summary: Nearly every binary tree problem is one recursive function, and the design question is which way information flows. Bottom-up returns an answer from the children (post-order); top-down passes what you know down to them (pre-order). Plus the same problem solved both ways, return one thing while tracking another, return a signal, or recurse on two nodes at once.
 added: 2026-11-22
 ---
 import Viz from "./Viz.tsx";
@@ -16,10 +16,11 @@ import { questions } from "./quiz";
 [The traversals read](/concepts/tree-traversals/) shows the order nodes are visited in. Solving a problem adds one
 more question: **what does each call need, and what does it give back?** Information can flow two ways:
 
-- **Up**: a call asks its children about their subtrees, then combines the two answers. Children finish first,
-  so this is **post-order**.
-- **Down**: a call receives something from its parent (a running total, a depth, an allowed range), uses it, and
-  hands an updated version to its children. The parent's work happens first, so this is **pre-order**.
+- **Up**, called **bottom-up** recursion: a call asks its children about their subtrees, then combines the two
+  answers. Children finish first, so this is **post-order**.
+- **Down**, called **top-down** recursion: a call receives something from its parent (a running total, a depth, an
+  allowed range), uses it, and hands an updated version to its children. The parent's work happens first, so this is
+  **pre-order**.
 
 Decide the direction first, and the code almost writes itself.
 
@@ -72,6 +73,42 @@ and [Same Tree](/dsa/same-tree/).
 
 All of them visit each node once: **O(n)** time, and **O(h)** extra space for the recursion, where h is the tree's
 height (n for a tree that's one long chain, about log₂ n for a balanced one).
+
+## Top-down or bottom-up: the same problem both ways
+
+Many problems can be solved in either direction. Maximum depth, for example:
+
+```text
+// bottom-up: each call returns its height
+function depth(node)
+    if node = none
+        return 0
+    return 1 + max(depth(node.left), depth(node.right))
+
+// top-down: each call is told its depth
+function walk(node, d)
+    if node = none
+        return
+    best ← max(best, d)  // best starts at 0
+    walk(node.left, d + 1)
+    walk(node.right, d + 1)
+```
+
+Both visit each node once. Bottom-up needs no shared variable; top-down needs one (`best`) to collect the answer. The
+choice matters more when a check needs facts from below. [Balanced Binary Tree](/dsa/balanced-binary-tree/) can be
+solved top-down, asking at every node "how tall are my two subtrees?" and measuring them from scratch each time, which
+is O(n²) on a chain. Bottom-up, each call returns its height (or −1 for "already unbalanced"), so every height is
+measured once: O(n). [Balanced trees](/concepts/balanced-trees/) walks through it.
+
+| | Top-down | Bottom-up |
+|---|---|---|
+| Information flows | From parent to children, as arguments | From children to parent, as return values |
+| Order | Pre-order: the node's work comes first | Post-order: the children finish first |
+| Good for | Depth, path sums, allowed ranges: facts about what's **above** | Heights, sizes, balance, diameter: facts about what's **below** |
+| Watch out for | Re-measuring subtrees at every node | Needing a second value (use a pair, or track a best on the side) |
+
+A quick test: if a node needs to know something about its ancestors, pass it down; if it needs something about its
+descendants, return it up.
 
 ## Interview theory
 
