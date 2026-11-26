@@ -62,17 +62,20 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
     )}
 
     {guide && (
+      <details class="guide">
+        <summary><span class="sr">Show </span>When to reach for it, and a template</summary>
       <div class="cols">
         <section class="card">
-          <h2>When to reach for it</h2>
+          <h3>When to reach for it</h3>
           <ul class="signals">{guide.signals.map((s) => <li>{s}</li>)}</ul>
           <p class="payoff">{guide.payoff}</p>
         </section>
         <section class="card">
-          <h2>Template</h2>
+          <h3>Template</h3>
           <pre class="tpl"><code>{guide.template.split("\n").map((l, i, all) => { const lead = l.length - l.trimStart().length; const lv = Math.floor(lead / 4); return <>{Array.from({ length: lv }, () => <span class="ind">{"    "}</span>)}{l.slice(lv * 4)}{i < all.length - 1 ? "\n" : ""}</>; })}</code></pre>
         </section>
       </div>
+      </details>
     )}
 
     <section>
@@ -83,20 +86,27 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
           : topic.name === "Coding basics"
           ? <>No problems of its own: these reads prepare you for all of them. When you're done, start with <a href="/dsa/two-sum/">Two Sum</a>.</>
           : <>Problems for this topic are on the way. Meanwhile, <a href="/problems/">browse all problems</a>.</>}</p>
-      ) : <p class="sub">Easiest first. Each one builds from the brute force to the optimal solution, with an animation for every approach.</p>}
+      ) : <p class="sub">Easiest first. Each one goes from the brute force to the optimal solution, with an animation for every approach.</p>}
+      {all.length > 6 && (
+        <div class="filters" role="group" aria-label="Show problems by difficulty">
+          {(["All", "Easy", "Medium", "Hard"] as const).map((d) => {
+            const n = d === "All" ? all.length : all.filter((p) => p.data.difficulty === d).length;
+            return n > 0 && <button type="button" class:list={["chipf", { "is-on": d === "All" }]} data-diff={d} aria-pressed={d === "All" ? "true" : "false"}>{d} <span>{n}</span></button>;
+          })}
+        </div>
+      )}
       <ol class="plist">
         {all.map((p) => (
-          <li>
-            <a href={`/dsa/${p.id}/`}>
+          <li data-diff={p.data.difficulty}>
+            <a href={`/dsa/${p.id}/`} title={p.data.summary}>
               <span class="num">#{p.data.leetcode.number}</span>
               <span class="main">
                 <span class="title" data-pslug={p.id}>{p.data.title}</span>
-                <span class="summary">{p.data.summary}</span>
+                {homeTopic(p.data.topics) !== topic && <span class="also">Main topic: {homeTopic(p.data.topics)?.name}</span>}
               </span>
               <span class={`pill pill--${p.data.difficulty}`}>{p.data.difficulty}</span>
               <span class="best"><code>{p.data.best.time}</code></span>
             </a>
-            {homeTopic(p.data.topics) !== topic && <span class="also">Main topic: {homeTopic(p.data.topics)?.name}</span>}
           </li>
         ))}
       </ol>
@@ -120,7 +130,22 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
   .reads a:hover { box-shadow: var(--shadow); }
   .rkind { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
   .rtitle { font: 600 18px var(--font-serif); }
-  .rsum { font-size: 14px; color: var(--text-2); }
+  .rsum { font-size: 13.5px; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .reads ol { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+  .reads a { padding: 12px 14px !important; height: 100%; }
+  .rtitle { font-size: 16px !important; line-height: 1.3; }
+  .guide { margin-bottom: 28px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  .guide > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; }
+  .guide > summary::-webkit-details-marker { display: none; }
+  .guide > summary::before { content: "+"; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .guide[open] > summary::before { content: "−"; }
+  .guide .cols { padding: 0 16px 16px; }
+  .guide .card { padding: 14px 16px; }
+  .card h3 { margin: 0 0 8px; font-size: 17px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .chipf { border: 1px solid var(--border); background: var(--surface); color: var(--text-2); border-radius: 99px; padding: 4px 12px; font: 600 13px var(--font-sans); cursor: pointer; }
+  .chipf span { color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .chipf.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
   .plist:empty { display: none; }
   .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
@@ -130,22 +155,34 @@ const count = (n: number) => `${n} problem${n === 1 ? "" : "s"}`;
   .tpl .ind { box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent); }
   .tpl { margin: 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13.5px/1.6 var(--font-mono); }
   .sub { color: var(--text-2); margin: 0 0 14px; }
-  .plist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
-  .plist li + li { border-top: 1px solid var(--border); }
-  .plist a { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) auto 6em; align-items: center; gap: 12px; padding: 14px 16px; color: var(--text); text-decoration: none; }
+  /* Compact rows, two columns on wide screens; the summary shows on hover. */
+  .plist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr)); gap: 0 12px; }
+  .plist li { border-bottom: 1px solid var(--border); }
+  .plist li[hidden] { display: none; }
+  .plist a { display: grid; grid-template-columns: 3.6em minmax(0, 1fr) auto 5.6em; align-items: center; gap: 10px; padding: 9px 8px; color: var(--text); text-decoration: none; border-radius: 8px; }
   .plist a:hover { background: var(--accent-soft); }
   .num { font: 500 13px var(--font-mono); color: var(--muted); }
   .main { display: flex; flex-direction: column; min-width: 0; }
-  .title { font: 600 17px var(--font-serif); }
-  .summary { font-size: 13.5px; color: var(--text-2); line-height: 1.45; }
+  .title { font: 600 15px var(--font-serif); line-height: 1.3; }
   .best code { font-size: 13px; }
-  .also { display: block; padding: 0 16px 10px calc(4.2em + 28px); margin-top: -8px; font-size: 12.5px; color: var(--muted); }
+  .also { font-size: 12px; color: var(--muted); }
   .pn { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-weight: 600; }
   .pn a { text-decoration: none; }
   @media (max-width: 640px) {
     .plist a { grid-template-columns: 3.4em minmax(0, 1fr) auto; }
     .best { display: none; }
-    .summary { display: none; }
-    .also { padding-left: 16px; }
   }
 </style>
+
+<script>
+  // Difficulty chips: show only that difficulty's rows. Nothing is stored; a reload shows all again.
+  for (const box of document.querySelectorAll<HTMLElement>(".filters")) {
+    const list = box.nextElementSibling as HTMLElement;
+    box.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>(".chipf");
+      if (!btn) return;
+      box.querySelectorAll(".chipf").forEach((b) => { b.classList.toggle("is-on", b === btn); b.setAttribute("aria-pressed", String(b === btn)); });
+      list.querySelectorAll<HTMLElement>("li[data-diff]").forEach((li) => { li.hidden = btn.dataset.diff !== "All" && li.dataset.diff !== btn.dataset.diff; });
+    });
+  }
+</script>
