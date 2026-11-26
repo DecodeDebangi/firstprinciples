@@ -1,0 +1,83 @@
+---
+title: Convert BST to Greater Tree
+leetcode: { number: 538, url: "https://leetcode.com/problems/convert-bst-to-greater-tree/" }
+difficulty: Medium
+topics: [BST, Binary tree, DFS]
+added: 2026-11-26
+summary: "Replace each value in a binary search tree with itself plus every bigger value in the tree. Goes from adding up the bigger values separately for each node to one reverse in-order walk with a running total."
+insight: "Visit the nodes from largest to smallest (right, node, left). A running total then always holds the sum of everything bigger, so each node adds itself and takes the total."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree. Change every node's value to its original value plus the sum of all values bigger than it, and return the root.
+
+For the tree `[6, 3, 9, 1, 4, 8, 12]` the answer is `[35, 42, 21, 43, 39, 29, 12]`: 12 has nothing bigger, 9 becomes 9 + 12 = 21, and so on.
+
+## The key question
+
+> **In what order should the nodes be visited so that everything bigger has already been counted?**
+
+Largest first: right subtree, node, left subtree. That's in-order backwards ([Binary search trees](/concepts/binary-search-trees/)).
+
+## Approach 1: Add up the bigger values for each node
+
+Keep the original values. For each node, add up every original value at least as big as its own.
+
+<Viz client:visible approach="each" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each of the `n` nodes reads all `n` values: **O(n²)**.
+
+**Space.** The copy of the original values: **O(n)**.
+
+**What it wastes:** the same large values are added again for every smaller node.
+</Complexity>
+
+## Approach 2: Reverse in-order with a running total (optimal)
+
+Walk right, node, left, keeping a running total. At each node add its value to the total and replace its value with the total.
+
+<Viz client:visible approach="reverse" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One walk: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Add up the bigger values for each node | O(n²) | O(n) | Sum per node |
+| Reverse in-order with a running total | **O(n)** | O(h) | Largest first, running total |
+
+<GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes." />
+
+## Common mistakes
+
+- **Walking left first.** Then the running total holds the smaller values instead.
+- **Adding the new values instead of the original ones.** Add `node.val` before overwriting it.
+- **Forgetting the node itself.** Each new value includes the node's own value.
+
+## Check yourself
+
+<Quiz client:visible title="Convert BST to Greater Tree" questions={questions} />
+
+## Related problems
+
+- [Kth Smallest Element in a BST](/dsa/kth-smallest-element-in-a-bst/). In-order the usual way round.
+- [Running Sum of 1d Array](/dsa/running-sum-of-1d-array/). A running total on an array.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The walk, forwards.

@@ -1,0 +1,83 @@
+---
+title: Range Sum of BST
+leetcode: { number: 938, url: "https://leetcode.com/problems/range-sum-of-bst/" }
+difficulty: Easy
+topics: [BST, Binary tree, DFS]
+added: 2026-11-26
+summary: "Add up every value in a binary search tree that falls between two bounds. Goes from visiting every node to skipping the subtrees the order rules out."
+insight: "A node below the range has only smaller values on its left, so skip that side; a node above it can skip its right. Only paths that touch the range are walked."
+best: { time: "O(h + m)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and two numbers `low` and `high`. Return the sum of all values from `low` to `high`, inclusive.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7]`, `low = 5` and `high = 9`, the answer is `21`: 6 + 7 + 8.
+
+## The key question
+
+> **Which subtrees can't contain anything in range?**
+
+The left subtree of a node below `low`, and the right subtree of a node above `high` ([Binary search trees](/concepts/binary-search-trees/)).
+
+## Approach 1: Visit every node
+
+Walk the whole tree, adding each value that's in range.
+
+<Viz client:visible approach="all" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Every node is visited: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** whole subtrees that can't hold a single value in range.
+</Complexity>
+
+## Approach 2: Skip the subtrees the order rules out (optimal)
+
+If the node is below `low`, only go right; above `high`, only go left; in range, add it and go both ways.
+
+<Viz client:visible approach="prune" />
+
+<Complexity time="O(h + m)" space="O(h)">
+**Time.** Only the paths down to the range's edges and the `m` nodes inside it are visited: **O(h + m)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Visit every node | O(n) | O(h) | Ignore the order |
+| Skip the subtrees the order rules out | **O(h + m)** | O(h) | Prune by value |
+
+<GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes, with a range beyond every value." />
+
+## Common mistakes
+
+- **Stopping at a node below the range.** Its right subtree may still hold values in range.
+- **Using the wrong side.** Below `low`: go right. Above `high`: go left.
+- **Excluding the bounds.** `low` and `high` themselves count.
+
+## Check yourself
+
+<Quiz client:visible title="Range Sum of BST" questions={questions} />
+
+## Related problems
+
+- [Trim a Binary Search Tree](/dsa/trim-a-binary-search-tree/). The same pruning, removing instead of adding.
+- [Search in a Binary Search Tree](/dsa/search-in-a-binary-search-tree/). Pruning down to one value.
+- [Range Sum Query - Immutable](/dsa/range-sum-query-immutable/). Range sums on an array.

@@ -1,0 +1,83 @@
+---
+title: Two Sum IV - Input is a BST
+leetcode: { number: 653, url: "https://leetcode.com/problems/two-sum-iv-input-is-a-bst/" }
+difficulty: Easy
+topics: [BST, Two pointers, Binary tree]
+added: 2026-11-26
+summary: "Decide whether two different nodes of a binary search tree add up to a target. Goes from searching the tree for each node's partner to reading the values in order and closing in with two pointers."
+insight: "An in-order read gives the values sorted, which turns it into the two-pointer pair search: too small moves the left pointer up, too big moves the right one down."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and a number `k`. Return `true` if two different nodes add up to `k`.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7]` and `k = 14`, the answer is `true`: 4 + 10.
+
+## The key question
+
+> **Which faster tool does a BST hand you for a pair-sum question?**
+
+A sorted list, by reading it in order. Then it's [two pointers](/concepts/two-pointers/), as in [Two Sum II](/dsa/two-sum-ii-input-array-is-sorted/).
+
+## Approach 1: For each node, search for its partner
+
+For each value `x`, walk down from the root looking for `k − x`.
+
+<Viz client:visible approach="search" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Each of the `n` nodes runs a search of up to `h` steps: **O(n · h)**.
+
+**Space.** A pointer and the walk: **O(h)**.
+
+**What it wastes:** every search starts again from the root.
+</Complexity>
+
+## Approach 2: In-order list, then two pointers (optimal)
+
+Read the values in order into a sorted list. Start `lo` at the smallest and `hi` at the largest; if the sum is too small, move `lo` up; too big, move `hi` down.
+
+<Viz client:visible approach="pointers" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One read and one pass: **O(n)**.
+
+**Space.** The list: **O(n)**. (A hash set of values seen is also O(n), and works on any tree.)
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| For each node, search for its partner | O(n · h) | O(h) | One search per node |
+| In-order list, then two pointers | **O(n)** | O(n) | Sorted list + two pointers |
+
+<GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes with no matching pair." />
+
+## Common mistakes
+
+- **Using the same node twice.** For `k = 8` and a node 4, 4 + 4 doesn't count unless there are two 4s.
+- **Moving the wrong pointer.** Too small means the left value can't pair with anything: move `lo`.
+- **Forgetting that a hash set works too.** It's O(n) and doesn't need the BST order at all.
+
+## Check yourself
+
+<Quiz client:visible title="Two Sum IV - Input is a BST" questions={questions} />
+
+## Related problems
+
+- [Two Sum II](/dsa/two-sum-ii-input-array-is-sorted/). The same pointers on a sorted array.
+- [Two Sum](/dsa/two-sum/). The hash-map version.
+- [Kth Smallest Element in a BST](/dsa/kth-smallest-element-in-a-bst/). Another use of in-order on a BST.

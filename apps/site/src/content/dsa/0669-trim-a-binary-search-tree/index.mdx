@@ -1,0 +1,83 @@
+---
+title: Trim a Binary Search Tree
+leetcode: { number: 669, url: "https://leetcode.com/problems/trim-a-binary-search-tree/" }
+difficulty: Medium
+topics: [BST, Binary tree, DFS]
+added: 2026-11-26
+summary: "Remove every value outside a range from a binary search tree, keeping the rest in the same shape. Goes from reinserting the kept values one by one to trimming recursively, dropping whole subtrees at once."
+insight: "A node below the range takes its whole left subtree with it, so only its trimmed right subtree survives in its place; a node above the range likewise keeps only its left."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and two numbers `low` and `high`. Remove every node whose value is outside `low` to `high`, keeping the remaining nodes in the same relative positions (a kept node stays below its kept ancestors). Return the new root.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7]`, `low = 4` and `high = 10`, the answer is `[8, 6, 10, 4, 7]`: 1, 3 and 14 go, and 6 moves up into 3's place.
+
+## The key question
+
+> **When a node is out of range, how much of its subtree can go with it?**
+
+Half of it, without looking. A node below `low` has only smaller values on its left, so they all go; only its right side can hold kept values ([Binary search trees](/concepts/binary-search-trees/)).
+
+## Approach 1: Insert the kept values into a new tree
+
+Go through the nodes in pre-order (parents before children) and insert each kept value into a new tree. That rebuilds exactly the trimmed shape.
+
+<Viz client:visible approach="reinsert" />
+
+<Complexity time="O(n · h)" space="O(n)">
+**Time.** Each insert walks down the new tree: **O(n · h)**, O(n²) for a chain.
+
+**Space.** The new tree: **O(n)**.
+
+**What it wastes:** building a whole new tree, one walk per value, when the old nodes could simply be relinked.
+</Complexity>
+
+## Approach 2: Trim recursively, skipping whole subtrees (optimal)
+
+If a node is below `low`, return the trimmed right subtree in its place; above `high`, the trimmed left subtree. Otherwise keep it and trim both children.
+
+<Viz client:visible approach="trim" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is looked at once at most, and dropped subtrees aren't looked at at all: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Insert the kept values into a new tree | O(n · h) | O(n) | Rebuild by inserting |
+| Trim recursively, skipping whole subtrees | **O(n)** | O(h) | Drop half a subtree at a time |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n values, the worst case for reinserting." />
+
+## Common mistakes
+
+- **Returning none for an out-of-range node.** Its other side may hold kept values.
+- **Checking both sides of an out-of-range node.** One side is always all out of range.
+- **Rebuilding the tree with a different shape.** The kept nodes must stay in the same relative positions.
+
+## Check yourself
+
+<Quiz client:visible title="Trim a Binary Search Tree" questions={questions} />
+
+## Related problems
+
+- [Delete Node in a BST](/dsa/delete-node-in-a-bst/). Removing a single value.
+- [Range Sum of BST](/dsa/range-sum-of-bst/). The same pruning, adding up instead of removing.
+- [Validate Binary Search Tree](/dsa/validate-binary-search-tree/). Ranges passed down a BST.

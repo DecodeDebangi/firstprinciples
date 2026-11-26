@@ -1,0 +1,83 @@
+---
+title: Kth Smallest Element in a BST
+leetcode: { number: 230, url: "https://leetcode.com/problems/kth-smallest-element-in-a-bst/" }
+difficulty: Medium
+topics: [BST, Binary tree, Stack, DFS]
+added: 2026-11-26
+summary: "Find the kth smallest value in a binary search tree. Goes from writing out every value in order to an in-order walk that stops as soon as it has counted k values."
+insight: "Reading a BST in order gives its values sorted. Walk in order with a stack and stop at the kth value: nothing after it is ever touched."
+best: { time: "O(h + k)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and a number `k`. Return the kth smallest value (counting from 1).
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7]` and `k = 3`, the answer is `4`: in order the values are 1, 3, 4, 6, 7, 8, 10, 14.
+
+## The key question
+
+> **Do you need every value to find the kth smallest?**
+
+No. In-order reads the values smallest first ([Binary search trees](/concepts/binary-search-trees/)), so you can stop after k of them.
+
+## Approach 1: Write out every value in order
+
+Read the whole tree in order into a list, then return the item at position k − 1.
+
+<Viz client:visible approach="list" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Every node is read: **O(n)**.
+
+**Space.** The list of every value: **O(n)**.
+
+**What it wastes:** everything after the kth value is read and stored for nothing.
+</Complexity>
+
+## Approach 2: Walk in order, stop at the kth (optimal)
+
+Walk in order with a stack (left as far as possible, pop, then go right), counting down `k` at each pop. Return the value that brings it to 0.
+
+<Viz client:visible approach="stop" />
+
+<Complexity time="O(h + k)" space="O(h)">
+**Time.** Reaching the smallest value takes up to `h` steps, then each of the `k` pops costs O(1) on average: **O(h + k)**.
+
+**Space.** The stack holds one path: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Write out every value in order | O(n) | O(n) | Read all, pick one |
+| Walk in order, stop at the kth | **O(h + k)** | O(h) | Count pops, stop at k |
+
+<GrowthChart client:visible series={growth} caption="Operations for k = 1 in a balanced tree of n nodes." />
+
+## Common mistakes
+
+- **Counting from 0.** The 1st smallest is the first value popped.
+- **Reading right before left.** That counts down from the largest.
+- **Storing every value anyway.** The point of the stack is to stop early.
+
+## Check yourself
+
+<Quiz client:visible title="Kth Smallest Element in a BST" questions={questions} />
+
+## Related problems
+
+- [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/). The same stack, one value per call.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The walk itself.
+- [Kth Largest Element in an Array](/dsa/kth-largest-element-in-an-array/). The kth question without a tree.
