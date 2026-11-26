@@ -1,0 +1,83 @@
+---
+title: Subtree of Another Tree
+leetcode: { number: 572, url: "https://leetcode.com/problems/subtree-of-another-tree/" }
+difficulty: Easy
+topics: [Binary tree, Tree, DFS, Hashing]
+added: 2026-11-26
+summary: "Decide whether one tree appears inside another as some node's complete subtree. Goes from comparing the small tree against every node to naming every subtree with an id, so a match is one equal number."
+insight: "Give each distinct subtree an id built from (left child's id, value, right child's id), using one shared table for both trees. Two subtrees match exactly when their ids are equal, so you only compare numbers."
+best: { time: "O(m + n)", space: "O(m + n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the roots of two binary trees, `root` and `subRoot`. Return true if some node of `root` has a subtree that is an exact copy of `subRoot`: same shape and same values, all the way down to the leaves. A node's subtree is that node together with everything below it.
+
+For `root = [3, 4, 5, 1, 2, 4, null, null, null, null, null, 1, 2]` and `subRoot = [4, 1, 2]` the answer is true: the 4 on the left (with children 1 and 2) matches. If the left 4's child 2 also had a child, it would no longer match, but the 4 on the right still could.
+
+## The key question
+
+> **How can you tell two subtrees are equal without walking both of them again?**
+
+Give each distinct subtree a number when you first build it. A subtree is fully described by its left child's number, its value and its right child's number, so that triple can be looked up in a table: equal subtrees get the same number.
+
+## Approach 1: Compare subRoot against every node
+
+At every node of `root`, compare its subtree with `subRoot` node by node. Stop at the first full match.
+
+<Viz client:visible approach="compare" />
+
+<Complexity time="O(m · n)" space="O(h)">
+**Time.** Each of the m nodes of root can start a comparison of up to n nodes of subRoot: **O(m · n)**. A chain of equal values with one difference at the bottom is the worst case.
+
+**Space.** The recursion goes as deep as the trees: **O(h)**.
+
+**What it wastes:** repeated comparisons. The same parts of root are compared with subRoot again and again from different starting nodes.
+</Complexity>
+
+## Approach 2: Give every subtree an id, then compare ids (optimal)
+
+Name subRoot's subtrees bottom-up with a table from (left id, value, right id) to a new id. Then name root's subtrees with the same table. The answer is true if any node of root gets subRoot's id.
+
+<Viz client:visible approach="ids" />
+
+<Complexity time="O(m + n)" space="O(m + n)">
+**Time.** Every node of both trees is named once with one table lookup: **O(m + n)**.
+
+**Space.** The table and the ids: **O(m + n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Compare subRoot against every node | O(m · n) | O(h) | Same-tree check at every node |
+| Give every subtree an id, then compare ids | **O(m + n)** | O(m + n) | Equal ids mean equal subtrees |
+
+<GrowthChart client:visible series={growth} caption="Operations when root is a chain of n equal values and subRoot almost matches every part of it." />
+
+## Common mistakes
+
+- **Checking only values, not shape.** A subtree with the same values in a different shape isn't a match; the ids include the empty children, so they tell shapes apart.
+- **Matching a part of a subtree.** subRoot must equal a node's whole subtree, down to the leaves; a node with extra children below doesn't match.
+- **Using two separate tables.** The ids of root and subRoot are only comparable if both trees are named with the same table.
+
+## Check yourself
+
+<Quiz client:visible title="Subtree of Another Tree" questions={questions} />
+
+## Related problems
+
+- [Same Tree](/dsa/same-tree/). The comparison the first approach repeats.
+- [Find Duplicate Subtrees](/dsa/find-duplicate-subtrees/). The same ids, counted.
+- [Serialize and Deserialize Binary Tree](/dsa/serialize-and-deserialize-binary-tree/). Writing a whole tree out as text.

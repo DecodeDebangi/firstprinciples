@@ -1,0 +1,83 @@
+---
+title: Find Duplicate Subtrees
+leetcode: { number: 652, url: "https://leetcode.com/problems/find-duplicate-subtrees/" }
+difficulty: Medium
+topics: [Binary tree, Tree, DFS, Hashing]
+added: 2026-11-26
+summary: "Report one node for each kind of subtree that appears more than once in a tree. Goes from writing every subtree out as text to naming each subtree with a small id built from its children's ids."
+insight: "A subtree is fully described by (left child's id, value, right child's id). Look that triple up in a table to get the subtree's id, count how often each id appears, and report a node the second time its id turns up."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Find every kind of subtree that appears at least twice: two subtrees are the same kind if they have the same shape and the same values. Return one node (the root of one copy) for each kind.
+
+For the tree `[1, 2, 3, 4, null, 2, 4, null, null, 4]` there are two kinds: the single leaf 4 (it appears three times) and the subtree 2 with a left child 4 (it appears twice).
+
+## The key question
+
+> **How do you tell that two subtrees are the same without comparing them node by node?**
+
+Give each subtree a short name built from its children's names and its value. Equal subtrees get equal names, so counting names finds the duplicates.
+
+## Approach 1: Write every subtree out in full
+
+For each node, write its whole subtree out as text, including the empty children, and count how often each text appears. Report a node when its text appears the second time.
+
+<Viz client:visible approach="strings" />
+
+<Complexity time="O(n²)" space="O(n²)">
+**Time.** Each node writes out its whole subtree. On a chain the texts are n, n − 1, …, 1 nodes long: **O(n²)**.
+
+**Space.** All those texts kept in the count map: **O(n²)**.
+
+**What it wastes:** writing out the same parts again. A node's text repeats its children's texts in full.
+</Complexity>
+
+## Approach 2: Name each subtree with an id (optimal)
+
+Walk bottom-up. Each node's key is (left child's id, value, right child's id); look it up in a table to get the node's id, giving new keys the next number. Count each id, and report the node the second time its id turns up.
+
+<Viz client:visible approach="ids" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One table lookup per node: **O(n)**.
+
+**Space.** The table and the counts: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Write every subtree out in full | O(n²) | O(n²) | Count the written-out subtrees |
+| Name each subtree with an id | **O(n)** | O(n) | Short ids instead of long texts |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n equal values." />
+
+## Common mistakes
+
+- **Reporting a kind more than once.** Report it only when its count reaches exactly 2.
+- **Leaving the empty children out of the text.** Then different shapes can look the same, like a 2 with a left child 4 and a 2 with a right child 4.
+- **Walking top-down.** A node's id needs its children's ids first, so the walk must be bottom-up (post-order).
+
+## Check yourself
+
+<Quiz client:visible title="Find Duplicate Subtrees" questions={questions} />
+
+## Related problems
+
+- [Subtree of Another Tree](/dsa/subtree-of-another-tree/). The same ids, used to find one tree inside another.
+- [Same Tree](/dsa/same-tree/). Comparing two subtrees directly.
+- [Group Anagrams](/dsa/group-anagrams/). Grouping things by a key that equal items share.
