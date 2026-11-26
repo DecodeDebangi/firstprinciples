@@ -1,0 +1,71 @@
+---
+title: "Building a tree from its traversals"
+topic: Trees
+kind: Explainer
+order: 5
+summary: One traversal can't tell you a tree's shape, but two can. Pre-order or post-order hands you the roots in order; in-order says where each root splits its values into a left and a right subtree. With a map of positions the whole tree is rebuilt in O(n). Pre-order with post-order works too, except where a node has only one child.
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Tree traversals](/concepts/tree-traversals/) turns a tree into a list. This read goes the other way.
+
+## One list isn't enough
+
+The pre-order `[1, 2]` could be a root 1 with 2 on its **left**, or with 2 on its **right**. Both trees write the same
+list. Each traversal throws away some shape information, so to rebuild a tree you need two of them, or one that records
+the missing children (that's [serialization](/concepts/serializing-trees/)).
+
+## What each order tells you
+
+- **Pre-order** (node, left, right) starts with the root, so read from the left it gives the roots in the order to build
+  them: the root, then the root of its left subtree, and so on.
+- **Post-order** (left, right, node) ends with the root, so read from the **right** it does the same, but meets the right
+  subtree's roots before the left's.
+- **In-order** (left, node, right) puts each root **between** its subtrees: everything before it is on its left,
+  everything after it on its right.
+
+So: take the next root from pre-order, find it in in-order, and the in-order range splits in two. Build the left part,
+then the right part, the same way.
+
+<Viz client:visible approach="pre-in" />
+
+Finding each root by scanning the in-order range costs up to O(n) per node, so O(n²) for a lopsided tree. A map from
+value to in-order position makes each lookup O(1), and the whole rebuild **O(n)**. That's [Construct Binary Tree from
+Preorder and Inorder Traversal](/dsa/construct-binary-tree-from-preorder-and-inorder-traversal/); the post-order
+version is [Construct Binary Tree from Inorder and Postorder
+Traversal](/dsa/construct-binary-tree-from-inorder-and-postorder-traversal/).
+
+## Pre-order with post-order
+
+Without in-order there's no direct "left of the root" list, but there's a trick: in pre-order the value right after a
+root is its left child, and in post-order a subtree **ends** with its own root. So finding that left child in post-order
+shows where the left subtree ends.
+
+<Viz client:visible approach="pre-post" />
+
+This can't tell a lone left child from a lone right child, so it gives *a* tree with those orders, not *the* tree. When
+every node has zero or two children, the answer is unique. That's [Construct Binary Tree from Preorder and Postorder
+Traversal](/dsa/construct-binary-tree-from-preorder-and-postorder-traversal/).
+
+## Interview theory
+
+<QA q="Which pairs of traversals determine a binary tree uniquely?">
+In-order with pre-order, or in-order with post-order (assuming distinct values). Pre-order with post-order only does when
+every node has zero or two children.
+</QA>
+
+<QA q="What's the time complexity of rebuilding from pre-order and in-order?">
+O(n) with a hash map from value to in-order position; O(n²) in the worst case if you scan for each root.
+</QA>
+
+<QA q="Why do the values need to be distinct?">
+The method finds each root's position in the other list. With repeated values, that position is ambiguous.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

@@ -1,0 +1,84 @@
+---
+title: Construct Binary Tree from Inorder and Postorder Traversal
+leetcode: { number: 106, url: "https://leetcode.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/" }
+difficulty: Medium
+topics: [Binary tree, Tree, Hash map, DFS]
+added: 2026-11-26
+summary: "Rebuild a binary tree from its in-order and post-order lists. Goes from scanning for each root to a map of positions, reading post-order from the end and building the right side first."
+insight: "Read the post-order list from the end: each value is the next root, and its in-order position splits the rest. Build the right subtree before the left."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the in-order and post-order traversals of a binary tree with distinct values: `inorder` and `postorder`. Rebuild the tree and return its root.
+
+For `inorder = [1, 2, 3, 4, 6, 7, 9]` and `postorder = [1, 3, 4, 2, 7, 9, 6]` the tree is `[6, 2, 9, 1, 4, 7, null, null, null, 3]` (level by level).
+
+## The key question
+
+> **Which list says where the root is, and which says how to split the rest?**
+
+Post-order, read from the end, gives the roots; in-order splits each range around its root. Backwards, post-order meets the right subtree first. [Building a tree from its traversals](/concepts/trees-from-traversals/) explains why two lists are needed.
+
+## Approach 1: Scan for each root
+
+Take the next root, then scan the other list's current range to find where it splits.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Each scan can run across its whole range. On a tree that leans one way the ranges shrink by one each time:
+n + (n − 1) + … + 1, **O(n²)**.
+
+**Space.** The new tree and the recursion: **O(n)**.
+
+**What it wastes:** the same list is searched again and again for values whose positions never change.
+</Complexity>
+
+## Approach 2: Look positions up in a map (optimal)
+
+Record every value's position once, in a map. Then each root's split point is a single lookup.
+
+<Viz client:visible approach="map" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Building the map is O(n), and each of the `n` nodes costs O(1): **O(n)**.
+
+**Space.** The map, the tree and the recursion (as deep as the tree): **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Scan for each root | O(n²) | O(n) | Search the range every time |
+| Map of positions | **O(n)** | O(n) | One lookup per root |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes leaning left, the worst case for scanning." />
+
+## Common mistakes
+
+- **Copying sub-lists for each call.** Pass ranges (`lo`, `hi`) and one shared position for the next root instead.
+- **Off-by-one ranges.** The root itself belongs to neither subtree.
+- **Building the subtrees in the wrong order.** The next root must come from the side the list reaches next.
+
+## Check yourself
+
+<Quiz client:visible title="Construct Binary Tree from Inorder and Postorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Construct Binary Tree from Preorder and Inorder Traversal](/dsa/construct-binary-tree-from-preorder-and-inorder-traversal/). The same rebuild from a different pair of lists.
+- [Construct Binary Tree from Preorder and Postorder Traversal](/dsa/construct-binary-tree-from-preorder-and-postorder-traversal/). The same rebuild from a different pair of lists.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The list that does the splitting.
