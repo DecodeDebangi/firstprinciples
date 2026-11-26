@@ -1,0 +1,56 @@
+---
+title: "Trees as graphs: walking up as well as down"
+topic: Trees
+kind: Explainer
+order: 7
+summary: "A binary tree only points down, so questions about distance from some node in the middle are awkward. One walk that records each node's parent turns the tree into an undirected graph, and a breadth-first search can then spread out from any node: down to its children and up through its parent."
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+Most tree problems start at the root and work downward, as in [Tree recursion](/concepts/tree-recursion/). Some start
+somewhere in the middle: "which nodes are 2 edges from this one?" or "how long until something spreading from this node
+reaches everything?" Those need to go **up** as well as down, and a tree node has no link to its parent.
+
+## Adding the missing links
+
+Walk the tree once from the root and record each node's parent in a map (each call passes itself down as its children's
+parent). Now every node has up to three neighbours: left child, right child and parent. That's an undirected
+[graph](/concepts/graphs/), with no cycles.
+
+## Searching outward
+
+With the links in place, a breadth-first search from the starting node finds everything in rings: ring 1 is one edge
+away, ring 2 two edges, and so on. A seen set stops it walking back to where it came from, since every edge can now be
+used in both directions.
+
+<Viz client:visible />
+
+Recording parents is O(n) and the search is O(n), so the whole thing is O(n). Without parent links, each distance
+has to be measured through the two nodes' shared ancestor, one search from the root per node: O(n · h).
+
+## Where this comes up
+
+- [All Nodes Distance K in Binary Tree](/dsa/all-nodes-distance-k-in-binary-tree/): stop after ring k.
+- [Amount of Time for Binary Tree to Be Infected](/dsa/amount-of-time-for-binary-tree-to-be-infected/): count rings until none are left.
+- Problems that only ever need something about the nodes above can skip the links and pass it down instead, as
+  [Count Good Nodes in Binary Tree](/dsa/count-good-nodes-in-binary-tree/) does with the largest value so far.
+
+## Interview theory
+
+<QA q="How do you find all nodes at distance k from a target in a binary tree?">
+Record every node's parent with one walk, then run a breadth-first search from the target over left, right and parent
+links, with a seen set, and return ring k. O(n) time and memory.
+</QA>
+
+<QA q="Can you do it without a parent map?">
+Yes: a recursion that returns each node's distance to the target (or −1) can collect nodes at the right depth on the
+other side of each ancestor. It's O(n) too, but trickier to get right; the parent map is the clearer answer.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

@@ -1,0 +1,83 @@
+---
+title: Count Good Nodes in Binary Tree
+leetcode: { number: 1448, url: "https://leetcode.com/problems/count-good-nodes-in-binary-tree/" }
+difficulty: Medium
+topics: [Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "Count the nodes that no value above them on the path from the root is bigger than. Goes from checking each node's whole root path to passing the largest value so far down the tree."
+insight: "A node only needs one fact about its path: the largest value above it. Pass that number down; a node is good when it's at least that big."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. A node is **good** if no node on the path from the root down to it has a bigger value. Return how many good nodes there are (the root is always good).
+
+For the tree `[5, 3, 7, 6, 1, 4, 9, null, null, 2]` the answer is `4`: 5, 6, 7 and 9.
+
+## The key question
+
+> **What does a node need to know about the path above it?**
+
+Only the largest value on it. That one number can travel down with each call, so no node ever looks back up: [top-down recursion](/concepts/tree-recursion/).
+
+## Approach 1: Check each node's whole root path
+
+For each node, find the path from the root to it and check whether anything on it is bigger.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Each node finds and reads its root path: **O(n · h)**.
+
+**Space.** One path at a time: **O(h)**.
+
+**What it wastes:** the path above each node was already walked on the way down to it.
+</Complexity>
+
+## Approach 2: Pass the largest value so far down (optimal)
+
+Recurse from the root with the largest value seen so far. A node is good if its value is at least that; then pass the new maximum to its children.
+
+<Viz client:visible approach="down" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check each node's whole root path | O(n · h) | O(h) | Re-read each path |
+| Pass the largest value so far down | **O(n)** | O(h) | One number travels down |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n increasing values." />
+
+## Common mistakes
+
+- **Using > instead of ≥.** A node equal to the largest above it is still good.
+- **Comparing only with the parent.** A bigger value further up also disqualifies it.
+- **Updating the maximum before checking.** Compare first, then pass max(most, value) down.
+
+## Check yourself
+
+<Quiz client:visible title="Count Good Nodes in Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Path Sum](/dsa/path-sum/). Another fact passed down the path.
+- [Validate Binary Search Tree](/dsa/validate-binary-search-tree/). Passing allowed ranges down.
+- [Binary Tree Maximum Path Sum](/dsa/binary-tree-maximum-path-sum/). The bottom-up counterpart.

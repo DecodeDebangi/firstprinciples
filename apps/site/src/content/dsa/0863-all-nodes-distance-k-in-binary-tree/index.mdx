@@ -1,0 +1,83 @@
+---
+title: All Nodes Distance K in Binary Tree
+leetcode: { number: 863, url: "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/" }
+difficulty: Medium
+topics: [Binary tree, Tree, BFS, Graph, Hash map]
+added: 2026-11-26
+summary: "List every node exactly k edges away from a target node, in any direction. Goes from measuring each node's distance through their shared ancestor to adding parent links and spreading out from the target with a breadth-first search."
+insight: "Record each node's parent with one walk. Then the tree is a graph: search outward from the target over left, right and parent links, and return the nodes in ring k."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree with distinct values, a target node and a number `k`. Return the values of every node exactly `k` edges from the target, in any order. Edges can be walked up as well as down.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]`, target `6` and `k = 2`, the answer is `1` and `8`: up to 3 and then down to 1, or up twice to 8. (Its grandchildren would also count, but 6 has none.)
+
+## The key question
+
+> **How can you walk up from the target?**
+
+Record each node's parent first. Then the tree is an ordinary graph, and a breadth-first search from the target finds nodes in order of distance; see [Trees as graphs](/concepts/trees-as-graphs/).
+
+## Approach 1: Measure each node's distance through their shared ancestor
+
+Find the root-to-target path. For every node, find its root path too; the distance is the two paths' lengths minus twice the part they share.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** One search from the root per node: **O(n · h)**, up to O(n²).
+
+**Space.** Two paths at a time: **O(h)**.
+
+**What it wastes:** each node's path is found again from the root, though the paths overlap heavily.
+</Complexity>
+
+## Approach 2: Add parent links, then spread out from the start (optimal)
+
+One walk records every node's parent. Then search breadth-first from the target, over left, right and parent, with a seen set; after `k` rings, return the ring.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** The walk and the search each handle every node once: **O(n)**.
+
+**Space.** The parent map, the seen set and the queue: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Measure each node's distance through their shared ancestor | O(n · h) | O(h) | Distance through the root |
+| Add parent links, then spread out from the start | **O(n)** | O(n) | Parents + BFS |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes, from the bottom node with k = 1." />
+
+## Common mistakes
+
+- **Only searching down.** Nodes above the target and in its siblings' subtrees count too.
+- **Forgetting the seen set.** Going up to a parent and back down would revisit the target.
+- **Counting nodes instead of edges.** The target itself is at distance 0.
+
+## Check yourself
+
+<Quiz client:visible title="All Nodes Distance K in Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Amount of Time for Binary Tree to Be Infected](/dsa/amount-of-time-for-binary-tree-to-be-infected/). The same rings, counted until none are left.
+- [Rotting Oranges](/dsa/rotting-oranges/). Spreading in rings on a grid.
+- [Lowest Common Ancestor of a Binary Tree](/dsa/lowest-common-ancestor-of-a-binary-tree/). The shared ancestor the slow approach measures through.

@@ -1,0 +1,83 @@
+---
+title: Amount of Time for Binary Tree to Be Infected
+leetcode: { number: 2385, url: "https://leetcode.com/problems/amount-of-time-for-binary-tree-to-be-infected/" }
+difficulty: Medium
+topics: [Binary tree, Tree, BFS, Graph, Hash map]
+added: 2026-11-26
+summary: "An infection starts at one node and spreads one edge per minute to every neighbour, up or down. Find how many minutes until every node is infected. Goes from measuring each node's distance through the root to spreading out from the start with a breadth-first search."
+insight: "The answer is the distance from the start to the farthest node. Add parent links, then search outward ring by ring and count the rings."
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree with distinct values and a value `start`. At minute 0, the node holding `start` is infected; each minute, every infected node infects its uninfected neighbours (children and parent). Return how many minutes it takes for the whole tree to be infected.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]` and `start = 4`, the answer is `6`: the farthest node, 13, is 6 edges from 4.
+
+## The key question
+
+> **What does the number of minutes measure?**
+
+The distance from the start to the farthest node, counting edges in any direction. A breadth-first search from the start with parent links finds it; see [Trees as graphs](/concepts/trees-as-graphs/).
+
+## Approach 1: Measure each node's distance through their shared ancestor
+
+Find the root-to-start path. For every node, find its root path and work out the distance through their shared part; the answer is the largest.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** One search from the root per node: **O(n · h)**.
+
+**Space.** Two paths at a time: **O(h)**.
+
+**What it wastes:** every node's path is searched for from scratch.
+</Complexity>
+
+## Approach 2: Add parent links, then spread out from the start (optimal)
+
+Record every node's parent, then search breadth-first from the start over left, right and parent with a seen set, counting rings until none are left.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node is handled once in each pass: **O(n)**.
+
+**Space.** The parent map, the seen set and the queue: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Measure each node's distance through their shared ancestor | O(n · h) | O(h) | Distance through the root |
+| Add parent links, then spread out from the start | **O(n)** | O(n) | Count the rings |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes, starting at the bottom." />
+
+## Common mistakes
+
+- **Counting the starting minute.** At minute 0 only the start is infected; count rings after it.
+- **Only spreading downward.** The infection goes up through parents too.
+- **Returning the number of nodes.** The answer is the number of rings, not how many nodes they hold.
+
+## Check yourself
+
+<Quiz client:visible title="Amount of Time for Binary Tree to Be Infected" questions={questions} />
+
+## Related problems
+
+- [All Nodes Distance K in Binary Tree](/dsa/all-nodes-distance-k-in-binary-tree/). The same rings, stopping at ring k.
+- [Rotting Oranges](/dsa/rotting-oranges/). The same spread on a grid.
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/). The farthest distance when the start is the root.
