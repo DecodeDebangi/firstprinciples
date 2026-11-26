@@ -1,0 +1,89 @@
+---
+title: Lowest Common Ancestor of a Binary Search Tree
+leetcode: { number: 235, url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/" }
+difficulty: Medium
+topics: [BST, Binary tree]
+added: 2026-11-26
+summary: Find the lowest node in a binary search tree that has two given nodes below it. Goes from the general one-pass search that works on any binary tree to one walk down that stops where the two values split.
+insight: "While both values are smaller than a node, go left; while both are bigger, go right. The first node between them is the answer."
+best: { time: "O(h)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and two different nodes in it, `p` and `q`. Return their **lowest common
+ancestor**: the lowest node that has both in its subtree. A node counts as part of its own subtree.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]`, `p = 4` and `q = 7`, the answer is `6`: 4 is on its
+left, 7 on its right.
+
+## The key question
+
+> **In a BST, can you tell from a node's value alone which side p and q are on?**
+
+Yes. Values smaller than the node are on its left and bigger ones on its right, so there's no need to search both sides
+as [Lowest Common Ancestor of a Binary Tree](/dsa/lowest-common-ancestor-of-a-binary-tree/) has to.
+
+## Approach 1: The general one-pass search
+
+Ignore the order and use the method for any binary tree: each call reports whether it found `p` or `q` below it, and the
+first node that hears from both sides is the answer.
+
+<Viz client:visible approach="onePass" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** It may visit every node: **O(n)**.
+
+**Space.** The recursion along one path: **O(h)**.
+
+**What it wastes:** it searches subtrees that the values already rule out.
+</Complexity>
+
+## Approach 2: Walk down to the split point (optimal)
+
+While both values are smaller than the node, go left; while both are bigger, go right. The first node that isn't on the
+same side of both is between them, so it's the lowest common ancestor. The [binary search
+trees](/concepts/binary-search-trees/) read shows more uses of the order.
+
+<Viz client:visible approach="split" />
+
+<Complexity time="O(h)" space="O(1)">
+**Time.** One path down: **O(h)**.
+
+**Space.** One pointer: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| General one-pass search | O(n) | O(h) | Works on any tree |
+| Walk to the split point | **O(h)** | **O(1)** | The values pick the side |
+
+<GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes, with p and q deep on the right." />
+
+## Common mistakes
+
+- **Stopping only when p and q are on opposite sides.** If the node *is* `p` or `q`, it's the answer too: use `≤`.
+- **Assuming p < q.** Take the smaller and bigger of the two first.
+- **Searching for p and q first.** Not needed: the walk never has to find them, only compare against them.
+
+## Check yourself
+
+<Quiz client:visible title="Lowest Common Ancestor of a BST" questions={questions} />
+
+## Related problems
+
+- [Lowest Common Ancestor of a Binary Tree](/dsa/lowest-common-ancestor-of-a-binary-tree/). The general version, without the order.
+- [Search in a Binary Search Tree](/dsa/search-in-a-binary-search-tree/). The same one-path walk.
+- [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). Another answer found on the way down.

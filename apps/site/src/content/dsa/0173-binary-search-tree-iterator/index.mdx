@@ -1,0 +1,93 @@
+---
+title: Binary Search Tree Iterator
+leetcode: { number: 173, url: "https://leetcode.com/problems/binary-search-tree-iterator/" }
+difficulty: Medium
+topics: [BST, Stack, Binary tree]
+added: 2026-11-26
+summary: Build an iterator that hands out a binary search tree's values in increasing order, one per call. Goes from writing out every value up front to a stack that only holds the left path, using memory in proportion to the tree's height.
+insight: "Keep a stack of the nodes still waiting on the left path. The top is always the next smallest; after returning it, push the left path of its right subtree."
+best: { time: "O(1) average per call", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a class that's given the root of a binary search tree. `next()` returns the next value in increasing order (the
+first call returns the smallest), and `hasNext()` says whether any values are left. `next()` is only called when there
+is a next value. Aim for O(1) average time per call and memory in proportion to the tree's height, not its size.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4]` and the calls `next, next, hasNext, next, next, next`, the
+results are `1, 3, true, 4, 6, 8`.
+
+## The key question
+
+> **To hand out the next smallest value, which nodes do I actually need to remember?**
+
+Not all of them: only the nodes on the way down that haven't been returned yet. Those form a path, so there are at most
+`h` of them.
+
+## Approach 1: Write out every value first
+
+In the constructor, read the tree in order into a list. `next()` returns the next item, `hasNext()` checks the index.
+
+<Viz client:visible approach="flatten" />
+
+<Complexity time="O(n) to build, then O(1) per call" space="O(n)">
+**Time.** Reading the tree once is O(n); after that each call is **O(1)**.
+
+**Space.** Every value is stored: **O(n)**.
+
+**What it wastes:** memory. Most of the list sits unused until much later, and if only a few values are asked for, most
+of the work is wasted too.
+</Complexity>
+
+## Approach 2: Keep a stack of the left path (optimal)
+
+The constructor pushes the root and keeps going left, so the smallest value ends up on top. `next()` pops the top,
+pushes the left path of its right subtree (where the next values in order are), and returns the popped value.
+`hasNext()` checks whether the stack is empty. This is the iterative [in-order walk](/concepts/tree-traversals/), paused
+between values.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(1) average per call" space="O(h)">
+**Time.** One `next()` can push several nodes, but each node is pushed once and popped once over all the calls, so `n`
+calls cost O(n) in total: **O(1)** each on average.
+
+**Space.** The stack holds at most one node per level: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Write out every value | O(n) up front, O(1) per call | O(n) | A list and an index |
+| Stack of the left path | **O(1) average per call** | **O(h)** | Only the nodes still waiting |
+
+Over a full walk both do about the same total work, so there's no growth chart. The difference is memory: O(n) against
+O(h), which for a balanced tree of a million values is a million against about 20.
+
+## Common mistakes
+
+- **Forgetting the right subtree.** After popping a node, its right subtree's left path must go on the stack, or values
+  are skipped.
+- **Pushing only the right child.** Its left children are smaller and come first.
+- **Calling it O(h) per next().** A single call can be, but the average over all calls is O(1).
+
+## Check yourself
+
+<Quiz client:visible title="Binary Search Tree Iterator" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The same stack, run without pausing.
+- [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). One "next value" question, answered from the root.
+- [Kth Largest Element in a Stream](/dsa/kth-largest-element-in-a-stream/). Another class answering calls one at a time.

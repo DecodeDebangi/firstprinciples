@@ -1,0 +1,93 @@
+---
+title: Delete Node in a BST
+leetcode: { number: 450, url: "https://leetcode.com/problems/delete-node-in-a-bst/" }
+difficulty: Medium
+topics: [BST, Binary tree]
+added: 2026-11-26
+summary: Remove a value from a binary search tree so it stays a binary search tree, and return the root. Goes from rebuilding the whole tree without the value to finding the node and filling its hole in one of three ways.
+insight: "Find the node like a search. A leaf just goes, a node with one child is replaced by that child's subtree, and a node with two children takes the smallest value from its right subtree."
+best: { time: "O(h)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and a value `key`. Delete the node holding `key`, if there is one, so the tree
+is still a binary search tree, and return its root. Any valid result is accepted.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]` and `key = 3`, one answer puts 4 where 3 was: 4 is
+bigger than everything left of 3 (just 1) and smaller than everything else on its right (6 and 7).
+
+## The key question
+
+> **When a node goes, what can take its place without breaking the order?**
+
+It depends on how many children it has: nothing, its only child's subtree, or the smallest value bigger than it. The
+[binary search trees](/concepts/binary-search-trees/) read walks through all three.
+
+## Approach 1: Rebuild without the key
+
+Write out every value in order, remove `key`, and build a new balanced tree from the rest: the middle value becomes the
+root, then the same for each half.
+
+<Viz client:visible approach="rebuild" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Reading every node and building every node again: **O(n)**.
+
+**Space.** The list of values and the new tree: **O(n)**.
+
+**What it wastes:** deleting one node only changes the area around it, yet every node is read and rebuilt.
+</Complexity>
+
+## Approach 2: Find it, then fill the hole (optimal)
+
+Search for `key`. When you find it:
+
+1. **No children:** remove it.
+2. **One child:** return that child, so its whole subtree moves up.
+3. **Two children:** copy in the smallest value from its right subtree (right once, then left as far as possible), then
+   delete that value from the right subtree, which is case 1 or 2.
+
+<Viz client:visible approach="walk" />
+
+<Complexity time="O(h)" space="O(h)">
+**Time.** One walk down to the node and at most one more down to its successor: **O(h)**.
+
+**Space.** The recursive calls along the path: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Rebuild without the key | O(n) | O(n) | Avoid the cases by starting over |
+| Find it, fill the hole | **O(h)** | O(h) | Three cases, one path |
+
+<GrowthChart client:visible series={growth} caption="Operations deleting the largest value from a balanced tree of n nodes." />
+
+## Common mistakes
+
+- **Replacing a two-child node with one of its children.** The other child's subtree has nowhere valid to go.
+- **Taking the successor from the left subtree.** The smallest bigger value is in the *right* subtree. (The largest
+  value of the left subtree also works, as long as you're consistent.)
+- **Copying the successor's value and forgetting to delete the original.** It would appear twice.
+
+## Check yourself
+
+<Quiz client:visible title="Delete Node in a BST" questions={questions} />
+
+## Related problems
+
+- [Insert into a Binary Search Tree](/dsa/insert-into-a-binary-search-tree/). The easier direction.
+- [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). Finding the value that takes a deleted node's place.
+- [Search in a Binary Search Tree](/dsa/search-in-a-binary-search-tree/). The walk down both use.

@@ -1,0 +1,89 @@
+---
+title: Insert into a Binary Search Tree
+leetcode: { number: 701, url: "https://leetcode.com/problems/insert-into-a-binary-search-tree/" }
+difficulty: Medium
+topics: [BST, Binary tree]
+added: 2026-11-26
+summary: Add a new value to a binary search tree so it stays a binary search tree, and return the root. Goes from a recursive walk down that relinks each subtree to a loop that only remembers the parent.
+insight: "Search for the new value as if it were already there. Where the search falls off the tree is the only spot that keeps the order: hang it there as a new leaf."
+best: { time: "O(h)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and a value `val` that isn't in it yet. Insert `val` so the tree is still a
+binary search tree, and return the root. Any valid tree is accepted.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]` and `val = 5`, one answer hangs 5 as the right child of
+4: 5 < 8, 5 > 3, 5 < 6 and 5 > 4.
+
+## The key question
+
+> **Where is the one place a new value can go without moving anything else?**
+
+Where a search for it falls off the tree. Every comparison on the way down already agrees with the
+[order rule](/concepts/binary-search-trees/), so the empty spot at the end does too.
+
+## Approach 1: Recursive, down to the empty spot
+
+Compare with the root and insert into the left or right subtree. When the subtree is empty, return a new node; each
+call hands its subtree back so its parent can link the new node in.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(h)" space="O(h)">
+**Time.** One comparison per level: **O(h)**.
+
+**Space.** One waiting call per level: **O(h)**.
+
+**What it wastes:** the waiting calls. Nothing has to happen on the way back up except relinking children that didn't
+change.
+</Complexity>
+
+## Approach 2: Loop, remembering the parent (optimal)
+
+Walk down with two pointers: `node`, and `parent`, the last real node. When `node` falls off the tree, attach the new
+node to `parent` on the correct side.
+
+<Viz client:visible approach="iterative" />
+
+<Complexity time="O(h)" space="O(1)">
+**Time.** The same single path: **O(h)**.
+
+**Space.** Two pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Recursive | O(h) | O(h) | Each call returns its subtree |
+| Loop | O(h) | **O(1)** | Remember the parent |
+
+Both do the same comparisons, so there's no growth chart: the difference is memory, not time. In a balanced tree h is
+about log₂ n; in a chain it's n (see [Balanced trees](/concepts/balanced-trees/)).
+
+## Common mistakes
+
+- **Forgetting the empty tree.** With no root, the new node is the whole tree.
+- **Dropping the returned node.** In the recursive version, `root.left ← …` is what links the new node in.
+- **Trying to rebalance.** Not needed: any valid BST is accepted, and the new node is always a leaf.
+
+## Check yourself
+
+<Quiz client:visible title="Insert into a Binary Search Tree" questions={questions} />
+
+## Related problems
+
+- [Search in a Binary Search Tree](/dsa/search-in-a-binary-search-tree/). The same walk down, without the insert.
+- [Delete Node in a BST](/dsa/delete-node-in-a-bst/). The harder direction: filling a hole.
+- [Convert Sorted Array to Binary Search Tree](/dsa/convert-sorted-array-to-binary-search-tree/). Building a tree that stays short.

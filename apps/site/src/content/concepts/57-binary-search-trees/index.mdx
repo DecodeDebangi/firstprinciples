@@ -1,0 +1,114 @@
+---
+title: "Binary search trees: search, insert, delete and the next value in order"
+topic: Trees
+kind: Explainer
+order: 3
+summary: A binary search tree keeps every smaller value to a node's left and every bigger one to its right. That one rule turns searching into a single walk down, decides where a new value goes, says how to fill the hole a deleted node leaves, and finds the next value in order without reading the whole tree.
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Tree traversals](/concepts/tree-traversals/) covers walking a tree, and [Tree recursion](/concepts/tree-recursion/) the
+two directions information can travel. A **binary search tree** (BST) adds one rule about where values sit, and every
+operation below comes from it.
+
+## The order rule
+
+At every node, everything in its left subtree is **smaller** and everything in its right subtree is **bigger**. Not just
+its children: the whole subtree. (On this site, as on LeetCode, values don't repeat.) Two things follow:
+
+- Reading the tree in order (left subtree, node, right subtree) gives the values **sorted**.
+- At any node, one comparison tells you which side a value must be on, so the other side never needs a look.
+
+Checking that a tree really follows the rule is [Validate Binary Search Tree](/dsa/validate-binary-search-tree/).
+
+## Searching: one path down
+
+Start at the root. If the value you want is smaller, go left; if bigger, go right; stop when you find it or fall off
+the tree. Each step rules out a whole subtree.
+
+<Viz client:visible approach="search" />
+
+The search visits one node per level, so it costs **O(h)**, where `h` is the tree's height. In a well-shaped tree h is
+about log₂ n, so a million values take about 20 steps. That's [Search in a Binary Search
+Tree](/dsa/search-in-a-binary-search-tree/).
+
+## Inserting: where the search falls off
+
+To add a new value, search for it as if it were already there. The search ends at an empty spot, and that spot is the
+only place that keeps the order. The new node becomes a leaf, and nothing else moves.
+
+<Viz client:visible approach="insert" />
+
+Also O(h). Written recursively, each call hands its subtree back to its parent, which is why the code reads
+`root.left ← insertIntoBST(root.left, val)`. That's [Insert into a Binary Search
+Tree](/dsa/insert-into-a-binary-search-tree/).
+
+## Deleting: three cases
+
+Find the node, then fill the hole it leaves:
+
+1. **No children:** just remove it.
+2. **One child:** that child's whole subtree moves up into its place. Everything in it was already on the right side
+   of the deleted node's parent.
+3. **Two children:** the replacement must be bigger than everything on its left and smaller than everything on its
+   right. That's the smallest value in its right subtree: go right once, then left as far as you can. Copy that value
+   up, then delete it from the right subtree. It has no left child, so that's case 1 or 2.
+
+<Viz client:visible approach="delete" />
+
+At most two walks down: **O(h)**. That's [Delete Node in a BST](/dsa/delete-node-in-a-bst/).
+
+## The next value in order
+
+The **in-order successor** of a value `p` is the smallest value bigger than `p`. Walk down from the root. Whenever `p`
+is smaller than the node, that node is bigger than `p`, so it's a candidate; go left to look for a smaller one that's
+still bigger than `p`. Otherwise go right. The last candidate is the answer.
+
+<Viz client:visible approach="successor" />
+
+One path again: O(h). That's [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). Stepping through every value
+in order, one at a time, is [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/), which keeps a stack of the
+left path instead of a list of every value.
+
+## The order helps elsewhere too
+
+- **Lowest common ancestor:** in a BST, the first node on the way down whose value lies between `p` and `q` is their
+  lowest common ancestor, with no need to search both sides: [Lowest Common Ancestor of a Binary Search
+  Tree](/dsa/lowest-common-ancestor-of-a-binary-search-tree/).
+- **Nearby values:** "is there a value within `t` of `x`?" is a successor question, which is how an ordered set (a
+  balanced BST under the hood) solves [Contains Duplicate III](/dsa/contains-duplicate-iii/).
+
+## Everything is O(h), so h matters
+
+Every operation walks one path, so it's only fast when the tree is short. Insert the values 1, 2, 3, 4, 5 in that
+order and each one goes to the right of the last: the "tree" is a chain, h = n, and search is back to O(n). [Balanced
+trees](/concepts/balanced-trees/) covers what balanced means, how to check it, and how to build a tree that stays short.
+
+## Interview theory
+
+<QA q="What's the time complexity of searching a BST?">
+O(h), where h is the height: O(log n) when the tree is balanced, O(n) in the worst case, when it has become a chain.
+</QA>
+
+<QA q="How do you delete a node with two children?">
+Replace its value with its in-order successor, the smallest value in its right subtree, then delete that successor from
+the right subtree. The successor has no left child, so removing it is the easy case.
+</QA>
+
+<QA q="How do you check that a binary tree is a BST?">
+Read it in order and check the values strictly increase, or pass down the range each node's value must fall in. Comparing
+each node with its children alone isn't enough.
+</QA>
+
+<QA q="Why would you use a BST instead of a hash map?">
+A BST keeps values in order, so it can answer "next bigger", "smallest", or "everything between a and b" quickly. A hash
+map finds exact values in O(1) on average but knows nothing about order.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

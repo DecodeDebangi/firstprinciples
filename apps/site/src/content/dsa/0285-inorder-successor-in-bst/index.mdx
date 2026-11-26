@@ -1,0 +1,90 @@
+---
+title: Inorder Successor in BST
+leetcode: { number: 285, url: "https://leetcode.com/problems/inorder-successor-in-bst/" }
+difficulty: Medium
+topics: [BST, Binary tree]
+added: 2026-11-26
+summary: Find the node that comes right after a given node when a binary search tree is read in order. Goes from writing out the whole in-order list to one walk down that remembers the last left turn.
+insight: "Walk down from the root. Every node bigger than p is a candidate, and going left from it looks for a smaller candidate; the last one is the answer."
+best: { time: "O(h)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree and one of its nodes, `p`. Return the node that comes right after `p` when the
+tree is read in order (its **in-order successor**), or `none` if `p` is the largest. On LeetCode this problem needs a
+Premium subscription.
+
+For the tree `[8, 3, 10, 1, 6, null, 14, null, null, 4, 7, 13]` and `p = 7`, the answer is `8`. Note that 7 has no right
+child, so the answer is above it, not below.
+
+## The key question
+
+> **Without reading every value, how can I find the smallest value bigger than p?**
+
+Every node bigger than `p` is a possible answer, and the order rule says where to look for a smaller one: its left.
+
+## Approach 1: Write out the in-order list
+
+Read the tree in order (left, node, right), which gives the values sorted, find `p`, and return the next one.
+
+<Viz client:visible approach="list" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Every node is read: **O(n)**.
+
+**Space.** The list of every value: **O(n)**.
+
+**What it wastes:** all the values far from `p`. The answer only depends on the nodes on `p`'s path.
+</Complexity>
+
+## Approach 2: Walk down, keep the last left turn (optimal)
+
+Start at the root with no candidate. If `p` is smaller than the node, the node is bigger than `p`: it becomes the
+candidate, and you go left to look for a smaller one. Otherwise go right. When you fall off the tree, the candidate is
+the answer. The [binary search trees](/concepts/binary-search-trees/) read shows why this finds the smallest bigger value.
+
+<Viz client:visible approach="walk" />
+
+<Complexity time="O(h)" space="O(1)">
+**Time.** One path down: **O(h)**.
+
+**Space.** Two pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| In-order list | O(n) | O(n) | Sort by reading, then look up |
+| Walk down | **O(h)** | **O(1)** | The last node bigger than p on the path |
+
+<GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes." />
+
+## Common mistakes
+
+- **Only looking at p's right subtree.** It's the answer when it exists (its leftmost node), but when p has no right
+  child, the successor is an ancestor.
+- **Stopping at p.** When the walk reaches `p`, keep going right: something in its right subtree may be smaller than
+  the current candidate.
+- **Updating the candidate when going right.** A node smaller than or equal to `p` can never be the answer.
+
+## Check yourself
+
+<Quiz client:visible title="Inorder Successor in BST" questions={questions} />
+
+## Related problems
+
+- [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/). Every successor in turn, in O(1) average each.
+- [Delete Node in a BST](/dsa/delete-node-in-a-bst/). The successor fills the hole when a node has two children.
+- [Search in a Binary Search Tree](/dsa/search-in-a-binary-search-tree/). The same walk down.
