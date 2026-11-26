@@ -1,0 +1,83 @@
+---
+title: Maximum Width of Binary Tree
+leetcode: { number: 662, url: "https://leetcode.com/problems/maximum-width-of-binary-tree/" }
+difficulty: Medium
+topics: [Binary tree, Tree, BFS]
+added: 2026-11-26
+summary: "Find the widest level of a binary tree, counting every position between its leftmost and rightmost nodes, empty ones included. Goes from storing a slot for every missing node to numbering positions like a full tree."
+insight: "Number positions as if the tree were full: the root is 0 and a node at i has children at 2i and 2i + 1. A level's width is last − first + 1."
+best: { time: "O(n)", space: "O(w)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. The **width** of a level is the number of positions from its leftmost node to its rightmost node, counting the empty positions in between as if the tree were full. Return the largest width of any level.
+
+For the tree `[4, 2, 6, 1, null, null, 7, null, 3, 5]` the answer is `6`: the bottom level has 3 at the far left and 5 near the far right, with four empty positions between them.
+
+## The key question
+
+> **How can you measure the gap between two nodes without storing what's in between?**
+
+Give every position a number, as in a full tree: then the gap is just a subtraction. Real nodes alone carry their numbers through a normal [breadth-first walk](/concepts/tree-traversals/).
+
+## Approach 1: Fill in every missing position
+
+Walk level by level, but keep a slot for every missing node too, so positions stay lined up. Trim empty slots from both ends and measure what's left.
+
+<Viz client:visible approach="slots" />
+
+<Complexity time="O(2^h)" space="O(2^h)">
+**Time.** Every level stores all its slots, real or not, and the number of slots doubles each level: up to **O(2^h)**, even for a tree with few nodes.
+
+**Space.** The slots of one level: **O(2^h)**.
+
+**What it wastes:** storing nothing. Most slots are empty, yet they all have to be kept and copied.
+</Complexity>
+
+## Approach 2: Number the positions (optimal)
+
+Queue each real node with its position: the root is 0, and a node at `i` puts its children at `2i` and `2i + 1`. For each level, the width is the last position minus the first, plus 1.
+
+<Viz client:visible approach="numbers" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each real node is queued once: **O(n)**.
+
+**Space.** The queue holds one level of real nodes: **O(w)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Fill in every missing position | O(2^h) | O(2^h) | Store every slot |
+| Number the positions | **O(n)** | O(w) | Width = last − first + 1 |
+
+<GrowthChart client:visible series={growth} caption="Operations for a tree with two long legs, the x-axis being its depth: empty slots double with every level." />
+
+## Common mistakes
+
+- **Counting only the real nodes on a level.** The empty positions between them count too.
+- **Letting the numbers grow too large.** Positions double each level; renumber each level from its first position in languages with fixed-size integers.
+- **Measuring before trimming.** Empty slots outside the leftmost and rightmost nodes don't count.
+
+## Check yourself
+
+<Quiz client:visible title="Maximum Width of Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The breadth-first walk used here.
+- [Binary Tree Right Side View](/dsa/binary-tree-right-side-view/). Another fact about each level.
+- [Vertical Order Traversal of a Binary Tree](/dsa/vertical-order-traversal-of-a-binary-tree/). Numbering positions sideways instead.

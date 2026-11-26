@@ -1,0 +1,82 @@
+---
+title: Binary Tree Zigzag Level Order Traversal
+leetcode: { number: 103, url: "https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/" }
+difficulty: Medium
+topics: [Binary tree, Tree, BFS]
+added: 2026-11-26
+summary: "Return a binary tree's levels, reading the first left to right, the next right to left, and so on. Goes from reversing every other level after reading it to writing each value straight into its slot."
+insight: "Read every level left to right with a queue. On odd levels, put the k-th node at slot size − 1 − k, so the level comes out reversed without a second pass."
+best: { time: "O(n)", space: "O(w)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Return its levels top to bottom, but alternate the direction: the first level left to right, the second right to left, the third left to right again.
+
+For the tree `[5, 3, 8, 1, 4, null, 9, null, 2]` the answer is `[[5], [8, 3], [1, 4, 9], [2]]`.
+
+## The key question
+
+> **Does the walk itself have to change direction?**
+
+No. Walk every level left to right as in [level order](/dsa/binary-tree-level-order-traversal/), and only change where each value is written.
+
+## Approach 1: Read each level, reverse every other one
+
+Collect each level left to right, then reverse the odd-numbered ones before adding them.
+
+<Viz client:visible approach="reverse" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node is handled once, plus one reversal pass over the odd levels: **O(n)**.
+
+**Space.** The queue and the current level: **O(w)**.
+
+**What it wastes:** a second pass over half the levels to reverse them.
+</Complexity>
+
+## Approach 2: Place each value at the right end (optimal)
+
+Make each level an array of its size. The k-th node taken goes to slot k on left-to-right levels and slot size − 1 − k on the others.
+
+<Viz client:visible approach="place" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node is handled once: **O(n)**.
+
+**Space.** The queue and the current level: **O(w)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Read each level, reverse every other one | O(n) | O(w) | Read, then reverse |
+| Place each value at the right end | **O(n)** | O(w) | Write straight into place |
+
+Both handle every node once, so there's no growth chart: the second approach just skips the reversing pass.
+
+## Common mistakes
+
+- **Changing which child is queued first.** That scrambles the next level; keep queueing left then right.
+- **Starting right to left.** The first level (the root) is left to right.
+- **Reversing on even levels.** Count levels from 0: reverse levels 1, 3, 5, …
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Zigzag Level Order Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The same walk without alternating.
+- [Binary Tree Right Side View](/dsa/binary-tree-right-side-view/). The last node of each level.
+- [Average of Levels in Binary Tree](/dsa/average-of-levels-in-binary-tree/). One number per level.

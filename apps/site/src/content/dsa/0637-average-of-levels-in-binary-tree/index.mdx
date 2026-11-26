@@ -1,0 +1,83 @@
+---
+title: Average of Levels in Binary Tree
+leetcode: { number: 637, url: "https://leetcode.com/problems/average-of-levels-in-binary-tree/" }
+difficulty: Easy
+topics: [Binary tree, Tree, BFS]
+added: 2026-11-26
+summary: "Return the average value of each level of a binary tree, top to bottom. Goes from walking down again for every level to one breadth-first walk that adds up each level as it goes."
+insight: "Walk level by level with a queue. The queue's length at the start of a level is its size; add up that many values and divide."
+best: { time: "O(n)", space: "O(w)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Return the average of the values on each level, top to bottom.
+
+For the tree `[5, 3, 8, 1, 4, null, 9, null, 2]` the answer is `[5, 5.5, 4.67, 2]`: level 1 is (3 + 8) / 2 and level 2 is (1 + 4 + 9) / 3.
+
+## The key question
+
+> **How do you know where one level ends and the next begins?**
+
+In a [breadth-first walk](/concepts/tree-traversals/), the queue holds exactly one level at the moment the previous level is finished. Its length is the count you divide by.
+
+## Approach 1: One walk down per level
+
+For each depth, walk down from the root to add up the values at that depth and count them, then divide.
+
+<Viz client:visible approach="rewalk" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Each depth re-walks every level above it: **O(n · h)**, O(n²) for a chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** the upper levels are walked again for every level below them.
+</Complexity>
+
+## Approach 2: One breadth-first walk, a level at a time (optimal)
+
+Read the queue's length, take that many nodes while adding up their values and queueing their children, then record the sum divided by the length.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node is queued and taken once: **O(n)**.
+
+**Space.** The queue holds at most one level: **O(w)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| One walk down per level | O(n · h) | O(h) | Restart from the root per level |
+| One breadth-first walk, a level at a time | **O(n)** | O(w) | Sum each level as it passes |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes leaning right." />
+
+## Common mistakes
+
+- **Dividing by the queue's length after children were added.** Read the size before taking the level.
+- **Whole-number division.** The average can be a fraction.
+- **Overflowing the sum.** In languages with fixed-size integers, add up in a wider type.
+
+## Check yourself
+
+<Quiz client:visible title="Average of Levels in Binary Tree" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The levels themselves.
+- [Binary Tree Right Side View](/dsa/binary-tree-right-side-view/). One value per level: the last.
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/). Counting the levels.

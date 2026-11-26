@@ -1,0 +1,83 @@
+---
+title: Binary Tree Right Side View
+leetcode: { number: 199, url: "https://leetcode.com/problems/binary-tree-right-side-view/" }
+difficulty: Medium
+topics: [Binary tree, Tree, BFS, DFS]
+added: 2026-11-26
+summary: "List the values you'd see standing to the right of a binary tree, top to bottom: the rightmost node of each level. Goes from walking down again for every level to one breadth-first walk."
+insight: "Walk level by level. The last node taken from each level is the one seen from the right, even when it's a left child."
+best: { time: "O(n)", space: "O(w)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Imagine standing to its right: return the values you can see, top to bottom. That's the rightmost node of each level.
+
+For the tree `[5, 3, 8, 1, 4, null, 9, null, 2]` the answer is `[5, 8, 9, 2]`. The 2 is a left child, but nothing on its level is further right.
+
+## The key question
+
+> **What makes a node visible from the right?**
+
+Being the last node on its level. So the answer is one value per level, and a [level-by-level walk](/concepts/tree-traversals/) hands you each level in order.
+
+## Approach 1: One walk down per level
+
+For each depth, walk down from the root, trying the right child before the left, and stop at the first node found at that depth.
+
+<Viz client:visible approach="rewalk" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Each depth re-walks every level above it: **O(n · h)**, O(n²) for a chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** the upper levels are walked again for every level below them.
+</Complexity>
+
+## Approach 2: One breadth-first walk, a level at a time (optimal)
+
+Use a queue. At the start of each level its length is the level's size; take that many nodes, queueing their children, and record the last one.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node is queued and taken once: **O(n)**.
+
+**Space.** The queue holds at most one level: **O(w)**, the tree's widest level.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| One walk down per level | O(n · h) | O(h) | Restart from the root per level |
+| One breadth-first walk, a level at a time | **O(n)** | O(w) | The last node of each level |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes leaning right." />
+
+## Common mistakes
+
+- **Only following right children.** A left child is visible when nothing on its level is to its right.
+- **Recording the first node of each level.** That's the view from the left.
+- **Losing track of where a level ends.** Read the queue's length before taking the level.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Right Side View" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). Every level, not just its last node.
+- [Average of Levels in Binary Tree](/dsa/average-of-levels-in-binary-tree/). One number per level.
+- [Binary Tree Zigzag Level Order Traversal](/dsa/binary-tree-zigzag-level-order-traversal/). Levels read in alternating directions.
