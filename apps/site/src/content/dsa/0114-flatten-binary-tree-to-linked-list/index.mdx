@@ -1,0 +1,82 @@
+---
+title: Flatten Binary Tree to Linked List
+leetcode: { number: 114, url: "https://leetcode.com/problems/flatten-binary-tree-to-linked-list/" }
+difficulty: Medium
+topics: [Binary tree, Tree, Linked list, DFS]
+added: 2026-11-26
+summary: "Rearrange a binary tree in place into a chain that follows pre-order, using only right pointers. Goes from writing out the nodes first to splicing each left subtree in with no extra memory."
+insight: "A node's left subtree comes before its right subtree in pre-order, and the left subtree ends at its rightmost node. Hang the right subtree there, move the left subtree to the right, and continue down."
+best: { time: "O(n)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Rearrange it in place into a "linked list": every node's left child is none, its right child is the next node, and the order is pre-order (node, left subtree, right subtree).
+
+For the tree `[1, 2, 5, 3, 4, null, 6]` the result is 1 → 2 → 3 → 4 → 5 → 6 down the right pointers.
+
+## The key question
+
+> **Where must a node's right subtree go so that pre-order is kept?**
+
+Right after its whole left subtree, which ends at the left subtree's rightmost node. Hanging it there keeps the order and moves nothing else.
+
+## Approach 1: Write out the nodes in pre-order, then relink
+
+Collect the nodes in pre-order, then give each one no left child and the next node as its right child.
+
+<Viz client:visible approach="list" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One walk and one pass: **O(n)**.
+
+**Space.** The list of nodes: **O(n)**.
+
+**What it wastes:** memory. The order can be built by relinking the existing nodes as you go.
+</Complexity>
+
+## Approach 2: Splice each left subtree in, in place (optimal)
+
+Walk down the right pointers. At a node with a left subtree, find that subtree's rightmost node, hang the node's right subtree under it, then move the left subtree to the right.
+
+<Viz client:visible approach="inPlace" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each node is the current node once, and the rightmost searches never walk the same edge twice: **O(n)**.
+
+**Space.** A couple of pointers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Write out the nodes in pre-order, then relink | O(n) | O(n) | List, then relink |
+| Splice each left subtree in, in place | **O(n)** | O(1) | Rightmost node takes the right subtree |
+
+Both approaches are O(n) time, so there's no growth chart: the difference is the extra memory.
+
+## Common mistakes
+
+- **Forgetting to set left to none.** Every node in the result has no left child.
+- **Attaching the right subtree to the left child.** It belongs under the left subtree's rightmost node, its last node in pre-order.
+- **Losing the right subtree.** Save or attach it before overwriting node.right.
+
+## Check yourself
+
+<Quiz client:visible title="Flatten Binary Tree to Linked List" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Preorder Traversal](/dsa/binary-tree-preorder-traversal/). The order the list follows.
+- [Reverse Linked List](/dsa/reverse-linked-list/). Relinking nodes in place.
+- [Populating Next Right Pointers in Each Node](/dsa/populating-next-right-pointers-in-each-node/). Another in-place relinking.

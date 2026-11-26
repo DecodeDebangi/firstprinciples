@@ -1,0 +1,82 @@
+---
+title: Populating Next Right Pointers in Each Node II
+leetcode: { number: 117, url: "https://leetcode.com/problems/populating-next-right-pointers-in-each-node-ii/" }
+difficulty: Medium
+topics: [Binary tree, Tree, Linked list, BFS]
+added: 2026-11-26
+summary: "In any binary tree, point each node's next pointer at the node to its right on the same level. Goes from a level-by-level queue to walking each linked level and building the level below with a placeholder head, using no extra memory."
+insight: "Walk each linked level by its next pointers, appending its children to the level below with a tail pointer. A placeholder head means the first child needs no special case; its next is where the level below starts."
+best: { time: "O(n)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree (not necessarily full), whose nodes have an extra `next` pointer, initially none. Point each `next` at the node to its right on the same level, or none for the last node of a level.
+
+For the tree `[1, 2, 3, 4, 5, null, 7, 8]`: 2 → 3, 4 → 5 → 7, and 8 has nothing to its right.
+
+## The key question
+
+> **Without a perfect tree, how do you find each child's neighbour?**
+
+Build the level below as a list while walking the level above: append each child at the tail. The children come out left to right, whatever gaps the tree has.
+
+## Approach 1: Level by level with a queue
+
+Walk level by level with a queue, linking each node to the one taken before it.
+
+<Viz client:visible approach="queue" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node is queued once: **O(n)**.
+
+**Space.** The queue holds up to a whole level: **O(w)**.
+
+**What it wastes:** the queue, when the linked level above can be walked directly.
+</Complexity>
+
+## Approach 2: Walk each level by its next links, building the level below (optimal)
+
+Keep a placeholder head and a tail for the level below. Walk the current level by next pointers; append each child to the tail. Then the level below starts at the placeholder's next.
+
+<Viz client:visible approach="links" />
+
+<Complexity time="O(n)" space="O(1)">
+**Time.** Each node is visited once in its level's walk: **O(n)**.
+
+**Space.** A few pointers and one placeholder node: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Level by level with a queue | O(n) | O(w) | Queue per level |
+| Walk each level by its next links, building the level below | **O(n)** | O(1) | Placeholder head + tail |
+
+Both approaches are O(n) time, so there's no growth chart: the difference is the extra memory.
+
+## Common mistakes
+
+- **Using next.left as in the perfect tree.** A gap can make it missing; append children to a tail instead.
+- **Special-casing the first child.** The placeholder head makes it the same as every other child.
+- **Losing the start of the next level.** It's the placeholder's next, once the level above is done.
+
+## Check yourself
+
+<Quiz client:visible title="Populating Next Right Pointers in Each Node II" questions={questions} />
+
+## Related problems
+
+- [Populating Next Right Pointers in Each Node](/dsa/populating-next-right-pointers-in-each-node/). The perfect-tree version.
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/). Another list built with a placeholder head and a tail.
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The queue version's walk.
