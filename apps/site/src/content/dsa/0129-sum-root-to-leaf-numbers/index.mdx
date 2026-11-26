@@ -1,0 +1,83 @@
+---
+title: Sum Root to Leaf Numbers
+leetcode: { number: 129, url: "https://leetcode.com/problems/sum-root-to-leaf-numbers/" }
+difficulty: Medium
+topics: [Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "Each root-to-leaf path spells a number from its digits; add all those numbers up. Goes from collecting every path and reading it afterwards to carrying the number down as you go."
+insight: "Pass the number spelled so far down to each child, which appends its digit with num · 10 + digit. Leaves return the finished numbers, and parents add up what comes back."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree whose nodes each hold one digit, 0 to 9. Every path from the root to a leaf spells a number: the path 2 → 7 → 1 spells 271. Return the sum of all those numbers.
+
+For the tree `[2, 7, 3, 1, null, 4, 6]` the paths spell 271, 234 and 236, so the answer is `741`.
+
+## The key question
+
+> **What does a node need to know to work out its own part of the number?**
+
+Only the number spelled above it. Appending a digit is `num · 10 + digit`, so that one number can travel down with each call: [top-down recursion](/concepts/tree-recursion/).
+
+## Approach 1: Collect each path, then read it as a number
+
+Collect every root-to-leaf path as a list of digits, copying the list at each step down. Then read each list as a number and add them up.
+
+<Viz client:visible approach="collect" />
+
+<Complexity time="O(n · h)" space="O(n · h)">
+**Time.** Copying the path at every node, then reading each path again: **O(n · h)**.
+
+**Space.** All the stored paths: **O(n · h)** in the worst case.
+
+**What it wastes:** the lists. The number can be built as you go, one digit per step, without remembering the digits.
+</Complexity>
+
+## Approach 2: Carry the number down (optimal)
+
+Pass the number so far down to each child. A child computes `num · 10 + its digit`; a leaf returns that number; a parent returns the sum of what its two children return.
+
+<Viz client:visible approach="carry" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node, O(1) each: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Collect each path, then read it as a number | O(n · h) | O(n · h) | Store paths, read them later |
+| Carry the number down | **O(n)** | O(h) | One number travels down |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes, one long path." />
+
+## Common mistakes
+
+- **Adding a digit instead of appending it.** Going down a level shifts the number: multiply by 10 first.
+- **Counting a node with one child as a leaf.** Only nodes with no children end a number.
+- **Returning 0 for a missing child and adding it at a leaf twice.** Return the number only at real leaves.
+
+## Check yourself
+
+<Quiz client:visible title="Sum Root to Leaf Numbers" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Paths](/dsa/binary-tree-paths/). The same root-to-leaf paths, written out instead of added up.
+- [Path Sum](/dsa/path-sum/). Carrying a running total down to the leaves.
+- [Path Sum II](/dsa/path-sum-ii/). Keeping the paths with a given sum.

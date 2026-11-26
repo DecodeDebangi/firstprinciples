@@ -1,0 +1,83 @@
+---
+title: Binary Tree Maximum Path Sum
+leetcode: { number: 124, url: "https://leetcode.com/problems/binary-tree-maximum-path-sum/" }
+difficulty: Hard
+topics: [Binary tree, Tree, Dynamic programming, DFS]
+added: 2026-11-26
+summary: "Find the largest sum along any path in a binary tree, where a path can start and end at any nodes. Goes from trying every node as the path's top and measuring both sides from scratch, to one bottom-up walk that returns the best one-sided gain."
+insight: "Each node returns the best path going down from it, which can only use one side. While it's there, it also checks the path that bends at it, using both sides, against the best so far."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree whose values can be negative. A **path** is any sequence of nodes connected by edges, each used at most once; it doesn't have to pass through the root. Return the largest sum of values along any path (with at least one node).
+
+For the tree `[2, -6, 5, 3, 4, -1, 7]` the answer is `14`: 2 → 5 → 7, bending at 2 after skipping the −6 side.
+
+## The key question
+
+> **What does a node have to tell its parent, and what can it only check itself?**
+
+A parent can extend a path through only one side of its child, so the child returns its best **one-sided** gain. The path that bends at a node, using both sides, can't be extended upward, so the node checks it against the best so far itself. That's the [bottom-up](/concepts/tree-recursion/) pattern from Diameter of Binary Tree, with values instead of edge counts.
+
+## Approach 1: Try every node as the top of the path
+
+For each node, measure the best path going down its left side and its right side (from scratch), skip a side worth less than 0, and add the node's value.
+
+<Viz client:visible approach="every" />
+
+<Complexity time="O(n²)" space="O(h)">
+**Time.** Each node measures both of its subtrees again: **O(n²)** on a chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** subtrees are measured again for every ancestor above them.
+</Complexity>
+
+## Approach 2: Return the best one-sided gain, track the best bend (optimal)
+
+One bottom-up walk. Each call gets the best gain from each child (0 if that side is negative), updates the best with `node + left + right`, and returns `node + max(left, right)`.
+
+<Viz client:visible approach="once" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One visit per node: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every node as the top of the path | O(n²) | O(h) | Measure from scratch per node |
+| Return the best one-sided gain, track the best bend | **O(n)** | O(h) | Return one side, check both |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes." />
+
+## Common mistakes
+
+- **Returning the bending path to the parent.** A path can't go down both sides and then up; return only one side.
+- **Starting best at 0.** If every value is negative, the answer is the largest single value, so start at −∞.
+- **Not skipping negative sides.** A side worth less than 0 should count as 0: the path simply doesn't go there.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Maximum Path Sum" questions={questions} />
+
+## Related problems
+
+- [Diameter of Binary Tree](/dsa/diameter-of-binary-tree/). The same return-one-side, check-both pattern with lengths.
+- [Maximum Subarray](/dsa/maximum-subarray/). Dropping a negative running sum, on an array.
+- [Balanced Binary Tree](/dsa/balanced-binary-tree/). Another bottom-up walk that returns one thing and checks another.

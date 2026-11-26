@@ -1,0 +1,83 @@
+---
+title: Path Sum III
+leetcode: { number: 437, url: "https://leetcode.com/problems/path-sum-iii/" }
+difficulty: Medium
+topics: [Prefix sum, Binary tree, Tree, Hash map, DFS]
+added: 2026-11-26
+summary: "Count the downward paths, starting and ending at any nodes, whose values add up to a target. Goes from starting a new walk at every node to running sums from the root, counted in a map."
+insight: "A downward path ending at a node adds up to the target exactly when an earlier node on the same root path had a running sum of (this sum − target). Count running sums in a map, and remove each one on the way back up."
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree and a number `target`. Count the paths that add up to `target`, where a path goes **downward** (parent to child) but can start at any node and end at any node below it.
+
+For the tree `[3, 1, 5, 2, null, -1, 4, 3]` and `target = 6`, the answer is `2`: 3 → 1 → 2, starting at the root, and 1 → 2 → 3, which starts and ends partway down.
+
+## The key question
+
+> **How can each node count the paths ending at it without walking back up?**
+
+With running sums from the root. A path from just below node A down to node B adds up to `sum(B) − sum(A)`, the same trick as [prefix sums](/concepts/prefix-sums/) on an array. So B only needs to know how many nodes above it had a running sum of `sum(B) − target`.
+
+## Approach 1: Start a downward walk from every node
+
+Treat every node as a starting point and walk all paths down from it, counting those that hit the target.
+
+<Viz client:visible approach="every" />
+
+<Complexity time="O(n · h)" space="O(h)">
+**Time.** Each node is walked once from every ancestor and from itself: **O(n · h)**, O(n²) on a chain.
+
+**Space.** The recursion: **O(h)**.
+
+**What it wastes:** each stretch of path is added up again for every place it could start.
+</Complexity>
+
+## Approach 2: Running sums from the root, counted in a map (optimal)
+
+Walk once, keeping the running sum from the root and a map of how many times each running sum appears on the current root path (starting with 0 → 1, the empty path). At each node, `seen[sum − target]` paths end here. Remove the node's sum from the map on the way back up, so other branches don't see it.
+
+<Viz client:visible approach="prefix" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** One lookup and one update per node: **O(n)**.
+
+**Space.** The map holds at most one root path's sums, and the recursion is as deep: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Start a downward walk from every node | O(n · h) | O(h) | Restart from each node |
+| Running sums from the root, counted in a map | **O(n)** | O(h) | sum(B) − sum(A) = target |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes, the worst case for restarting at every node." />
+
+## Common mistakes
+
+- **Forgetting `0 → 1` in the map.** Paths that start at the root need an "empty path" sum of 0 before it.
+- **Not removing a sum on the way back up.** A sibling branch would count paths through nodes that aren't its ancestors.
+- **Updating the map before looking up.** With `target = 0` the node would match itself.
+
+## Check yourself
+
+<Quiz client:visible title="Path Sum III" questions={questions} />
+
+## Related problems
+
+- [Subarray Sum Equals K](/dsa/subarray-sum-equals-k/). The same running-sum count, on an array.
+- [Path Sum II](/dsa/path-sum-ii/). Root-to-leaf paths only.
+- [Path Sum](/dsa/path-sum/). Whether one root-to-leaf path adds up.

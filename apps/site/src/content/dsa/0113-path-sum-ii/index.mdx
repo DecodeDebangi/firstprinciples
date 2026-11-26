@@ -1,0 +1,83 @@
+---
+title: Path Sum II
+leetcode: { number: 113, url: "https://leetcode.com/problems/path-sum-ii/" }
+difficulty: Medium
+topics: [Backtracking, Binary tree, Tree, DFS]
+added: 2026-11-26
+summary: "Find every root-to-leaf path whose values add up to a target. Goes from copying the path at every node to one shared path, passing down how much is still needed and copying only the paths that match."
+insight: "Keep one shared path and pass down how much is still needed. At a leaf with nothing left, copy the path into the answer; pop each node on the way back up."
+best: { time: "O(n + k · h)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree and a number `target`. Return every root-to-leaf path whose values add up to `target`, each as a list of values.
+
+For the tree `[6, 3, 8, 2, 1, null, -3, null, null, 2]` and `target = 11`, the answer is `[6, 3, 2]` and `[6, 8, -3]`.
+
+## The key question
+
+> **What does each call need to carry, and what should only be copied at the end?**
+
+It needs the amount still needed, a single number. The path itself can be one shared list, copied only when a leaf matches. [Path Sum](/dsa/path-sum/) is the same walk with a yes-or-no answer.
+
+## Approach 1: Copy the path at every node
+
+Each call makes a new list: the path so far plus its own value. At a leaf, keep the list if its sum matches.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n · h)" space="O(n · h)">
+**Time.** Each node copies up to `h` values: **O(n · h)**, O(n²) on a chain.
+
+**Space.** The copies along the current path: **O(n · h)** in the worst case.
+
+**What it wastes:** copying paths that will never match, at every node instead of only at matching leaves.
+</Complexity>
+
+## Approach 2: One shared path, copied only when it matches (optimal)
+
+Push each node onto one shared list and pass down `remain − node.val`. At a leaf with 0 remaining, copy the list into the answer. Pop the node when its subtrees are done.
+
+<Viz client:visible approach="shared" />
+
+<Complexity time="O(n + k · h)" space="O(h)">
+**Time.** Each node is pushed and popped once, and each of the `k` matching paths is copied once: **O(n + k · h)**.
+
+**Space.** The shared path and the recursion: **O(h)**, plus the answer.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Copy the path at every node | O(n · h) | O(n · h) | A fresh copy per node |
+| One shared path, copied only when it matches | **O(n + k · h)** | O(h) | Push, recurse, pop; copy on a match |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes with no matching path." />
+
+## Common mistakes
+
+- **Storing the shared list itself instead of a copy.** It keeps changing; the answer must hold a snapshot.
+- **Stopping early when the sum passes the target.** Values can be negative, so the sum can come back down.
+- **Checking the sum at nodes that aren't leaves.** The path has to reach a leaf.
+
+## Check yourself
+
+<Quiz client:visible title="Path Sum II" questions={questions} />
+
+## Related problems
+
+- [Path Sum](/dsa/path-sum/). Whether any such path exists.
+- [Path Sum III](/dsa/path-sum-iii/). Paths that can start and end anywhere going down.
+- [Binary Tree Paths](/dsa/binary-tree-paths/). Every root-to-leaf path, with no target.

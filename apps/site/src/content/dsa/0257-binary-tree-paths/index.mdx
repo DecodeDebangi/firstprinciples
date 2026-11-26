@@ -1,0 +1,83 @@
+---
+title: Binary Tree Paths
+leetcode: { number: 257, url: "https://leetcode.com/problems/binary-tree-paths/" }
+difficulty: Easy
+topics: [Binary tree, Tree, Backtracking, DFS]
+added: 2026-11-26
+summary: "List every path from the root down to a leaf, written like 5->3->1. Goes from handing each call a new copy of the path to one shared path that is undone on the way back up."
+insight: "Keep one list for the current path: push a node on the way down, write the path out at a leaf, and pop the node on the way back up."
+best: { time: "O(n · h)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary tree. Return every path from the root to a leaf, each written as its values joined by `->`, in any order.
+
+For the tree `[5, 3, 8, 1, 4, null, 9]` the answer is `5->3->1`, `5->3->4` and `5->8->9`.
+
+## The key question
+
+> **Does each call need its own copy of the path?**
+
+No. Only the finished paths need copying. While walking, one shared list is enough, as long as each node removes itself when its subtree is done. That push, recurse, pop pattern is [backtracking](/concepts/backtracking/).
+
+## Approach 1: Pass a new string down
+
+Each call builds a new string from the path so far plus its own value, and passes it to its children. A leaf adds its string to the answer.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n · h)" space="O(n · h)">
+**Time.** Each node copies the path above it, up to `h` characters: **O(n · h)**, which is O(n²) on a chain.
+
+**Space.** Every call along the current path holds its own copy: **O(n · h)** in the worst case.
+
+**What it wastes:** the copies. Most of them are thrown away; only leaves need the full path.
+</Complexity>
+
+## Approach 2: One shared path, undone on the way back (optimal)
+
+Keep one list. Push each node on the way down; at a leaf, join the list into the answer; pop the node when both subtrees are done.
+
+<Viz client:visible approach="shared" />
+
+<Complexity time="O(n + L · h)" space="O(h)">
+**Time.** Each node is pushed and popped once, and each of the `L` leaves writes out a path of up to `h` values: **O(n + L · h)**. Writing the answer can't be avoided.
+
+**Space.** The shared path and the recursion: **O(h)**, plus the answer.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Pass a new string down | O(n · h) | O(n · h) | A fresh copy per node |
+| One shared path, undone on the way back | **O(n + L · h)** | O(h) | Push, recurse, pop |
+
+<GrowthChart client:visible series={growth} caption="Operations for a chain of n nodes, one long path." />
+
+## Common mistakes
+
+- **Forgetting to pop.** Without it, later paths keep values from branches already finished.
+- **Treating a node with one child as a leaf.** A leaf has no children at all.
+- **Adding `->` after the last value.** Join with the separator, or add it only between values.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Paths" questions={questions} />
+
+## Related problems
+
+- [Path Sum II](/dsa/path-sum-ii/). The same walk, keeping only the paths with the right sum.
+- [Sum Root to Leaf Numbers](/dsa/sum-root-to-leaf-numbers/). Each path read as a number.
+- [Subsets](/dsa/subsets/). The same push, recurse, pop pattern on a list.
