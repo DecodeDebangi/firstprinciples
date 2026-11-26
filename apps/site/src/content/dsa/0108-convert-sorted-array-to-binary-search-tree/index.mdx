@@ -1,0 +1,88 @@
+---
+title: Convert Sorted Array to Binary Search Tree
+leetcode: { number: 108, url: "https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/" }
+difficulty: Easy
+topics: [BST, Binary tree]
+added: 2026-11-26
+summary: Turn a sorted list of distinct values into a height-balanced binary search tree. Goes from building each half from a copied slice to building it from index ranges, so every value is touched once.
+insight: "Make the middle value the root; the values before it build the left subtree and the values after it the right, the same way."
+best: { time: "O(n)", space: "O(log n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` of distinct values in increasing order. Build a **height-balanced** binary search tree from them
+(at every node, the two subtrees' heights differ by at most 1) and return its root. Any balanced answer is accepted.
+
+For `nums = [1, 3, 4, 6, 7, 8, 10]` one answer has 6 at the root, 3 and 8 below it, and 1, 4, 7, 10 as leaves: height 3.
+
+## The key question
+
+> **Which value has to be the root so that both sides come out the same size?**
+
+The middle one. Inserting the values in order would build a valid BST, but a chain of height `n`, as [Balanced
+trees](/concepts/balanced-trees/) shows.
+
+## Approach 1: Middle as root, copying each half
+
+Take the middle value as the root, copy out the values before it and after it, and build each half the same way.
+
+<Viz client:visible approach="copy" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** About log₂ n levels of recursion, and at each level the copied slices together hold all `n` values:
+**O(n log n)**.
+
+**Space.** The copies made along the current path add up to about `n`: **O(n)**.
+
+**What it wastes:** the copies. The values never move, so two positions are enough to describe each half.
+</Complexity>
+
+## Approach 2: Middle as root, using positions (optimal)
+
+Same idea, but pass the range `lo..hi` instead of a copy. The middle is `floor((lo + hi) / 2)`, and the halves are
+`lo..mid − 1` and `mid + 1..hi`. It's **divide and conquer**: split, solve each half, combine.
+
+<Viz client:visible approach="indexes" />
+
+<Complexity time="O(n)" space="O(log n)">
+**Time.** Each value becomes a node once: **O(n)**.
+
+**Space.** The recursion is as deep as the tree, which is balanced: **O(log n)** (plus the tree itself, which is the
+answer).
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Copy each half | O(n log n) | O(n) | Slices for each call |
+| Pass positions | **O(n)** | **O(log n)** | Two numbers describe each half |
+
+<GrowthChart client:visible series={growth} caption="Operations for n sorted values, counting copied values." />
+
+## Common mistakes
+
+- **Inserting in order.** It builds a chain, not a balanced tree.
+- **Off-by-one in the halves.** The middle itself goes in neither half: `lo..mid − 1` and `mid + 1..hi`.
+- **Worrying about which middle.** For an even count, the left or right middle both work.
+
+## Check yourself
+
+<Quiz client:visible title="Convert Sorted Array to BST" questions={questions} />
+
+## Related problems
+
+- [Balanced Binary Tree](/dsa/balanced-binary-tree/). Checking that a tree is height-balanced.
+- [Insert into a Binary Search Tree](/dsa/insert-into-a-binary-search-tree/). Why inserting sorted values goes wrong.
+- [Binary Search](/dsa/binary-search/). The same middle-then-halves idea, searching instead of building.

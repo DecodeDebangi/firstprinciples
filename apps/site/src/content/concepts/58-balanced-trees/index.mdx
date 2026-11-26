@@ -1,0 +1,99 @@
+---
+title: "Balanced trees: height-balanced, why BSTs need it, and how to build one"
+topic: Trees
+kind: Explainer
+order: 4
+summary: Every binary search tree operation walks one path, so it costs the tree's height. Inserting values in sorted order turns a BST into a chain as tall as the number of values. This read covers what height-balanced means, how to check it bottom-up in one pass, how to build a balanced BST from sorted values, and how self-balancing trees keep it that way.
+added: 2026-11-26
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Binary search trees](/concepts/binary-search-trees/) shows that search, insert and delete all walk a single path from the
+root, so each costs **O(h)**, where `h` is the tree's height. Whether that's fast depends entirely on the tree's shape.
+
+## Height decides everything
+
+A tree holding `n` values can be as short as about log₂ n levels or as tall as `n`. With a million values that's the
+difference between about 20 steps and a million. Nothing in the BST rule stops the tall shape: insert values that are
+already sorted, and each new one is bigger than everything before it, so it always goes right to the bottom.
+
+<Viz client:visible approach="chain" />
+
+The result is a valid BST that behaves like a linked list. Real data is often sorted or nearly sorted (ids, timestamps),
+so this isn't a rare accident.
+
+## What "balanced" means
+
+A binary tree is **height-balanced** when, **at every node**, the heights of its left and right subtrees differ by at
+most 1. Checking only the root isn't enough: a root can have two equally tall sides that are each a chain.
+
+A height-balanced tree with `n` nodes always has height O(log n): the shortest subtree of a node of height `h` still has
+height at least `h − 2`, so the number of nodes grows exponentially with the height. That's why balance is what makes
+every BST operation O(log n).
+
+## Checking balance: bottom-up, in one pass
+
+Checking each node by measuring both subtrees from scratch repeats work: a deep node is measured again for every
+ancestor. Instead, let each call return its subtree's height, or **−1** if anything below is already unbalanced. A parent
+then knows both heights at once, checks the difference, and passes the answer up.
+
+<Viz client:visible approach="check" />
+
+Every node is visited once: O(n). That's the **bottom-up** pattern from [Tree recursion](/concepts/tree-recursion/):
+the answer is built from the children's answers on the way back up. The full problem is [Balanced Binary
+Tree](/dsa/balanced-binary-tree/), which compares it with the top-down version.
+
+## Building a balanced BST from sorted values
+
+Given the values in sorted order, make the **middle** value the root. Everything before it goes into the left subtree
+and everything after it into the right, and each half is built the same way. Each side gets half the values (give or
+take one), so every height difference is at most 1.
+
+<Viz client:visible approach="middle" />
+
+Each value becomes a node exactly once: O(n), as long as you pass positions (`lo`, `hi`) instead of copying the halves.
+That's [Convert Sorted Array to Binary Search Tree](/dsa/convert-sorted-array-to-binary-search-tree/).
+
+## Staying balanced as values change
+
+Rebuilding after every insert would cost O(n) each time. **Self-balancing** BSTs fix the shape locally instead:
+
+- A **rotation** lifts a child above its parent while keeping the order: if `B` is `A`'s left child, `B` becomes the
+  subtree's root and `A` becomes `B`'s right child, with `B`'s old right subtree moving over to be `A`'s left. Only three
+  links change, so it's O(1).
+- **AVL trees** store each node's height and rotate whenever a node's sides differ by 2, keeping the tree strictly
+  height-balanced.
+- **Red-black trees** follow a looser rule (no path is more than twice as long as another), which needs fewer rotations.
+  Java's `TreeMap` and C++'s `std::map` are red-black trees.
+
+Every insert and delete then stays O(log n). In interviews you're rarely asked to write one; you're expected to know they
+exist and to reach for your language's ordered set or map: `TreeMap`/`TreeSet` in Java, `std::map`/`std::set` in C++.
+Python has no built-in one; the `sortedcontainers` package is the usual choice.
+
+## Interview theory
+
+<QA q="What's the worst-case height of a BST, and when does it happen?">
+n, when values arrive sorted (or reverse sorted): every insert goes to the same side and the tree becomes a chain.
+</QA>
+
+<QA q="How do you check whether a binary tree is height-balanced in O(n)?">
+Recurse bottom-up: each call returns its height, or −1 if its subtree is unbalanced. A node returns −1 if either child did
+or if their heights differ by more than 1, else 1 + the larger height.
+</QA>
+
+<QA q="How do you build a height-balanced BST from a sorted array?">
+Take the middle element as the root and build the left and right halves the same way, passing index ranges. O(n) time,
+O(log n) recursion depth.
+</QA>
+
+<QA q="What's the difference between AVL and red-black trees?">
+Both rotate to keep the height O(log n). AVL keeps every node's sides within 1, so lookups are slightly faster; red-black
+allows more slack, so inserts and deletes need fewer rotations. Most standard-library ordered maps use red-black trees.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
