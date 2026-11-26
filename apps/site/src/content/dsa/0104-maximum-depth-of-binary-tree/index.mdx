@@ -7,9 +7,12 @@ added: 2026-11-13
 summary: Count how many levels a binary tree has. Compares asking each subtree for its depth recursively with counting levels one at a time using a queue.
 insight: "A tree's depth is 1 plus the deeper of its two subtrees. Ask each subtree, and the answer builds itself."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import Complexity from "../../../components/Complexity.astro";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -74,6 +77,10 @@ difference is memory, and it depends on the tree's shape.
 - **Returning 1 for an empty tree.** No nodes means depth 0.
 - **Counting edges instead of nodes.** This problem counts nodes on the path: a single node has depth 1.
 - **Forgetting the tree can be a chain.** On a 10,000-node chain, recursion can run out of call stack (Python stops at 1,000 calls by default); BFS can't.
+
+## Check yourself
+
+<Quiz client:visible title="Maximum Depth of Binary Tree" questions={questions} />
 
 ## Related problems
 

@@ -7,9 +7,12 @@ added: 2026-11-22
 summary: Decide whether a binary tree is a mirror image of itself around its centre. Goes from checking that every level reads the same backwards to a recursion that compares mirror pairs of nodes directly, using only O(h) space.
 insight: "Recurse on pairs: two subtrees mirror each other when their tops match, the outside pair mirrors and the inside pair mirrors."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import Complexity from "../../../components/Complexity.astro";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -79,6 +82,10 @@ Both are O(n) time, so there's no growth chart: the difference is memory, a whol
   gaps are dropped, but it isn't symmetric.
 - **Checking only values, not shape.** One side having a node where the other has none must fail.
 - **Comparing the tree with itself, left to left.** That's [Same Tree](/dsa/same-tree/), which is always true here.
+
+## Check yourself
+
+<Quiz client:visible title="Symmetric Tree" questions={questions} />
 
 ## Related problems
 

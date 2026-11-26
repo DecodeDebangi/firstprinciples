@@ -30,6 +30,7 @@ const recursive: Approach<Input> = {
     const by = new Map(nodes.map((n) => [n.id, n]));
     const done = new Set<string>();
     const stack: string[] = [];
+    let asked = 0;
     const tones = (extra: Record<string, Tone> = {}) => ({ ...Object.fromEntries([...done].map((d) => [d, "settled" as Tone])), ...extra });
     t.step({ line: 2, array: [], trees: [{ root, nodes: snap(nodes) }], stack: [], vars: { node: null },
       message: "Mirror the tree: at every node, swap its left and right children. Watch whole subtrees slide across." });
@@ -38,9 +39,12 @@ const recursive: Approach<Input> = {
       const n = by.get(id)!;
       t.op();
       stack.push(`invert(${n.val})`);
+      const L = n.left ? by.get(n.left)!.val : null, R = n.right ? by.get(n.right)!.val : null;
+      const name = (v: number | string | null, side: string) => (v === null ? `Nothing (the old ${side} was empty)` : `${v}, the old ${side} child`);
+      const q = asked < 3 && (L !== null || R !== null) ? (asked++, { ask: { q: `${n.val} has ${L ?? "nothing"} on the left and ${R ?? "nothing"} on the right. After the swap, what is its left child?`, options: [name(R, "right"), name(L, "left")], answer: 0 } }) : {};
       [n.left, n.right] = [n.right, n.left];
       done.add(id);
-      t.step({ line: 4, array: [], trees: [{ root, nodes: snap(nodes), tones: tones({ [id]: "found" }), pointers: { node: id } }], stack: [...stack], vars: { node: n.val },
+      t.step({ ...q, line: 4, array: [], trees: [{ root, nodes: snap(nodes), tones: tones({ [id]: "found" }), pointers: { node: id } }], stack: [...stack], vars: { node: n.val },
         message: `Swap ${n.val}'s children. Each subtree moves as a whole; its insides are mirrored when the recursion reaches them.` });
       go(n.left);
       go(n.right);
@@ -73,7 +77,10 @@ const bfs: Approach<Input> = {
     const tones = (extra: Record<string, Tone> = {}) => ({ ...Object.fromEntries([...done].map((d) => [d, "settled" as Tone])), ...extra });
     t.step({ line: 2, array: [], trees: [{ root, nodes: snap(nodes) }], grid: grid(), vars: { node: null },
       message: "Same swaps without recursion: visit the nodes level by level with a queue, swapping each node's children." });
+    let asked = 0;
     while (queue.length) {
+      const front = by.get(queue[0])!.val, back = by.get(queue[queue.length - 1])!.val;
+      const q = asked < 2 && queue.length > 1 && front !== back ? (asked++, { ask: { q: `The queue holds ${queue.map((x) => by.get(x)!.val).join(", ")} (front first). Which node is swapped next?`, options: [`${front}, at the front`, `${back}, at the back`], answer: 0 } }) : {};
       const id = queue.shift()!;
       const n = by.get(id)!;
       t.op();
@@ -81,7 +88,7 @@ const bfs: Approach<Input> = {
       done.add(id);
       if (n.left) queue.push(n.left);
       if (n.right) queue.push(n.right);
-      t.step({ line: 5, array: [], trees: [{ root, nodes: snap(nodes), tones: tones({ [id]: "found" }), pointers: { node: id } }], grid: grid(), vars: { node: n.val },
+      t.step({ ...q, line: 5, array: [], trees: [{ root, nodes: snap(nodes), tones: tones({ [id]: "found" }), pointers: { node: id } }], grid: grid(), vars: { node: n.val },
         message: `Take ${n.val} from the queue, swap its children, and queue them up.` });
     }
     t.step({ line: 8, array: [], trees: [{ root, nodes: snap(nodes), tones: tones() }], grid: grid(), vars: { node: null }, done: "found",

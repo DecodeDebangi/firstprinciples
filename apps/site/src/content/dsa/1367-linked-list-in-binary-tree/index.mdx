@@ -7,9 +7,12 @@ added: 2026-11-16
 summary: Decide whether a linked list's values appear, in order, along some downward path in a binary tree. Goes from writing out every root-to-leaf path and searching each one, to trying a match from every tree node and giving up at the first mismatch.
 insight: "Treat every tree node as a possible start. From a start, walk down the tree and along the list together, trying both children at each step, and stop as soon as a value differs."
 best: { time: "O(n · m)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import Complexity from "../../../components/Complexity.astro";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -104,6 +107,10 @@ Both on the same list and tree:
   nodes.
 - **Requiring the path to end at a leaf.** The list can end anywhere: when `node = none`, it's a match.
 - **Checking only one child.** At each step, the next value may be in the left child or the right child; try both.
+
+## Check yourself
+
+<Quiz client:visible title="Linked List in Binary Tree" questions={questions} />
 
 ## Related problems
 

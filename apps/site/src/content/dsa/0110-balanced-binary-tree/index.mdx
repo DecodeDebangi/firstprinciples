@@ -7,11 +7,13 @@ added: 2026-11-22
 summary: Decide whether a binary tree is height-balanced, meaning that at every node the two subtree heights differ by at most 1. Goes from checking each node with heights measured from scratch to one bottom-up walk that returns a height, or −1 as soon as anything below is unbalanced.
 insight: "Compute heights bottom-up once, and return −1 instead of a height the moment a node is unbalanced. The −1 travels straight to the root."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import Complexity from "../../../components/Complexity.astro";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -84,6 +86,10 @@ Step through both side by side. Both share one clock that ticks once per operati
 - **Using the wrong height for an empty child.** An empty subtree has height 0 and a leaf has height 1, or the
   difference comes out wrong.
 - **Mixing up "balanced" with "complete" or "perfect".** Balanced only limits the height difference at each node.
+
+## Check yourself
+
+<Quiz client:visible title="Balanced Binary Tree" questions={questions} />
 
 ## Related problems
 

@@ -7,10 +7,12 @@ added: 2026-11-13
 summary: Check that every value in a node's left subtree is smaller and every value in its right subtree is bigger, at every node. Goes from checking whole subtrees at each node to one pass with an in-order walk or inherited ranges.
 insight: "Every node must fit inside a range set by the nodes above it. Pass that range down as you go, and each node is checked once."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
@@ -90,6 +92,10 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 - **Comparing a node only with its children.** The example above passes that check and still isn't a BST.
 - **Allowing equal values.** Here a BST needs strictly smaller on the left and strictly bigger on the right, so `[2, 2]` is invalid.
 - **Using the smallest possible integer as a starting bound.** A node may hold exactly that value; use infinity or `none`.
+
+## Check yourself
+
+<Quiz client:visible title="Validate Binary Search Tree" questions={questions} />
 
 ## Related problems
 

@@ -7,11 +7,13 @@ added: 2026-11-22
 summary: Decide whether some path from the root down to a leaf has values that add up to a target. Goes from listing every root-to-leaf path and adding each one up to passing the amount still needed down the tree, so each node does one subtraction.
 insight: "Pass down how much is still needed. Each node subtracts its own value; a leaf left needing exactly 0 ends a matching path."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import Complexity from "../../../components/Complexity.astro";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -84,6 +86,10 @@ Step through both side by side. Both share one clock that ticks once per operati
   down.
 - **Returning `true` for an empty tree when the target is 0.** There's no path at all.
 - **Treating a missing child as a leaf.** Only a node with **no** children ends a path.
+
+## Check yourself
+
+<Quiz client:visible title="Path Sum" questions={questions} />
 
 ## Related problems
 

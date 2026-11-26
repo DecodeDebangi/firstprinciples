@@ -7,9 +7,12 @@ added: 2026-11-22
 summary: Find the lowest node that has two given nodes, p and q, both somewhere beneath it (a node counts as beneath itself). Goes from finding both root-to-node paths and comparing them to one walk where each call reports what it found below.
 insight: "Each call reports p, q, the answer, or nothing. The first node that hears about a target from both sides is the lowest common ancestor."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import Complexity from "../../../components/Complexity.astro";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -86,6 +89,10 @@ paths.
 - **Using the BST shortcut on an ordinary tree.** Comparing values with the node's value only works in a binary search
   tree.
 - **Returning a value instead of the node.** The problem asks for the node itself.
+
+## Check yourself
+
+<Quiz client:visible title="Lowest Common Ancestor of a Binary Tree" questions={questions} />
 
 ## Related problems
 

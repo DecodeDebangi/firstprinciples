@@ -7,10 +7,12 @@ added: 2026-11-13
 summary: Decide whether two binary trees have the same shape and the same values. Goes from writing both trees out in full to walking them in step and stopping at the first difference.
 insight: "Walk both trees together, and stop at the first spot where one has a node the other doesn't, or the values differ."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
@@ -75,6 +77,10 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 - **Serializing without null markers.** `[1, 2]` and `[1, null, 2]` both list as `1 2` without them.
 - **Comparing only values in order.** Two trees can have the same in-order values and different shapes.
 - **Checking `p.val = q.val` before checking for `none`.** That crashes when one side is missing.
+
+## Check yourself
+
+<Quiz client:visible title="Same Tree" questions={questions} />
 
 ## Related problems
 

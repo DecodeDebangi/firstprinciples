@@ -7,11 +7,13 @@ added: 2026-11-22
 summary: Find the length of the longest path between any two nodes in a binary tree, counted in edges. Goes from measuring both subtree heights at every node from scratch to one post-order walk that returns each height and tracks the best path on the way.
 insight: "The longest path bends at some node and runs down both sides: left height + right height. One walk can return heights and check that sum at every node."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
 import Complexity from "../../../components/Complexity.astro";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -81,6 +83,10 @@ Step through both side by side. Both share one clock that ticks once per operati
 - **Only checking the root.** The longest path can sit inside one subtree, as in the example.
 - **Counting nodes instead of edges.** With heights counted in nodes, `left + right` is already the edge count.
 - **Off by one for a single node.** One node has diameter 0.
+
+## Check yourself
+
+<Quiz client:visible title="Diameter of Binary Tree" questions={questions} />
 
 ## Related problems
 

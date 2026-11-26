@@ -7,9 +7,12 @@ added: 2026-11-13
 summary: Mirror a binary tree by swapping every node's left and right children. Compares a recursive swap with an iterative one that uses a queue.
 insight: "Swap a node's left and right children, then do the same for each child. Every node is visited once."
 best: { time: "O(n)", space: "O(h)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import Complexity from "../../../components/Complexity.astro";
+import { Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 
 ## The problem
 
@@ -69,6 +72,10 @@ Both perform exactly one swap per node, so there's no growth chart: the two line
 - **Swapping one side at a time.** `root.left ← invert(root.right)` followed by `root.right ← invert(root.left)` uses the *new* left. Swap both at once, or save one first.
 - **Swapping values instead of children.** Only the shape changes; each node keeps its own value.
 - **Forgetting to return the root.** The problem expects the (same) root back.
+
+## Check yourself
+
+<Quiz client:visible title="Invert Binary Tree" questions={questions} />
 
 ## Related problems
 

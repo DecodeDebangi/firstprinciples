@@ -7,10 +7,12 @@ added: 2026-11-13
 summary: List a tree's values level by level, left to right. Goes from walking down from the root once per level to a queue that visits every node exactly once.
 insight: "A queue hands nodes back in the order they joined, which is level by level. Take one level's worth at a time."
 best: { time: "O(n)", space: "O(w)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
@@ -73,6 +75,10 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 - **Not fixing the level size first.** Read `length(queue)` *before* the inner loop; children added during it belong to the next level.
 - **Using a plain array as a queue.** Removing from the front (`list.pop(0)` in Python, `shift()` in JavaScript) is O(n); use a real queue (`collections.deque`, Java's `ArrayDeque`).
 - **Empty tree.** Return `[]`, not `[[]]`.
+
+## Check yourself
+
+<Quiz client:visible title="Binary Tree Level Order Traversal" questions={questions} />
 
 ## Related problems
 
