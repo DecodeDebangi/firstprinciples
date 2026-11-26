@@ -53,6 +53,8 @@ export class CallTree {
     finish: (grid: ArrayStep["grid"]) => Omit<ArrayStep, "ops" | "array" | "trees">;
     stackLabel: (id: string) => string;
   }) {
+    // Silent runs (the growth chart) only need the operation count; drawing the tree for every call is O(calls²).
+    if ((t as { record?: boolean }).record === false) { for (let k = 0; k < this.events.length; k++) t.op(); return; }
     const tones: Record<string, Tone> = Object.fromEntries(this.nodes.map((n) => [n.id, "discard" as Tone]));
     const notes: Record<string, string> = {};
     const solved = new Set<string>();

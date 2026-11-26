@@ -62,7 +62,8 @@ function runFib(n0: number, t: Parameters<Approach<FibInput>["run"]>[1], memo: b
   const seenN = new Set<number>();
   const known = new Map<number, number>();
   let k = 0, root: string | null = null, repeats = 0;
-  const view = (extra: Record<string, Tone> = {}): TreeData[] => [{ root, nodes: nodes.map((x) => ({ ...x, kids: [...(x.kids ?? [])] })), tones: { ...tones, ...extra }, notes: { ...notes }, layout: "compact" }];
+  // Silent runs (the growth chart) skip copying the tree at every call, which is O(calls²).
+  const view = (extra: Record<string, Tone> = {}): TreeData[] => !t.record ? [] : [{ root, nodes: nodes.map((x) => ({ ...x, kids: [...(x.kids ?? [])] })), tones: { ...tones, ...extra }, notes: { ...notes }, layout: "compact" }];
   const path = (id: string) => { const out: string[] = []; for (let p: string | null = id; p; p = parentOf.get(p) ?? null) out.unshift(p); return out; };
   const label = (id: string) => `fib(${nodes.find((x) => x.id === id)!.val})`;
   const memoPanel = () => (memo ? { map: { title: "memo (n → answer)", entries: [...known.entries()].sort((a, b) => a[0] - b[0]).map(([a, b]) => [String(a), String(b)] as [string, string]) } } : {});
