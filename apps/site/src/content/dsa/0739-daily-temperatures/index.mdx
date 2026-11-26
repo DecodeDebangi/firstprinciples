@@ -7,10 +7,12 @@ added: 2026-11-12
 summary: For each day, count how long until a warmer day. Goes from scanning ahead from every day to one pass with a stack of days still waiting.
 insight: "Keep a stack of days still waiting for a warmer day. Each new day settles every colder day waiting on top."
 best: { time: "O(n)", space: "O(n)" }
+study: true
 ---
 import Viz, { Compare } from "./Viz.tsx";
 import { growth } from "./steps";
-import { GrowthChart } from "@firstprinciples/ui";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import { questions } from "./quiz";
 import Complexity from "../../../components/Complexity.astro";
 
 ## The problem
@@ -76,6 +78,10 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 - **Storing temperatures instead of indices.** The answer is a distance, so the stack must hold days (indices).
 - **`≤` instead of `<`.** Only a strictly warmer day counts; an equal temperature keeps waiting.
 - **Thinking the nested loop makes it O(n²).** Count pushes and pops instead: each happens at most once per day.
+
+## Check yourself
+
+<Quiz client:visible title="Daily Temperatures" questions={questions} />
 
 ## Related problems
 

@@ -1,4 +1,4 @@
-import { measureGrowth, type Approach, type InputField, type Prepared, type Tone } from "@firstprinciples/ui";
+import { measureGrowth, type Approach, type InputField, type Prepared, type SceneData, type Tone } from "@firstprinciples/ui";
 
 export type Input = { temps: number[] };
 
@@ -7,8 +7,18 @@ export const example: Input = { temps: [70, 74, 71, 69, 72, 76, 73] };
 export const fields: InputField[] = [{ key: "temps", label: "temperatures", kind: "numbers" }];
 
 export function prepare(raw: Input): Prepared<Input> {
+  if (raw.temps.length < 1 || raw.temps.length > 10) return { error: "Use 1 to 10 temperatures so every day fits." };
+  if (raw.temps.some((x) => !Number.isInteger(x) || x < -50 || x > 150)) return { error: "Use whole temperatures from -50 to 150." };
   return { input: raw };
 }
+
+const plural = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+/** The days as bars (taller = warmer) and the answer row under them. */
+const scene = (a: number[], ans: (number | null)[], extra: Partial<SceneData> = {}): SceneData => ({
+  bars: a, unit: "°", title: "Days", names: a.map((_, i) => `day ${i}`),
+  answers: { title: "Days to wait", values: [...ans], tones: Object.fromEntries(ans.map((v, i) => [i, (v === 0 ? "visited" : "found") as Tone])) },
+  ...extra,
+});
 
 const bruteForce: Approach<Input> = {
   id: "brute",
@@ -25,24 +35,35 @@ const bruteForce: Approach<Input> = {
 `,
   run({ temps: a }, t) {
     const n = a.length;
-    const ans = Array(n).fill(0);
-    const grid = (tones: Record<string, Tone> = {}) => ({ title: "answer (days to wait)", rows: [[...ans]], tones });
-    t.step({ line: 3, array: a, grid: grid(), vars: { i: null, j: null }, message: "For each day, scan forward until a warmer day appears." });
+    const ans: (number | null)[] = Array(n).fill(null);
+    let asked = 0;
+    t.step({ line: 3, array: a, scene: scene(a, ans), vars: { i: null, j: null },
+      message: "Each bar is a day, as tall as its temperature. For each day, look forward one day at a time until a warmer day appears." });
     for (let i = 0; i < n; i++) {
+      let found = false;
       for (let j = i + 1; j < n; j++) {
         t.op();
-        if (a[j] > a[i]) {
-          ans[i] = j - i;
-          t.step({ line: 7, array: a, pointers: { i, j }, tones: { [i]: "active", [j]: "found" }, badge: { at: j, text: `${a[j]} > ${a[i]}` },
-            grid: grid({ [`0,${i}`]: "found" }), vars: { i, j }, message: `Day ${j} (${a[j]}) is warmer than day ${i} (${a[i]}): wait ${j - i}.` });
+        const warm = a[j] > a[i];
+        const ask = asked < 3 ? (asked++, { ask: { q: `Day ${i} is ${a[i]}° and day ${j} is ${a[j]}°. Is day ${j} the warmer day?`, options: ["Yes: stop and record the wait", "No: keep looking"], answer: warm ? 0 : 1 } }) : {};
+        if (warm) {
+          ans[i] = j - i; found = true;
+          t.step({ ...ask, key: true, line: 7, array: a, pointers: { i, j }, tones: { [i]: "active", [j]: "found" }, badge: { at: j, text: `${a[j]} > ${a[i]}` },
+            scene: scene(a, ans, { tones: { [i]: "active", [j]: "found" }, tags: { i, j }, say: { at: j, text: `${a[j]} > ${a[i]}` } }), vars: { i, j },
+            message: `Day ${j} (${a[j]}°) is warmer than day ${i} (${a[i]}°): day ${i} waits ${j} − ${i} = ${plural(j - i)}. Stop looking.` });
           break;
         }
-        t.step({ line: 6, array: a, pointers: { i, j }, tones: { [i]: "active", [j]: "compare" }, badge: { at: j, text: `${a[j]} ≤ ${a[i]}` },
-          grid: grid(), vars: { i, j }, message: `${a[j]} isn't warmer than ${a[i]}. Keep looking.` });
+        t.step({ ...ask, line: 6, array: a, pointers: { i, j }, tones: { [i]: "active", [j]: "compare" }, badge: { at: j, text: `${a[j]} ≤ ${a[i]}` },
+          scene: scene(a, ans, { tones: { [i]: "active", [j]: "compare" }, tags: { i, j }, say: { at: j, text: `${a[j]} ≤ ${a[i]}` } }), vars: { i, j },
+          message: `${a[j]}° isn't warmer than ${a[i]}°. Keep looking.` });
+      }
+      if (!found) {
+        ans[i] = 0;
+        t.step({ line: 5, array: a, pointers: { i }, tones: { [i]: "active" }, scene: scene(a, ans, { tones: { [i]: "active" }, tags: { i } }), vars: { i, j: null },
+          message: i === n - 1 ? `Day ${i} is the last day: nothing comes after it, so its answer stays 0.` : `No day after day ${i} is warmer than ${a[i]}°, so its answer stays 0.` });
       }
     }
-    t.step({ line: 9, array: a, grid: grid(Object.fromEntries(ans.map((_, k) => [`0,${k}`, "settled" as Tone]))), vars: { i: null, j: null }, done: "found",
-      message: `Done: [${ans.join(", ")}]. Days with no warmer day ahead stay 0.` });
+    t.step({ line: 9, array: a, tones: Object.fromEntries(a.map((_, k) => [k, "settled" as Tone])), scene: scene(a, ans), vars: { i: null, j: null }, done: "found",
+      message: `Done: [${ans.join(", ")}]. That took ${t.ops} comparison${t.ops === 1 ? "" : "s"}. When temperatures only fall, every day scans to the end: O(n²).` });
   },
 };
 
@@ -61,36 +82,42 @@ const monoStack: Approach<Input> = {
 `,
   run({ temps: a }, t) {
     const n = a.length;
-    const ans = Array(n).fill(0);
+    const ans: (number | null)[] = Array(n).fill(null);
     const stack: number[] = [];
-    const frames = () => stack.map((k) => `${a[k]} on day ${k}`);
-    const grid = (tones: Record<string, Tone> = {}) => ({ title: "answer (days to wait)", rows: [[...ans]], tones });
-    const waiting = (): Record<number, Tone> => Object.fromEntries(stack.map((k) => [k, "side-b" as Tone]));
-    t.step({ line: 3, array: a, grid: grid(), stack: frames(), stackTitle: "Waiting days (top first)", vars: { i: null },
-      message: "Walk forward once. Days that haven't found a warmer day wait on a stack; each new day settles every cooler day on top." });
+    let told = false;
+    const pile = () => ({ title: "Stack", items: [...stack] });
+    t.step({ line: 3, array: a, scene: scene(a, ans, { pile: pile() }), vars: { i: null },
+      message: "Each bar is a day, as tall as its temperature. Days that haven't found a warmer day yet wait in the stack, as blocks as wide as their temperature." });
     for (let i = 0; i < n; i++) {
       const top = stack.length ? stack[stack.length - 1] : null;
       const pops = top !== null && a[top] < a[i];
-      const ask = { q: top === null ? `Today is ${a[i]} and nobody is waiting. What happens?` : `Today is ${a[i]}; the day on top of the stack is ${a[top]}. What happens?`,
-        options: ["Warmer: pop that day and record its wait", "Not warmer: push today and move on"], answer: pops ? 0 : 1 };
+      const ask = top === null ? null : { q: `Day ${i} is ${a[i]}°, and the day on top of the stack is ${a[top]}°. What happens?`,
+        options: ["It's warmer: settle the day on top", "It isn't: day " + i + " waits on top"], answer: pops ? 0 : 1 };
       let asked = false;
       while (stack.length && a[stack[stack.length - 1]] < a[i]) {
         t.op();
         const j = stack.pop()!;
         ans[j] = i - j;
-        t.step({ ...(asked ? {} : { ask }), line: 7, array: a, pointers: { i }, tones: { ...waiting(), [j]: "found", [i]: "compare" },
-          badge: { at: j, text: `wait ${i - j}` }, grid: grid({ [`0,${j}`]: "found" }), stack: frames(), stackTitle: "Waiting days (top first)", vars: { i, j },
-          message: `${a[i]} is warmer than ${a[j]} (day ${j}). Pop it: it waited ${i - j} day${i - j > 1 ? "s" : ""}.` });
+        t.step({ ...(asked || !ask ? {} : { ask }), key: true, line: 7, array: a, pointers: { i }, tones: { [j]: "found", [i]: "compare" }, badge: { at: j, text: `wait ${i - j}` },
+          scene: scene(a, ans, { pile: pile(), tones: { [i]: "active" }, tags: { today: i }, say: { at: i, text: `${a[i]} > ${a[j]}` } }), vars: { i, j },
+          message: `${a[i]}° is warmer than ${a[j]}° (day ${j}): day ${j} has found its warmer day after ${i} − ${j} = ${plural(i - j)}. Pop it into the answers.` });
         asked = true;
       }
-      t.op();
+      if (stack.length) t.op();
+      const blocker = stack.length ? stack[stack.length - 1] : null;
       stack.push(i);
-      t.step({ ...(asked ? {} : { ask }), line: 8, array: a, pointers: { i }, tones: { ...waiting(), [i]: "active" }, grid: grid(),
-        stack: frames(), stackTitle: "Waiting days (top first)", vars: { i },
-        message: `Push day ${i} (${a[i]}). The stack stays coolest on top, so the next warm day settles the right ones first.` });
+      const shape = !told && stack.length >= 3 ? (told = true, " The pile narrows toward the top: cooler days always sit higher, which is why it's called a monotonic stack.") : "";
+      t.step({ ...(asked || !ask ? {} : { ask }), line: 8, array: a, pointers: { i }, tones: { [i]: "active" },
+        scene: scene(a, ans, { pile: pile(), tones: { [i]: "active" }, tags: { today: i }, ...(blocker !== null ? { say: { at: i, text: `${a[i]} ≤ ${a[blocker]}` } } : {}) }), vars: { i },
+        message: blocker !== null
+          ? `${a[i]}° isn't warmer than ${a[blocker]}° on top, so it stops there. Day ${i} waits on top.${shape}`
+          : asked ? `Nothing is left waiting. Day ${i} (${a[i]}°) goes into the stack.` : `Nobody is waiting, so day ${i} (${a[i]}°) goes into the stack.` });
     }
-    t.step({ line: 9, array: a, tones: waiting(), grid: grid(Object.fromEntries(ans.map((_, k) => [`0,${k}`, "settled" as Tone]))), stack: frames(), stackTitle: "Waiting days (top first)",
-      vars: { i: null }, done: "found", message: `Done: [${ans.join(", ")}]. Days still on the stack never saw a warmer day, so they stay 0.` });
+    const left = [...stack];
+    left.forEach((j) => (ans[j] = 0));
+    stack.length = 0;
+    t.step({ line: 9, array: a, tones: Object.fromEntries(left.map((k) => [k, "settled" as Tone])), scene: scene(a, ans, { pile: pile() }), vars: { i: null }, done: "found",
+      message: `Done: [${ans.join(", ")}].${left.length ? ` ${left.map((k) => `${a[k]}°`).join(" and ")} never saw a warmer day, so ${left.length === 1 ? "its answer stays" : "their answers stay"} 0.` : ""} Each day was pushed once and popped at most once: O(n).` });
   },
 };
 
