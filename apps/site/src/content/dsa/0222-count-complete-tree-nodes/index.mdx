@@ -1,0 +1,84 @@
+---
+title: Count Complete Tree Nodes
+leetcode: { number: 222, url: "https://leetcode.com/problems/count-complete-tree-nodes/" }
+difficulty: Easy
+topics: [Binary tree, Tree, Binary search, DFS]
+added: 2026-11-26
+summary: "Count the nodes of a complete binary tree in less than O(n) time. Goes from visiting every node to recognising perfect subtrees by their two edges and counting them with a formula."
+insight: "If the all-left path and the all-right path from a node have the same length h, its subtree is perfect and holds 2^h − 1 nodes. In a complete tree, at most one child of each node is imperfect, so only one path down the tree needs splitting."
+reads: [trees-from-scratch, tree-recursion]
+best: { time: "O(log² n)", space: "O(log n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a **complete** binary tree: every level is full except maybe the last, and the last level's nodes are packed to the left. (New to these words? The shapes table in [Trees from scratch](/concepts/trees-from-scratch/) shows complete and perfect trees.) Return how many nodes it has, in less than O(n) time.
+
+For the tree `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]` the answer is 10. Counting is easy; doing it without visiting every node is the actual problem.
+
+## The key question
+
+> **Which subtrees can be counted without visiting their nodes?**
+
+Perfect ones: when every level is full, a subtree with h levels holds exactly 1 + 2 + 4 + … = 2^h − 1 nodes. In a complete tree you can tell a subtree is perfect by walking its leftmost and rightmost paths: if they're the same length, there's no gap.
+
+## Approach 1: Count every node
+
+Visit every node and add 1 for each. It works for any tree, and ignores the fact that this one is complete.
+
+<Viz client:visible approach="all" />
+
+<Complexity time="O(n)" space="O(log n)">
+**Time.** Every node is visited once: **O(n)**.
+
+**Space.** The recursion goes as deep as the tree, and a complete tree is about log₂ n levels tall: **O(log n)**.
+
+**What it wastes:** visits to subtrees whose size a formula could give. Most of a complete tree is made of perfect subtrees.
+</Complexity>
+
+## Approach 2: Spot perfect subtrees by their two edges (optimal)
+
+At a node, count the nodes on the all-left path and on the all-right path. If they're equal, the subtree is perfect: return 2^h − 1. Otherwise count the node and ask both children. Of the two children, at least one is always perfect, so it returns right away.
+
+<Viz client:visible approach="fast" />
+
+<Complexity time="O(log² n)" space="O(log n)">
+**Time.** Only one node per level gets split, so there are about log n splits. Each one walks two paths of length about log n: **O(log² n)**.
+
+**Space.** The recursion depth: **O(log n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count every node | O(n) | O(log n) | Visit everything |
+| Spot perfect subtrees by their two edges | **O(log² n)** | O(log n) | Equal edges mean 2^h − 1 |
+
+<GrowthChart client:visible series={growth} caption="Operations for complete trees with n nodes (the plain count is faster only for tiny trees)." />
+
+## Common mistakes
+
+- **Comparing only the left path with the tree's height.** You need both edges of the same subtree; equal lengths are what prove there's no gap.
+- **Off by one in the formula.** With h counted in nodes, a perfect tree has 2^h − 1 nodes; a single leaf is h = 1 and 1 node.
+- **Expecting it to help on any tree.** The shortcut relies on completeness: in an ordinary tree, equal edges don't mean the middle is full.
+
+## Check yourself
+
+<Quiz client:visible title="Count Complete Tree Nodes" questions={questions} />
+
+## Related problems
+
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/). Counting levels instead of nodes.
+- [Balanced Binary Tree](/dsa/balanced-binary-tree/). Another shape check built from heights.
+- [Binary Search](/dsa/binary-search/). A faster count also exists that binary searches the last level.
