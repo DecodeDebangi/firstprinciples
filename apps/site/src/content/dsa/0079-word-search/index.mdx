@@ -1,0 +1,84 @@
+---
+title: Word Search
+leetcode: { number: 79, url: "https://leetcode.com/problems/word-search/" }
+difficulty: Medium
+topics: [Backtracking, Matrix, DFS, String]
+added: 2026-11-27
+summary: "Decide whether a word can be traced through a letter grid, moving between neighbouring cells without reusing one. Goes from building every path and then checking it to backtracking that drops a path at its first wrong letter."
+insight: "Grow the path one letter at a time and give up the moment a letter doesn't match. Mark a cell while it's on the path so it isn't reused, and unmark it when the path backs out."
+reads: [backtracking, searching-grids]
+best: { time: "O(cells · 3^L)", space: "O(L)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of letters and a `word`. Return true if the word can be spelled by a path through the grid: start at any cell, move each time to a cell above, below, left or right, and never use the same cell twice in one path.
+
+In the animation, write the grid as rows separated by commas. For the grid `seed, eats, dote` the word `eats` is there (down from the first e, then right twice); `toe` is not.
+
+## The key question
+
+> **When can a path be given up on?**
+
+As soon as its latest letter doesn't match. A path whose first two letters are wrong can't become right by adding more, so there's no point building the rest of it.
+
+## Approach 1: Build every path, then check its letters
+
+From each cell, walk every way possible through unused neighbours until the path is as long as the word. Only then compare the letters.
+
+<Viz client:visible approach="paths" />
+
+<Complexity time="O(cells · 4 · 3^(L−1))" space="O(L)">
+**Time.** From each cell, the first step has up to 4 choices and every later one up to 3: about **cells · 3^L** paths, each built in full.
+
+**Space.** The current path: **O(L)**.
+
+**What it wastes:** building paths that were already wrong at their first or second letter.
+</Complexity>
+
+## Approach 2: Backtracking: stop at the first wrong letter (optimal)
+
+From each cell, call dfs(r, c, 0): if this cell matches word[i], mark it, try its four neighbours for word[i + 1], and unmark it afterwards. Any mismatch, edge or already-used cell ends that direction at once.
+
+<Viz client:visible approach="backtrack" />
+
+<Complexity time="O(cells · 3^L)" space="O(L)">
+**Time.** The worst case is still exponential (a board of all the same letter), but each wrong letter cuts off everything that would have followed: on most boards, far fewer steps.
+
+**Space.** The recursion, one call per letter: **O(L)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Build every path, then check its letters | O(cells · 4 · 3^(L−1)) | O(L) | Check at the end |
+| Backtracking: stop at the first wrong letter | **O(cells · 3^L)** | O(L) | Prune at the first mismatch |
+
+<GrowthChart client:visible series={growth} caption="Operations on a 4 × 4 board of different letters, for a word of length n that follows a path and then asks for a missing letter." />
+
+## Common mistakes
+
+- **Not marking the current path.** Without it, a path can reuse a cell, like going e → a → e on the same e.
+- **Forgetting to unmark.** A cell left marked blocks every later path through it, even ones that should work.
+- **Moving diagonally.** Only up, down, left and right count as neighbours.
+
+## Check yourself
+
+<Quiz client:visible title="Word Search" questions={questions} />
+
+## Related problems
+
+- [Word Search II](/dsa/word-search-ii/). Many words at once, with a trie.
+- [Number of Islands](/dsa/number-of-islands/). Another search across a grid's neighbours.
+- [Backtracking](/concepts/backtracking/). Choose, explore, undo.

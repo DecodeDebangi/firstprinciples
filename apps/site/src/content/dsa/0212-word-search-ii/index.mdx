@@ -1,0 +1,84 @@
+---
+title: Word Search II
+leetcode: { number: 212, url: "https://leetcode.com/problems/word-search-ii/" }
+difficulty: Hard
+topics: [Trie, Backtracking, Matrix, String]
+added: 2026-11-27
+summary: "Find every word from a list that can be traced through a letter grid. Goes from running Word Search once per word to one backtracking search that follows a trie of all the words, dropping a path as soon as no word starts with it."
+insight: "Put the words in a trie and search the board once, walking the trie in step with the path. A path continues only while some word starts with its letters, and words that share a beginning share the search."
+reads: [tries, backtracking]
+best: { time: "O(cells · 3^L)", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a grid of letters and a list of `words`. Return every word that can be traced through the grid, by the same rules as [Word Search](/dsa/word-search/): start anywhere, step up, down, left or right, and don't reuse a cell within a word.
+
+For the grid `seed, eats, dote` and the words `eats, seat, dote, toe, east`, the answer is `eats, seat, dote` in any order.
+
+## The key question
+
+> **What decides whether a path is worth continuing, when you're looking for many words at once?**
+
+Whether any word starts with it. A trie answers that in one step per letter: follow the child for the next board letter, and if there's none, no word continues this way.
+
+## Approach 1: Run Word Search once per word
+
+For each word, run the backtracking search from Word Search over the whole board, and keep the words it finds.
+
+<Viz client:visible approach="each" />
+
+<Complexity time="O(words · cells · 3^L)" space="O(L)">
+**Time.** Every word repeats the full board search: **O(words · cells · 3^L)**.
+
+**Space.** The recursion: **O(L)**.
+
+**What it wastes:** repeated walks. Words with the same beginning trace the same cells again and again.
+</Complexity>
+
+## Approach 2: One search for all words, following a trie (optimal)
+
+Build a trie of the words. From each cell, run a backtracking search that moves through the trie in step with the board: step to the trie child for the cell's letter, or stop if there isn't one. When a node ends a word, record it and remove the mark so it's reported once.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(cells · 3^L)" space="O(total letters)">
+**Time.** One search of the board, however many words; paths stop as soon as they leave the trie: **O(cells · 3^L)** in the worst case, usually far less.
+
+**Space.** The trie: **O(total letters)**, plus the recursion.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Run Word Search once per word | O(words · cells · 3^L) | O(L) | One search per word |
+| One search for all words, following a trie | **O(cells · 3^L)** | O(total letters) | Search for all words together |
+
+<GrowthChart client:visible series={growth} caption="Operations on a 4 × 4 board for n words that share a long beginning." />
+
+## Common mistakes
+
+- **Reporting a word twice.** It can be traced from two places; remove its ✓ when it's first found.
+- **Stopping at the first word found.** A longer word may continue from the same node, like "dot" and "dote".
+- **Restarting the trie walk at each step.** The search carries the current trie node along with the board position.
+
+## Check yourself
+
+<Quiz client:visible title="Word Search II" questions={questions} />
+
+## Related problems
+
+- [Word Search](/dsa/word-search/). One word, the same backtracking.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie that steers the search.
+- [Design Add and Search Words Data Structure](/dsa/design-add-and-search-words-data-structure/). Another search that walks a trie and branches.

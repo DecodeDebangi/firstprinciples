@@ -51,6 +51,8 @@ Both take **O(L)** for a query of length `L`. Try searching for `car`, `cars` or
 - **Prefix questions:** autocomplete, "how many words start with…". [Implement Trie (Prefix
   Tree)](/dsa/implement-trie-prefix-tree/) builds exactly this. To count them, or delete words, put a number on each node: [Tries that
   count](/concepts/trie-counts/).
+- **Searching for many words at once:** walk the trie in step with a search, and stop as soon as no word starts with
+  the path so far. That's [Word Search II](/dsa/word-search-ii/) on a letter grid.
 - **Wildcards:** with a `.` that matches any letter, follow every child at that step. That's [Design Add and Search
   Words Data Structure](/dsa/design-add-and-search-words-data-structure/).
 - **Shortest root of a word:** walk a word down the trie and stop at the first ✓, as in [Replace

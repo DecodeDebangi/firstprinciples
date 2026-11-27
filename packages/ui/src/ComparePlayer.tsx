@@ -106,7 +106,7 @@ export function ComparePlayer<I extends InputValues>({ approaches, initialInput,
                   {approaches.map((ap, i) => <option key={ap.id} value={i}>{ap.name}</option>)}
                 </select>
               </label>
-              {step.trees ? <TreeView step={step} /> : step.graphs ? <GraphView step={step} /> : step.board ? <BoardView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
+              {step.board ? <BoardView step={step} /> : step.trees ? <TreeView step={step} /> : step.graphs ? <GraphView step={step} /> : step.lists ? <ListView step={step} /> : <ArrayCells step={step} />}
               <p className={`fp-message fp-message--small${step.done ? ` fp-message--${step.done}` : ""}`}>{step.message}</p>
               <div className="fp-meter">
                 <div className="fp-meter__label">
