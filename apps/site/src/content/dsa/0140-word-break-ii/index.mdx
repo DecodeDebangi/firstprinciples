@@ -1,0 +1,84 @@
+---
+title: Word Break II
+leetcode: { number: 140, url: "https://leetcode.com/problems/word-break-ii/" }
+difficulty: Hard
+topics: [Trie, Backtracking, Dynamic programming, String]
+added: 2026-11-27
+summary: "List every way to cut a string into dictionary words. Goes from recursion that works out the same rest of the string again and again to remembering each position's sentences, with a trie finding the words that start there."
+insight: "The sentences for the rest of s from position i don't depend on how you got to i. Work each position out once and remember it, walking a trie along s to find the words that start there."
+reads: [tries, memoisation-vs-tabulation, backtracking]
+best: { time: "O(n · L + output)", space: "O(n + output)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` and a dictionary of words. Return every way to put spaces into `s` so that each piece is a dictionary word (words may be reused), in any order.
+
+For `s = icecreamcone` and the dictionary `ice, cream, icecream, cone, creamcone`, the answer is "ice cream cone", "icecream cone" and "ice creamcone".
+
+## The key question
+
+> **Two different cuts reach the same position. Does the rest of the work differ?**
+
+No. The sentences for the rest of s from that position are the same either way, so they can be worked out once and reused. That's what turns an exponential search into one bounded by the answer's size.
+
+## Approach 1: Try every first word, recursively
+
+For each dictionary word that s starts with, list every way to cut the rest, and put the word in front of each. Nothing is remembered.
+
+<Viz client:visible approach="plain" />
+
+<Complexity time="exponential" space="O(n) plus the output">
+**Time.** The same rest of s is worked out again for every way of reaching it: on strings like "aaaa…b" that's **exponential**, even with no sentences at all.
+
+**Space.** The recursion: **O(n)**, plus the sentences.
+
+**What it wastes:** repeating identical work for positions reached in different ways.
+</Complexity>
+
+## Approach 2: Remember each position's sentences, walking a trie (optimal)
+
+build(i) returns the sentences for s[i..end]. It walks a trie of the dictionary along s from i; at each word end, it combines the word with build(j + 1). Results are stored in a memo, so each position is worked out once.
+
+<Viz client:visible approach="memo" />
+
+<Complexity time="O(n · L + output)" space="O(n + output)">
+**Time.** Each of the n positions is worked out once, with a trie walk of up to L letters; writing the sentences costs their total length: **O(n · L + output)**.
+
+**Space.** The memo holds the sentences for each position.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every first word, recursively | exponential | O(n) plus the output | Every cut, from scratch |
+| Remember each position's sentences, walking a trie | **O(n · L + output)** | O(n + output) | Remember positions |
+
+<GrowthChart client:visible series={growth} caption="Operations for n a's followed by a b, with the dictionary a, aa, aaa: there are no sentences at all." />
+
+## Common mistakes
+
+- **Remembering only whether a position works.** That's Word Break; here each position needs its list of sentences.
+- **Adding a trailing space.** When the rest is empty, the sentence is just the word.
+- **Expecting it to be fast when there are many sentences.** The output itself can be exponential; remembering only removes the wasted repeats.
+
+## Check yourself
+
+<Quiz client:visible title="Word Break II" questions={questions} />
+
+## Related problems
+
+- [Word Break](/dsa/word-break/). Whether any cut exists, not all of them.
+- [Extra Characters in a String](/dsa/extra-characters-in-a-string/). Cuts with spare letters allowed.
+- [Concatenated Words](/dsa/concatenated-words/). Cuts for every word in a list.

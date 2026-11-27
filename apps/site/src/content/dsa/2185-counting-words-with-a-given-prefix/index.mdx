@@ -1,0 +1,84 @@
+---
+title: Counting Words With a Given Prefix
+leetcode: { number: 2185, url: "https://leetcode.com/problems/counting-words-with-a-given-prefix/" }
+difficulty: Easy
+topics: [Trie, String]
+added: 2026-11-27
+summary: "Count the words that start with a given prefix. Compares building a counting trie with simply checking how each word starts, which is better for a single question."
+insight: "For one prefix, check each word's first letters and stop at the first difference: no structure is worth building. A counting trie only pays off when many prefixes are asked about the same words."
+reads: [tries, trie-counts]
+best: { time: "O(n · p)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of words and a string `pref`. Return how many of the words start with `pref`.
+
+For the words `cart, care, dog, carp, cat` and `pref = car`, the answer is 3.
+
+## The key question
+
+> **Is a trie worth building for one question?**
+
+No. Building it reads every letter of every word; checking the first p letters of each word reads less. A trie wins only when the same words answer many prefixes.
+
+## Approach 1: Build a counting trie, then read one count
+
+Insert every word into a trie that counts the words passing through each node, then walk the prefix and read the count.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(total letters)" space="O(total letters)">
+**Time.** Building reads every letter: **O(total letters)**; the walk is O(p).
+
+**Space.** The trie: **O(total letters)**.
+
+**What it wastes:** building a structure for a single question.
+</Complexity>
+
+## Approach 2: Check how each word starts (optimal)
+
+For each word, compare its first letters with the prefix, stopping at the first difference.
+
+<Viz client:visible approach="check" />
+
+<Complexity time="O(n · p)" space="O(1)">
+**Time.** At most p letters per word: **O(n · p)**.
+
+**Space.** A counter: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Build a counting trie, then read one count | O(total letters) | O(total letters) | Count once, read once |
+| Check how each word starts | **O(n · p)** | O(1) | Just compare |
+
+<GrowthChart client:visible series={growth} caption="Operations for n words of 8 letters and a 3-letter prefix." />
+
+## Common mistakes
+
+- **Counting words that contain the prefix anywhere.** It must be at the start.
+- **Comparing the whole word.** Stop after p letters, or at the first difference.
+- **Building a trie for one prefix.** It's more work than it saves here.
+
+## Check yourself
+
+<Quiz client:visible title="Counting Words With a Given Prefix" questions={questions} />
+
+## Related problems
+
+- [Tries that count](/concepts/trie-counts/). The counting trie, for many prefixes.
+- [Check If a Word Occurs As a Prefix of Any Word in a Sentence](/dsa/check-if-a-word-occurs-as-a-prefix-of-any-word-in-a-sentence/). The same check, inside a sentence.
+- [Search Suggestions System](/dsa/search-suggestions-system/). Another single-question vs many-questions choice.

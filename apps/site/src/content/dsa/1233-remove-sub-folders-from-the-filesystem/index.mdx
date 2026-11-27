@@ -1,0 +1,84 @@
+---
+title: Remove Sub-Folders from the Filesystem
+leetcode: { number: 1233, url: "https://leetcode.com/problems/remove-sub-folders-from-the-filesystem/" }
+difficulty: Medium
+topics: [Trie, String, Sorting]
+added: 2026-11-27
+summary: "Keep only the folders that aren't inside another listed folder. Goes from checking every folder against every other to a trie whose nodes are folder names, walked until the first listed folder on each path."
+insight: "Build a trie where each node is a whole folder name. A walk from the root that stops at the first listed folder on every path keeps exactly the top-level folders, and never looks inside them."
+reads: [tries]
+best: { time: "O(total length)", space: "O(total length)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of folder paths like `/pics/2024`. Remove every folder that is inside another folder in the list (a sub-folder), and return the rest in any order. A folder is inside `/pics` only if its path starts with `/pics/`: `/picsold` is not inside it.
+
+For `/docs, /docs/notes, /pics, /pics/2024, /pics/2024/may, /music/rock` the answer is `/docs, /pics, /music/rock`.
+
+## The key question
+
+> **What should a trie's nodes be here?**
+
+Whole folder names, not letters. Then "/pics" and "/picsold" are different nodes, so the inside-or-not question is exactly "is a listed folder an ancestor of this node?".
+
+## Approach 1: Check every folder against every other
+
+For each folder, check whether any other folder plus "/" starts it. Keep it if none does.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n² · L)" space="O(1) extra">
+**Time.** n² pairs, each compared over up to L characters: **O(n² · L)**.
+
+**Space.** Nothing beyond the answer.
+
+**What it wastes:** comparing folders from unrelated branches.
+</Complexity>
+
+## Approach 2: A trie of folder names (optimal)
+
+Insert every folder as its list of names, marking where each listed folder ends. Then walk from the root: at a marked node, record its path and don't go further down; otherwise keep walking.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(total length)" space="O(total length)">
+**Time.** Each name is inserted once and visited at most once: **O(total length)**.
+
+**Space.** The trie: **O(total length)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every folder against every other | O(n² · L) | O(1) extra | Every pair |
+| A trie of folder names | **O(total length)** | O(total length) | Stop at the first listed folder |
+
+<GrowthChart client:visible series={growth} caption="Operations for n folders, two levels deep." />
+
+## Common mistakes
+
+- **Checking "starts with" without the slash.** "/picsold" starts with "/pics" but isn't inside it.
+- **Splitting into letters instead of names.** Then /pics and /picsold share a path, the same mistake.
+- **Looking inside a listed folder.** Everything below it is a sub-folder, so stop there.
+
+## Check yourself
+
+<Quiz client:visible title="Remove Sub-Folders from the Filesystem" questions={questions} />
+
+## Related problems
+
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The same trie with letters instead of names.
+- [Replace Words](/dsa/replace-words/). Stopping at the first marked node on a path.
+- [Group Anagrams](/dsa/group-anagrams/). Grouping strings by a key.

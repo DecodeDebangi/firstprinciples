@@ -1,0 +1,84 @@
+---
+title: Count Prefix and Suffix Pairs II
+leetcode: { number: 3045, url: "https://leetcode.com/problems/count-prefix-and-suffix-pairs-ii/" }
+difficulty: Hard
+topics: [Trie, String, Hash map]
+added: 2026-11-27
+summary: "Count pairs of words where the earlier one is both the start and the end of the later one. Goes from checking every pair to a trie keyed by pairs of letters, the k-th from the start with the k-th from the end."
+insight: "Pair each word's k-th letter from the start with its k-th from the end. A word u both starts and ends w exactly when u's letter pairs are the first pairs of w's, so a trie of these pairs, counting words that end at each node, finds every match in one walk."
+reads: [tries, trie-counts]
+best: { time: "O(total letters)", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of words. Count the pairs of positions `i < j` where `words[i]` is both a prefix and a suffix of `words[j]` (it starts it and ends it).
+
+For `ab, abab, b, bab, abcab` the answer is 3: "ab" starts and ends both "abab" and "abcab", and "b" starts and ends "bab".
+
+## The key question
+
+> **How can one walk check a word's start and its end at the same time?**
+
+Walk both ends together: step k looks at the k-th letter from the start and the k-th from the end as one key. Then "u starts and ends w" becomes "u's keys are the first keys of w's", an ordinary prefix question.
+
+## Approach 1: Check every earlier word
+
+For each word, check every earlier word: does it start the word, and does it end it?
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n² · L)" space="O(1) extra">
+**Time.** Every pair is compared over up to L letters at each end: **O(n² · L)**.
+
+**Space.** Nothing extra.
+
+**What it wastes:** comparing pairs that differ in their very first letter.
+</Complexity>
+
+## Approach 2: A trie of (first, last) letter pairs (optimal)
+
+Go through the words in order. For each, walk a trie keyed by (w[k], w[length − 1 − k]), adding the number of earlier words that end at each node passed. Then add 1 at the node where this word ends.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(total letters)" space="O(total letters)">
+**Time.** One walk per word, one step per letter: **O(total letters)**.
+
+**Space.** The trie: **O(total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every earlier word | O(n² · L) | O(1) extra | Every pair |
+| A trie of (first, last) letter pairs | **O(total letters)** | O(total letters) | Pair the two ends |
+
+<GrowthChart client:visible series={growth} caption="Operations for n words made of ab repeated." />
+
+## Common mistakes
+
+- **Counting pairs in both orders.** Only an earlier word can count for a later one, so insert each word after counting for it.
+- **Keying on single letters.** A trie of letters checks only the start; the pairs check both ends at once.
+- **Forgetting equal words.** A word starts and ends an identical later word, so it counts.
+
+## Check yourself
+
+<Quiz client:visible title="Count Prefix and Suffix Pairs II" questions={questions} />
+
+## Related problems
+
+- [Prefix and Suffix Search](/dsa/prefix-and-suffix-search/). Another trick for both ends of a word.
+- [Reversed tries](/concepts/reversed-tries/). Endings, turned into beginnings.
+- [Tries that count](/concepts/trie-counts/). Counts kept on trie nodes.

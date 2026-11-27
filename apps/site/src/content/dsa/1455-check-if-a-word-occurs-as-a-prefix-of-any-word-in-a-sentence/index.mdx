@@ -1,0 +1,83 @@
+---
+title: Check If a Word Occurs As a Prefix of Any Word in a Sentence
+leetcode: { number: 1455, url: "https://leetcode.com/problems/check-if-a-word-occurs-as-a-prefix-of-any-word-in-a-sentence/" }
+difficulty: Easy
+topics: [String, Two pointers, Trie]
+added: 2026-11-27
+summary: "Find the first word in a sentence that starts with a given search word. Compares splitting the sentence into words with one pass over its letters that splits nothing."
+insight: "Read the letters once, counting words at each space and tracking how many letters of the search word the current word has matched. A mismatch makes the rest of that word irrelevant."
+reads: [tries]
+best: { time: "O(length of sentence)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a sentence of words separated by single spaces, and a `searchWord`. Return the position (counting from 1) of the first word that starts with `searchWord`, or −1 if there is none.
+
+For the sentence `the cat sat on a catalog` and the search word `cat`, the answer is 2.
+
+## The key question
+
+> **Do you need the words as a separate list?**
+
+No. Reading the sentence letter by letter, a space ends a word, and a running count of matched letters says whether the current word still starts with the search word.
+
+## Approach 1: Split into words, check each
+
+Split the sentence at the spaces, then check each word's start against the search word, returning the first match's position.
+
+<Viz client:visible approach="split" />
+
+<Complexity time="O(length of sentence)" space="O(length of sentence)">
+**Time.** Splitting and checking read each letter a fixed number of times: **O(length)**.
+
+**Space.** The list of words: **O(length)**.
+
+**What it wastes:** memory for a list of words that's read once.
+</Complexity>
+
+## Approach 2: One pass over the letters, no splitting (optimal)
+
+Walk the letters with a word counter and a count of letters matched. A space starts the next word; a matching letter extends the match; a mismatch marks the word as hopeless until the next space.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(length of sentence)" space="O(1)">
+**Time.** One pass over the sentence: **O(length)**.
+
+**Space.** Two counters: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Split into words, check each | O(length of sentence) | O(length of sentence) | Split, then check |
+| One pass over the letters, no splitting | **O(length of sentence)** | O(1) | Count while reading |
+
+Both approaches read the sentence once, so there's no growth chart. The difference is the list of words the first one builds.
+
+## Common mistakes
+
+- **Returning a position counted from 0.** The first word is position 1.
+- **Finding the search word in the middle of a word.** It must be at a word's start.
+- **Returning the last match.** The first matching word wins.
+
+## Check yourself
+
+<Quiz client:visible title="Check If a Word Occurs As a Prefix of Any Word in a Sentence" questions={questions} />
+
+## Related problems
+
+- [Counting Words With a Given Prefix](/dsa/counting-words-with-a-given-prefix/). The same check over a list.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). Prefix questions over many words.
+- [Search Suggestions System](/dsa/search-suggestions-system/). Prefixes checked as letters are typed.
