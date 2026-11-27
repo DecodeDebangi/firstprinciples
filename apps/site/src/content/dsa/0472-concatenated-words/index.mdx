@@ -1,0 +1,84 @@
+---
+title: Concatenated Words
+leetcode: { number: 472, url: "https://leetcode.com/problems/concatenated-words/" }
+difficulty: Hard
+topics: [Trie, Dynamic programming, DFS, String]
+added: 2026-11-27
+summary: "Find every word in a list that can be made by joining two or more shorter words from the same list. Goes from trying every split recursively to keeping the shorter words in a trie and marking which positions a run of cuts can reach."
+insight: "Go through the words shortest first, keeping the ones seen in a trie. For each word, mark the positions a cut can land on: from each one, a single trie walk finds every word starting there. If the end is reachable, the word is made of shorter words."
+reads: [tries, memoisation-vs-tabulation]
+best: { time: "O(Σ L²)", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of different words. Return every word that is the joining of **two or more** shorter words from the same list (a word may be used more than once).
+
+For `go, at, goat, to, gate, togo` the answer is `goat, togo`: goat is go + at, and togo is to + go. "gate" can't be made from the list.
+
+## The key question
+
+> **What does the check for one word really need to know at each position?**
+
+Only whether a run of cuts can land there. If it can, every listed word starting at that position extends the reach, and a trie finds all of them in one walk. Positions are checked once each, so nothing is retried.
+
+## Approach 1: Try every split, recursively
+
+For each word, try every first piece that is a listed word, then split the rest the same way, backing up when a choice leads nowhere. Count the pieces so a word doesn't count as made of itself.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="exponential" space="O(L)">
+**Time.** The same tail of a word can be split again and again from different first cuts: for words like a, aa, aaa, …, the number of tries grows **exponentially** with the length.
+
+**Space.** The recursion: **O(L)**.
+
+**What it wastes:** retrying the same tails. Whether "aaab" can be split is worked out again after every different way of cutting the front.
+</Complexity>
+
+## Approach 2: Shorter words in a trie, and which positions a cut can reach (optimal)
+
+Sort the words by length and go through them shortest first. For each word, mark position 0 as reachable; from each reachable position, walk the trie along the word, and each time a stored word ends, mark the position after it. If the end is marked, the word counts. Then add it to the trie.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(Σ L²)" space="O(total letters)">
+**Time.** Each of a word's L positions starts at most one trie walk of up to L letters: **O(L²)** per word.
+
+**Space.** The trie and one list of marks: **O(total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every split, recursively | exponential | O(L) | Every way of cutting |
+| Shorter words in a trie, and which positions a cut can reach | **O(Σ L²)** | O(total letters) | Mark reachable positions |
+
+<GrowthChart client:visible series={growth} caption="Operations for a, aa, …, and a final word of n a's and a b, which can never be completed." />
+
+## Common mistakes
+
+- **Counting a word as made of itself.** It must be two or more pieces; inserting it into the trie only after checking it guarantees that.
+- **Checking words in the given order.** A word can only be made of shorter ones, so go shortest first.
+- **Stopping a trie walk at the first word that ends.** Longer words may start at the same position, like "go" and "goat".
+
+## Check yourself
+
+<Quiz client:visible title="Concatenated Words" questions={questions} />
+
+## Related problems
+
+- [Word Break](/dsa/word-break/). The same marks for one string and a dictionary.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie being walked.
+- [Longest Word in Dictionary](/dsa/longest-word-in-dictionary/). Another word built from shorter words.
