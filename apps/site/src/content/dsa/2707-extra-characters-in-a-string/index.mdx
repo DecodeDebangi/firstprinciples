@@ -1,0 +1,84 @@
+---
+title: Extra Characters in a String
+leetcode: { number: 2707, url: "https://leetcode.com/problems/extra-characters-in-a-string/" }
+difficulty: Medium
+topics: [Trie, Dynamic programming, String, Hash map]
+added: 2026-11-27
+summary: "Cut a string into dictionary words, leaving as few spare letters as possible. Goes from a table that copies every piece to check it in a set, to the same table walking a trie from each position."
+insight: "dp[i] is the fewest spare letters in s[i..end]: either s[i] is spare, or a dictionary word starts at i. Walking a trie from i finds every such word in one pass and stops as soon as no word continues, without copying anything."
+reads: [tries, memoisation-vs-tabulation]
+best: { time: "O(n · L)", space: "O(n + total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a string `s` and a list of words, the `dictionary`. Cut `s` into pieces so that each piece is either a dictionary word or a single spare letter. Return the fewest spare letters possible.
+
+For `s = onetwoxthree` and the dictionary `one, two, three, on`, the answer is 1: "one", "two", "three", and the x is spare.
+
+## The key question
+
+> **What does the best answer for a position depend on?**
+
+Only on the answers further right. At position i, either s[i] is spare (1 + the answer from i + 1), or a dictionary word runs from i to j (the answer from j + 1). Fill those answers from the end of the string.
+
+## Approach 1: A table, checking each piece in a set
+
+Fill dp from the end. For each position, try s[i] as spare, then copy out every piece s[i..j] and check whether it's in a set of the dictionary words.
+
+<Viz client:visible approach="set" />
+
+<Complexity time="O(n³)" space="O(n + total letters)">
+**Time.** n positions, up to n pieces each, and copying a piece costs its length: **O(n³)** letters in the worst case.
+
+**Space.** The table and the set: **O(n + total letters)**.
+
+**What it wastes:** copying pieces that no word could start with.
+</Complexity>
+
+## Approach 2: A table, walking a trie from each position (optimal)
+
+The same table, but from each position walk a trie of the dictionary along s. Every ✓ reached is a word starting there. Stop when the trie has no child for the next letter.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(n · L)" space="O(n + total letters)">
+**Time.** Each position walks at most as far as the longest word, L: **O(n · L)**.
+
+**Space.** The table and the trie: **O(n + total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| A table, checking each piece in a set | O(n³) | O(n + total letters) | Copy each piece, look it up |
+| A table, walking a trie from each position | **O(n · L)** | O(n + total letters) | Walk instead of copy |
+
+<GrowthChart client:visible series={growth} caption="Operations for a string of n a's and the dictionary a, aa, aaa, aaaa." />
+
+## Common mistakes
+
+- **Filling the table from the start.** dp[i] needs the answers to its right, so go from the end.
+- **Stopping at the first word found from i.** A longer word from the same position may leave fewer spare letters.
+- **Forgetting the spare-letter option.** It's always available: dp[i] ≤ dp[i + 1] + 1.
+
+## Check yourself
+
+<Quiz client:visible title="Extra Characters in a String" questions={questions} />
+
+## Related problems
+
+- [Word Break](/dsa/word-break/). The same table, asking only whether no letters can be spare.
+- [Concatenated Words](/dsa/concatenated-words/). Cuts and a trie, for every word of a list.
+- [Tries that count](/concepts/trie-counts/). More that a trie walk can answer.

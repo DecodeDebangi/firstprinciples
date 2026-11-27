@@ -1,0 +1,84 @@
+---
+title: Find the Length of the Longest Common Prefix
+leetcode: { number: 3043, url: "https://leetcode.com/problems/find-the-length-of-the-longest-common-prefix/" }
+difficulty: Medium
+topics: [Trie, Hash map, String]
+added: 2026-11-27
+summary: "Find the longest run of leading digits shared by a number from one list and a number from another. Goes from comparing every pair to putting one list in a trie and walking the other list through it."
+insight: "Insert the first list's numbers into a trie, digit by digit. Each number of the second list walks down as far as its digits match; the depth reached is its longest shared prefix with the whole first list at once."
+reads: [tries]
+best: { time: "O((n + m) · D)", space: "O(n · D)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get two lists of positive whole numbers, `arr1` and `arr2`. For a number x from arr1 and y from arr2, their common prefix is the run of leading digits they share (for 1203 and 120, it's 120: three digits). Return the length of the longest common prefix over all such pairs, or 0 if no pair shares even a first digit.
+
+For `arr1 = 125, 1203, 98` and `arr2 = 120, 9, 1250`, the answer is 3 (125 and 1250, or 1203 and 120).
+
+## The key question
+
+> **How can one number be compared with a whole list at once?**
+
+Put the list in a trie of digits. Every prefix any of its numbers has is a path from the root, so a number shares k digits with some number in the list exactly when it can walk k steps down.
+
+## Approach 1: Compare every pair of numbers
+
+For every x in arr1 and y in arr2, count the leading digits they share, and keep the largest count.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n · m · D)" space="O(D)">
+**Time.** n · m pairs, each compared over up to D digits: **O(n · m · D)**.
+
+**Space.** The digits being compared: **O(D)**.
+
+**What it wastes:** re-reading the same prefixes for every pair.
+</Complexity>
+
+## Approach 2: A trie of arr1's digits, walked by arr2 (optimal)
+
+Insert every number of arr1 into a trie, one digit per node. For each number of arr2, walk down while the trie has its next digit; the number of steps is its best shared prefix. Keep the largest.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O((n + m) · D)" space="O(n · D)">
+**Time.** Each number is inserted or walked once, one step per digit: **O((n + m) · D)**.
+
+**Space.** The trie: up to **n · D** nodes.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Compare every pair of numbers | O(n · m · D) | O(D) | Every pair |
+| A trie of arr1's digits, walked by arr2 | **O((n + m) · D)** | O(n · D) | Compare with everything at once |
+
+<GrowthChart client:visible series={growth} caption="Operations for two lists of n five-digit numbers." />
+
+## Common mistakes
+
+- **Comparing the numbers' values instead of their digits.** 120 and 1203 share "120", though one is ten times the other.
+- **Building the trie from both lists.** Only one list goes in; the other walks it.
+- **Stopping at the first full match.** Keep the longest over all of arr2.
+
+## Check yourself
+
+<Quiz client:visible title="Find the Length of the Longest Common Prefix" questions={questions} />
+
+## Related problems
+
+- [Longest Common Prefix](/dsa/longest-common-prefix/). The prefix shared by every string in one list.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie being walked.
+- [Sum of Prefix Scores of Strings](/dsa/sum-of-prefix-scores-of-strings/). More prefix questions answered by a trie.

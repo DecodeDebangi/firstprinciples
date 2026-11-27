@@ -1,0 +1,84 @@
+---
+title: Palindrome Pairs
+leetcode: { number: 336, url: "https://leetcode.com/problems/palindrome-pairs/" }
+difficulty: Hard
+topics: [Hash map, Trie, String]
+added: 2026-11-27
+summary: "Find every ordered pair of words that joins into a palindrome. Goes from joining and checking every pair to cutting each word at every point and looking up the reversed other part."
+insight: "If x + w is a palindrome and x is the shorter word, then x is the reverse of w's ending, and the rest of w reads the same both ways. So cut each word everywhere: when the part that would sit in the middle is a palindrome, look up the other part reversed."
+reads: [tries, reversed-tries]
+best: { time: "O(n · L²)", space: "O(n · L)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of different words. Return every ordered pair of positions `(i, j)`, with i ≠ j, such that `words[i] + words[j]` reads the same forwards and backwards.
+
+For `race, car, ecar, a, ra` the pairs include race + car ("racecar"), race + ecar, ecar + race, a + ra ("ara") and ra + car ("racar").
+
+## The key question
+
+> **When x + w is a palindrome, what must be true of the two words?**
+
+Line the joined string up with its reverse. The shorter word must mirror one end of the longer word exactly, and whatever is left of the longer word sits in the middle, so it must read the same both ways on its own.
+
+## Approach 1: Join every ordered pair and check it
+
+For every ordered pair of words, join them and check whether the result reads the same backwards.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n² · L)" space="O(L)">
+**Time.** n(n − 1) ordered pairs, each checked in O(L): **O(n² · L)**.
+
+**Space.** One joined string at a time: **O(L)**.
+
+**What it wastes:** checking pairs whose ends can't possibly mirror each other.
+</Complexity>
+
+## Approach 2: Split each word, look up the reversed rest (optimal)
+
+Map every word, reversed, to its position. Cut each word w into left and right at every point. If left reads the same both ways and right reversed is some word j, then words[j] + w works. If right reads the same both ways and left reversed is some word j, then w + words[j] works.
+
+<Viz client:visible approach="split" />
+
+<Complexity time="O(n · L²)" space="O(n · L)">
+**Time.** Each word has L + 1 cuts, each with an O(L) palindrome check and lookup: **O(n · L²)**.
+
+**Space.** The map of reversed words: **O(n · L)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Join every ordered pair and check it | O(n² · L) | O(L) | Every pair |
+| Split each word, look up the reversed rest | **O(n · L²)** | O(n · L) | Cut, check the middle, look up |
+
+<GrowthChart client:visible series={growth} caption="Operations for n four-letter words." />
+
+## Common mistakes
+
+- **Counting a pair twice when one side is empty.** The cut with the whole word on the left and nothing on the right finds the same pair as the opposite cut; skip one of them (here, k < length(w) on the second check).
+- **Pairing a word with itself.** j ≠ i, even when a word is its own reverse.
+- **Only checking one order.** "race" + "ecar" and "ecar" + "race" are different pairs.
+
+## Check yourself
+
+<Quiz client:visible title="Palindrome Pairs" questions={questions} />
+
+## Related problems
+
+- [Reversed tries](/concepts/reversed-tries/). Words stored backwards turn endings into beginnings.
+- [Longest Palindromic Substring](/dsa/longest-palindromic-substring/). Palindromes inside one string.
+- [Two Sum](/dsa/two-sum/). The same "look up the partner you need" idea.
