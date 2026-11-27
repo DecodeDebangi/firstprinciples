@@ -57,6 +57,8 @@ Both take **O(L)** for a query of length `L`. Try searching for `car`, `cars` or
 - **Numbers, bit by bit:** a trie of bits finds the number whose XOR with x is largest. See [Binary
   tries](/concepts/binary-tries/).
 - **Less memory:** merge the chains where nothing branches. See [Compressed tries](/concepts/compressed-tries/).
+- **A trie that's never built:** the numbers 1 to n in dictionary order are a walk of a digit trie, done with
+  arithmetic alone, as in [Lexicographical Numbers](/dsa/lexicographical-numbers/).
 - **Wildcards:** with a `.` that matches any letter, follow every child at that step. That's [Design Add and Search
   Words Data Structure](/dsa/design-add-and-search-words-data-structure/).
 - **Shortest root of a word:** walk a word down the trie and stop at the first ✓, as in [Replace

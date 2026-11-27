@@ -1,0 +1,84 @@
+---
+title: K-th Smallest in Lexicographical Order
+leetcode: { number: 440, url: "https://leetcode.com/problems/k-th-smallest-in-lexicographical-order/" }
+difficulty: Hard
+topics: [Trie, Math]
+added: 2026-11-27
+summary: "Find the k-th number among 1 to n in dictionary order, for n up to a billion. Goes from walking the order one number at a time to counting whole subtrees of the imaginary digit trie and skipping them."
+insight: "The numbers starting with prefix p form a subtree of the digit trie, and their count can be computed level by level. If the k-th number lies past all of them, skip the subtree in one step; otherwise step inside it."
+reads: [tries, tree-traversals]
+best: { time: "O(D²)", space: "O(1)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given n and k, return the k-th number when 1 to n are listed in dictionary order (compared as text, so 10 comes before 2). n can be as large as a billion.
+
+For `n = 23, k = 9` the order begins 1, 10, 11, 12, 13, 14, 15, 16, 17, so the answer is 17.
+
+## The key question
+
+> **Can you jump over many numbers at once without listing them?**
+
+Yes. The numbers starting with p sit together in the order, and how many there are can be counted directly: those between p and p, then between 10p and 10p + 9, then 100p to 100p + 99, and so on, each capped at n.
+
+## Approach 1: Walk the order one number at a time
+
+Run the walk from Lexicographical Numbers and stop after k numbers.
+
+<Viz client:visible approach="walk" />
+
+<Complexity time="O(k)" space="O(1)">
+**Time.** k steps: **O(k)**, which can be close to n, a billion.
+
+**Space.** Only cur: **O(1)**.
+
+**What it wastes:** visiting every number before the k-th, when whole blocks of them could be skipped at once.
+</Complexity>
+
+## Approach 2: Count whole subtrees and skip them (optimal)
+
+Start at 1, with k − 1 more steps to take. Count the numbers starting with cur. If they're no more than the steps left, skip them all: move to cur + 1. Otherwise the answer is inside: move to cur × 10, using one step for cur itself.
+
+<Viz client:visible approach="skip" />
+
+<Complexity time="O(D²)" space="O(1)">
+**Time.** At most D levels, with up to 10 moves sideways on each, and every count takes D steps: about **O(D²)** with a constant of 10, about a thousand steps for a billion.
+
+**Space.** A few numbers: **O(1)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Walk the order one number at a time | O(k) | O(1) | One number per step |
+| Count whole subtrees and skip them | **O(D²)** | O(1) | Skip by subtree size |
+
+<GrowthChart client:visible series={growth} caption="Operations for n numbers with k = n − 1." />
+
+## Common mistakes
+
+- **Counting past n.** Each level's range is capped: min(n, hi) − lo + 1.
+- **Forgetting that cur itself counts.** Stepping inside uses one of the k steps (cur is the first number in its subtree).
+- **Using the walk for huge n.** A billion steps is too slow; skipping is what makes it fast.
+
+## Check yourself
+
+<Quiz client:visible title="K-th Smallest in Lexicographical Order" questions={questions} />
+
+## Related problems
+
+- [Lexicographical Numbers](/dsa/lexicographical-numbers/). The full walk of the same order.
+- [Kth Smallest Element in a BST](/dsa/kth-smallest-element-in-a-bst/). Another k-th found by counting a subtree.
+- [Tries that count](/concepts/trie-counts/). Counts on every node, here computed instead of stored.
