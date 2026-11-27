@@ -1,0 +1,84 @@
+---
+title: Maximum XOR of Two Numbers in an Array
+leetcode: { number: 421, url: "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/" }
+difficulty: Medium
+topics: [Trie, Bit manipulation, Hash map]
+added: 2026-11-27
+summary: "Find the largest XOR of any two numbers in a list. Goes from trying every pair to a binary trie, where each number finds its best partner by taking the opposite bit at every level it can."
+insight: "Store every number's bits, highest first, in a binary trie. For each number, walk down choosing the bit opposite to its own whenever the trie has it: a higher bit outweighs all lower bits, so that greedy choice finds its best partner."
+reads: [binary-and-bits, tries, binary-tries]
+best: { time: "O(n · B)", space: "O(n · B)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of non-negative whole numbers. Return the largest value of `nums[i] xor nums[j]` over any two of them.
+
+For `3, 10, 5, 12, 9` the answer is 15: 3 xor 12 = 0011 xor 1100 = 1111. (New to XOR? [Binary and bits](/concepts/binary-and-bits/) explains it.)
+
+## The key question
+
+> **What decides which of two candidate partners gives the bigger XOR?**
+
+The highest bit where their XORs differ. A 1 in bit b is worth more than every lower bit together, so the best partner is the one that differs from x in the highest bits possible. A trie of bits finds it from the top down.
+
+## Approach 1: Try every pair
+
+XOR every pair of numbers and keep the largest.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** n(n − 1)/2 pairs: **O(n²)**.
+
+**Space.** Nothing extra: **O(1)**.
+
+**What it wastes:** pairs that can't win: anything whose XOR has a 0 in a bit where some other pair has a 1.
+</Complexity>
+
+## Approach 2: A binary trie: the best partner for each number (optimal)
+
+Insert every number as B bits, highest first. Then for each number, walk down: at each bit, take the child with the opposite bit if it exists (adding 2^b to the XOR), otherwise the same bit. Keep the best result.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(n · B)" space="O(n · B)">
+**Time.** Each number is inserted and walked in B steps: **O(n · B)**, with B ≤ 31.
+
+**Space.** The trie: up to **n · B** nodes.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every pair | O(n²) | O(1) | Every pair |
+| A binary trie: the best partner for each number | **O(n · B)** | O(n · B) | Greedy from the top bit |
+
+<GrowthChart client:visible series={growth} caption="Operations for n numbers below 1024 (B = 10)." />
+
+## Common mistakes
+
+- **Storing bits lowest first.** The greedy choice only works from the highest bit down.
+- **Giving numbers different lengths.** Pad every number to the same B bits, or the paths won't line up.
+- **Following the same bit when the opposite exists.** The opposite bit is always at least as good.
+
+## Check yourself
+
+<Quiz client:visible title="Maximum XOR of Two Numbers in an Array" questions={questions} />
+
+## Related problems
+
+- [Maximum XOR With an Element From Array](/dsa/maximum-xor-with-an-element-from-array/). The same walk, with a limit on which numbers count.
+- [Single Number](/dsa/single-number/). XOR's other famous trick.
+- [Binary tries](/concepts/binary-tries/). Why the greedy bit choice is safe.

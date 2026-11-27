@@ -1,0 +1,84 @@
+---
+title: Maximum XOR With an Element From Array
+leetcode: { number: 1707, url: "https://leetcode.com/problems/maximum-xor-with-an-element-from-array/" }
+difficulty: Hard
+topics: [Trie, Bit manipulation, Sorting]
+added: 2026-11-27
+summary: "Answer queries for the largest x xor a over the numbers a that don't exceed a limit m. Goes from checking every number per query to answering the queries in order of their limit, while a binary trie grows with the allowed numbers."
+insight: "Sort the numbers and the queries by their limit. As the limit rises, numbers are only ever added to the trie, never removed, so each query finds the best partner among exactly the allowed numbers with one walk."
+reads: [binary-and-bits, tries, binary-tries]
+best: { time: "O((n + q) · B) after sorting", space: "O(n · B)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums` and queries `(x, m)`. For each query, return the largest value of `x xor a` over the numbers `a` in `nums` with `a ≤ m`, or −1 if no number is that small.
+
+In the animation, write queries as `x m`. For `nums = 3, 10, 5, 12, 9` and the queries `6 4, 6 9, 1 2`, the answers are 5 (6 xor 3), 15 (6 xor 9) and −1.
+
+## The key question
+
+> **Each query allows a different set of numbers. How can one trie serve them all?**
+
+Answer the queries in order of their limit. Then the allowed set only ever grows: before each query, add the numbers up to its limit, and the trie holds exactly the allowed numbers.
+
+## Approach 1: Check every number for every query
+
+For each query, look at every number at most m and keep the largest x xor a.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n · q)" space="O(1) extra">
+**Time.** Every query checks all n numbers: **O(n · q)**.
+
+**Space.** Nothing beyond the answers: **O(1)** extra.
+
+**What it wastes:** rechecking all the numbers for every query.
+</Complexity>
+
+## Approach 2: Sort by the limit, grow a binary trie as it rises (optimal)
+
+Sort the numbers, and order the queries by m. For each query, insert the numbers that are now ≤ m, then walk the binary trie for x, taking the opposite bit where possible. Put each answer back in the query's original place.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O((n + q) · B) after sorting" space="O(n · B)">
+**Time.** Sorting is O(n log n + q log q). Each number is inserted once and each query walks once, B steps each: **O((n + q) · B)**.
+
+**Space.** The trie: **O(n · B)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every number for every query | O(n · q) | O(1) extra | Check everything |
+| Sort by the limit, grow a binary trie as it rises | **O((n + q) · B) after sorting** | O(n · B) | Offline, by limit |
+
+<GrowthChart client:visible series={growth} caption="Operations for n numbers and n queries, all below 1024." />
+
+## Common mistakes
+
+- **Answering queries in the given order.** The trie can't remove numbers, so a smaller limit after a larger one would see too many.
+- **Losing the original order.** Sort positions, not the queries themselves, and write each answer to its own position.
+- **Walking an empty trie.** If no number is ≤ m yet, the answer is −1.
+
+## Check yourself
+
+<Quiz client:visible title="Maximum XOR With an Element From Array" questions={questions} />
+
+## Related problems
+
+- [Maximum XOR of Two Numbers in an Array](/dsa/maximum-xor-of-two-numbers-in-an-array/). The same walk without a limit.
+- [Binary tries](/concepts/binary-tries/). Numbers as paths of bits.
+- [Merge Intervals](/dsa/merge-intervals/). Another problem made easy by sorting first.

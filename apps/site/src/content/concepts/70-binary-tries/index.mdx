@@ -1,0 +1,59 @@
+---
+title: "Binary tries: finding the best XOR partner"
+topic: Tries
+kind: Explainer
+order: 4
+summary: Store numbers as their bits, highest bit first, in a trie with two children per node. To find the stored number whose XOR with x is largest, walk down taking the opposite of x's bit whenever possible. It's a greedy choice that's always right, because one higher bit outweighs all the lower ones.
+added: 2026-11-27
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+A [trie](/concepts/tries/) doesn't have to hold letters. Write each number in [binary](/concepts/binary-and-bits/)
+with the same number of bits, highest bit first, and a trie of those bit strings has at most two children per node: 0
+and 1. It's called a **binary trie**, and its classic use is XOR.
+
+## Numbers as paths of bits
+
+<Viz client:visible approach="build" />
+
+Numbers that start with the same bits share a path, just as words that start with the same letters do.
+
+## The best XOR partner: always take the other bit
+
+`a xor b` has a 1 wherever the two numbers' bits differ. To make it as large as possible, the **highest** bits matter
+most: bit 2⁴ is worth 16, more than bits 2³ + 2² + 2¹ + 2⁰ = 15 together. So a partner that differs from x in a higher
+bit always beats one that doesn't, whatever happens lower down.
+
+That makes a greedy walk safe. Start at the root with x's highest bit. If the trie has the **opposite** bit here, take
+it: this bit of the XOR will be 1. If not, follow the same bit: this bit will be 0, and nothing could have done better.
+
+<Viz client:visible approach="best" />
+
+The walk takes one step per bit, however many numbers are stored. Doing it for every number gives the largest XOR of
+any pair in O(n · B): [Maximum XOR of Two Numbers in an Array](/dsa/maximum-xor-of-two-numbers-in-an-array/).
+
+## When only some numbers are allowed
+
+If each query only allows numbers up to a limit m, sort the numbers, and answer the queries in order of their limit,
+smallest first. As the limit rises, more numbers become allowed and are added to the trie; nothing is ever removed. This
+is called answering the queries **offline**, since their order is chosen to suit the data structure. That's [Maximum
+XOR With an Element From Array](/dsa/maximum-xor-with-an-element-from-array/).
+
+## Interview theory
+
+<QA q="How do you find the maximum XOR of any two numbers in an array in better than O(n²)?">
+Insert every number's bits, highest first, into a binary trie. For each number, walk down taking the opposite bit
+whenever the trie has it; that finds its best partner in O(B). The answer is the best over all numbers: O(n · B).
+</QA>
+
+<QA q="Why is the greedy bit choice correct?">
+A 1 in bit b is worth 2^b, which is more than all the lower bits together (2^b − 1). So making the highest possible bit
+1 is always worth whatever it costs below.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
