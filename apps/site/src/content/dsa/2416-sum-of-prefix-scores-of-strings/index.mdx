@@ -1,0 +1,84 @@
+---
+title: Sum of Prefix Scores of Strings
+leetcode: { number: 2416, url: "https://leetcode.com/problems/sum-of-prefix-scores-of-strings/" }
+difficulty: Hard
+topics: [Trie, String, Hash map]
+added: 2026-11-27
+summary: "For each word, add up how many words start with each of its prefixes. Goes from counting every prefix in a map, which copies each prefix out, to a trie that counts words through each node."
+insight: "A trie node's count is how many words start with the letters on its path. A word's score is the sum of the counts along its own path, so insert everything once, then walk each word adding up counts."
+reads: [tries, trie-counts]
+best: { time: "O(total letters)", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of words. The **score** of a string is how many words in the list start with it. For each word, add up the scores of all its non-empty prefixes, and return these totals in order.
+
+For `car, cat, cart, dog` the answer is `[8, 7, 9, 3]`. For car: "c" starts 3 words, "ca" 3, "car" 2 (car and cart), so 3 + 3 + 2 = 8.
+
+## The key question
+
+> **Where is "how many words start with this prefix" already stored?**
+
+In a trie that counts: each node's count is exactly that number for the prefix spelled on its path. A word's prefixes are the nodes along its own path.
+
+## Approach 1: Count every prefix in a map
+
+For every word, copy out each of its prefixes and count it in a map. Then, for every word, look up each of its prefixes and add the counts.
+
+<Viz client:visible approach="map" />
+
+<Complexity time="O(Σ L²)" space="O(Σ L²)">
+**Time.** A word of length L has L prefixes of lengths 1 to L, and copying them costs about L²/2 letters: **O(Σ L²)** over all words.
+
+**Space.** The map's keys are all those copies: **O(Σ L²)**.
+
+**What it wastes:** copying. The prefix "car" is built letter by letter again for every word that has it.
+</Complexity>
+
+## Approach 2: A trie that counts words through each node (optimal)
+
+Insert every word, adding 1 to each node on its path. Then walk each word's path again, adding up the counts.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(total letters)" space="O(total letters)">
+**Time.** Each word is walked twice, one step per letter: **O(total letters)**.
+
+**Space.** At most one node per letter: **O(total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count every prefix in a map | O(Σ L²) | O(Σ L²) | Every prefix as a key |
+| A trie that counts words through each node | **O(total letters)** | O(total letters) | Prefix counts as a path |
+
+<GrowthChart client:visible series={growth} caption="Operations for four words of length n sharing their first half." />
+
+## Common mistakes
+
+- **Counting each prefix once per word, not once per occurrence.** A word that appears twice counts twice; the trie handles it with no special case.
+- **Scoring while inserting.** A word's score depends on words inserted later; insert everything first.
+- **Using the end-of-word marks.** The score counts words that start with the prefix, which is the pass-through count, not whether a word ends there.
+
+## Check yourself
+
+<Quiz client:visible title="Sum of Prefix Scores of Strings" questions={questions} />
+
+## Related problems
+
+- [Map Sum Pairs](/dsa/map-sum-pairs/). Totals on trie nodes, read at the end of a prefix.
+- [Longest Common Prefix](/dsa/longest-common-prefix/). Where a trie's single path splits.
+- [Tries that count](/concepts/trie-counts/). Counts on every node, and what they make easy.

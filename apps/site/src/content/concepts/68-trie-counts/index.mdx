@@ -1,0 +1,89 @@
+---
+title: "Tries that count: prefix counts, totals and deleting words"
+topic: Tries
+kind: Explainer
+order: 2
+summary: A plain trie answers yes or no. Store a number on each node, how many words pass through it, and it can say how many words start with any prefix in one walk down. The same idea keeps running totals, and the counts make deleting a word safe. With what a trie costs in memory.
+added: 2026-11-27
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Tries](/concepts/tries/) store words letter by letter, so words that start the same way share a path. A plain trie
+answers yes-or-no questions: is this word stored, does any word start with this prefix? Put a number on every node and
+it can answer **how many**.
+
+## A count on every node
+
+When a word is inserted, add 1 to every node on its path. A node's count is then how many stored words pass through
+it, and since every word passing through a node starts with the letters on the path to it, that's **how many words
+start with that prefix**. Under each node: its count (×), and ✓ where a word ends.
+
+<Viz client:visible approach="build" />
+
+The counts cost nothing extra to keep: the insert already visits every node on the path.
+
+## How many words start with a prefix?
+
+Walk down the prefix's letters and read the count where they end. The words themselves are never visited, so the
+answer takes as many steps as the prefix has letters, however many words are stored.
+
+<Viz client:visible approach="prefix" />
+
+## Deleting a word
+
+A plain trie can't safely remove nodes: it doesn't know whether some other word still needs them. The counts do.
+Walk the word's letters, taking 1 off each count. If a count reaches 0, no other word uses that node, so remove it and
+everything below it, and stop. If you reach the end, every node is still shared with a longer word: only the ✓ goes.
+
+<Viz client:visible approach="erase" />
+
+## Other totals: sums and scores
+
+A count is one kind of running total. Any number that adds up along words works the same way:
+
+- **A sum of values.** Store each key's value on every node of its path, and a node holds the total of all keys with
+  that prefix. Replacing a key's value means adding the *difference* along its path, not the new value.
+  That's [Map Sum Pairs](/dsa/map-sum-pairs/).
+- **A word's prefix score.** Adding up the counts along a word's own path gives, for each of its prefixes, how many
+  words share it. That's [Sum of Prefix Scores of Strings](/dsa/sum-of-prefix-scores-of-strings/).
+
+## What a trie costs in memory
+
+A trie has at most one node per letter stored, and fewer when words share beginnings. The cost is in each node's
+children:
+
+| Children stored as | Memory per node | Finding a child |
+|---|---|---|
+| An array of 26 slots | 26 pointers, even if only one is used | O(1) |
+| A map from letter to child | Only the children that exist | O(1) on average, but slower in practice |
+
+An array is the usual interview answer for lowercase letters; a map suits large alphabets (all of Unicode, or numbers).
+
+The alternative to a trie for prefix questions is a hash map with **every prefix** of every word as a key. It works,
+but a word of length L has L prefixes, and copying them all out costs 1 + 2 + … + L letters: O(L²) per word. A trie
+stores each prefix once, as a path, in O(L).
+
+## Interview theory
+
+<QA q="How do you count the words that start with a given prefix?">
+Keep a count on every trie node of how many words pass through it, updated on insert. Walk the prefix and return the
+count at its last node: O(length of the prefix).
+</QA>
+
+<QA q="How do you delete a word from a trie?">
+Walk its letters, decrementing each node's count. When a count reaches 0, remove that node and everything below it. If
+the walk reaches the end, just remove the end-of-word mark. Without counts, you'd have to check on the way back up
+whether each node has other children or ends another word.
+</QA>
+
+<QA q="Array of 26 or a map for a trie node's children?">
+An array for a small fixed alphabet: O(1) lookups with no hashing, at the cost of empty slots. A map for large or
+unknown alphabets, where most slots would be empty.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

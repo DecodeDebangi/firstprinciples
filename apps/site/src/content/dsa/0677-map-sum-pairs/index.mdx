@@ -1,0 +1,87 @@
+---
+title: Map Sum Pairs
+leetcode: { number: 677, url: "https://leetcode.com/problems/map-sum-pairs/" }
+difficulty: Medium
+topics: [Trie, Hash map, Design, String]
+added: 2026-11-27
+summary: "Store keys with values and answer the total value of all keys that start with a prefix. Goes from scanning every key on each sum to a trie whose nodes keep running totals."
+insight: "Give every trie node the total value of the keys that pass through it. A sum is then the total at the end of the prefix. When a key's value is replaced, add the difference along its path, not the new value."
+reads: [tries, trie-counts]
+best: { time: "O(L) per operation", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a class with two operations:
+
+- `insert(key, val)`: store `key` with value `val`. If `key` is already stored, its value is replaced.
+- `sum(prefix)`: return the total value of every stored key that starts with `prefix`.
+
+In the animation, write operations like `insert cat 3, sum ca`. For the example, `sum ca` first gives 7 (cat 3 + cart 4); after cat is replaced by 1, it gives 5.
+
+## The key question
+
+> **What can each prefix remember so that a sum needs no scanning?**
+
+Its own total. If every trie node holds the total value of the keys passing through it, the answer to sum(prefix) is already stored at the node where the prefix ends.
+
+## Approach 1: A map of keys, scanned on every sum
+
+Keep each key's value in a map. For a sum, look at every key and add up the values of those that start with the prefix.
+
+<Viz client:visible approach="map" />
+
+<Complexity time="O(n · L) per sum" space="O(total letters)">
+**Time.** Each sum checks all n keys, comparing up to L letters each: **O(n · L)**. Inserts are O(L).
+
+**Space.** The map: **O(total letters)**.
+
+**What it wastes:** rechecking every key on every sum, though the keys sharing a prefix could be grouped once.
+</Complexity>
+
+## Approach 2: A trie whose nodes keep running totals (optimal)
+
+Each trie node keeps the total of all keys through it. Insert walks the key's path adding the change in its value (the new value minus the old one, if it was stored). Sum walks the prefix and returns the total there.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(L) per operation" space="O(total letters)">
+**Time.** Both operations walk one key's letters: **O(L)**.
+
+**Space.** One node per stored letter, plus the map of current values: **O(total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| A map of keys, scanned on every sum | O(n · L) per sum | O(total letters) | Scan every key |
+| A trie whose nodes keep running totals | **O(L) per operation** | O(total letters) | Totals stored on prefixes |
+
+<GrowthChart client:visible series={growth} caption="Operations for n inserts of different keys, each followed by a sum." />
+
+## Common mistakes
+
+- **Adding the new value on a replace.** The old value is already in every total on the path; add val − old, or it's counted twice.
+- **Forgetting the map of current values.** Without it you can't know the old value to subtract.
+- **Returning a total for a prefix that isn't in the trie.** If the walk falls off, the answer is 0.
+
+## Check yourself
+
+<Quiz client:visible title="Map Sum Pairs" questions={questions} />
+
+## Related problems
+
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie these totals sit on.
+- [Sum of Prefix Scores of Strings](/dsa/sum-of-prefix-scores-of-strings/). Counts on nodes, added up along each word.
+- [Tries that count](/concepts/trie-counts/). Counts, totals and deleting words.
