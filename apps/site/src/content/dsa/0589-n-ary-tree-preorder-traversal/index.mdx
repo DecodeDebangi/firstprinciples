@@ -1,0 +1,83 @@
+---
+title: N-ary Tree Preorder Traversal
+leetcode: { number: 589, url: "https://leetcode.com/problems/n-ary-tree-preorder-traversal/" }
+difficulty: Easy
+topics: [Tree, DFS, Stack]
+added: 2026-11-26
+summary: "List the values of a tree whose nodes can have any number of children, each node before its children. Goes from recursion to an explicit stack that pushes children right to left."
+insight: "Pre-order is the same with many children as with two: write the node, then each child's subtree left to right. With a stack, push the children right to left so the leftmost is popped first."
+reads: [trees-from-scratch, tree-traversals]
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of an **N-ary tree**, where each node has a list of any number of children. Return its values in **pre-order**: each node comes before everything below it, and a node's children are handled left to right, each child's whole subtree before the next child.
+
+The tree is given as one list: the root, a `null`, then for each node in level order its children, each group of children ended by a `null`. For example, `[1, null, 2, 3, 4, null, 5, 6, null, 7, null, 8, 9, 10]` is 1 with children 2, 3 and 4; 2 has children 5 and 6, 3 has 7, and 4 has 8, 9 and 10. (The [Trees from scratch](/concepts/trees-from-scratch/) read covers trees and these lists.) Its pre-order is `[1, 2, 5, 6, 3, 7, 4, 8, 9, 10]`.
+
+## The key question
+
+> **What changes from a binary tree's pre-order when a node can have any number of children?**
+
+Only the loop: instead of visiting left then right, visit each child in turn. With a stack, the children go on in reverse so the leftmost comes off first.
+
+## Approach 1: Recursive
+
+Write the node, then call the same function on each child, left to right.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** One waiting call per level of the current path: **O(h)**.
+
+**What it wastes:** nothing in time. A very tall tree can run out of call stack, which the next approach avoids.
+</Complexity>
+
+## Approach 2: Iterative, with a stack
+
+Keep a stack of nodes to visit. Pop one, write it, and push its children from right to left, so the leftmost child is on top and comes next.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node is pushed and popped once: **O(n)**.
+
+**Space.** The stack holds the unvisited siblings along the path, up to **O(n)** for a very wide node.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Recursive | O(n) | O(h) | Node, then each child |
+| Iterative, with a stack | O(n) | O(n) | Push children right to left |
+
+Both approaches are O(n) time, so there's no growth chart. They differ in where the way back is remembered: the call stack or your own.
+
+## Common mistakes
+
+- **Pushing the children left to right.** The rightmost would then be popped first, and the order would come out mirrored.
+- **Writing a node after its children.** That's post-order.
+- **Reading the list as a binary tree's.** Here a null ends a group of children; it doesn't mark one missing child.
+
+## Check yourself
+
+<Quiz client:visible title="N-ary Tree Preorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Preorder Traversal](/dsa/binary-tree-preorder-traversal/). The same order with two children.
+- [N-ary Tree Postorder Traversal](/dsa/n-ary-tree-postorder-traversal/). Each node after its children.
+- [N-ary Tree Level Order Traversal](/dsa/n-ary-tree-level-order-traversal/). Level by level instead.

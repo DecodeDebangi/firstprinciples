@@ -89,6 +89,20 @@ Two details trip people up:
 
 Every "Try your own input" box on a tree page reads its tree this way.
 
+## Trees with any number of children
+
+In an **N-ary tree** a node has a list of children of any length, not just a left and a right. Folders on a computer
+work like this. Problems write these trees as a list too, but a `null` means something different: it **ends one node's
+group of children**. The list is the root, a `null`, then each node's children in level order, each group closed by a
+`null`:
+
+`[1, null, 2, 3, 4, null, 5, 6, null, 7]` is 1 with children 2, 3 and 4; then 2's children are 5 and 6, and 3's child
+is 7. 4's group would come next, but the list stops, so 4 has none.
+
+Traversals work the same way: where a binary tree visits left then right, an N-ary tree visits each child in turn. See
+[N-ary Tree Preorder Traversal](/dsa/n-ary-tree-preorder-traversal/) and [N-ary Tree Level Order
+Traversal](/dsa/n-ary-tree-level-order-traversal/).
+
 ## Shapes worth knowing
 
 | Shape | What it means | Example list |

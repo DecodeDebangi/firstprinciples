@@ -1,0 +1,83 @@
+---
+title: N-ary Tree Postorder Traversal
+leetcode: { number: 590, url: "https://leetcode.com/problems/n-ary-tree-postorder-traversal/" }
+difficulty: Easy
+topics: [Tree, DFS, Stack]
+added: 2026-11-26
+summary: "List the values of a tree whose nodes can have any number of children, each node after its children. Goes from recursion to a stack that builds the mirrored pre-order and reverses it."
+insight: "Post-order reversed is: node first, then children right to left. That's an easy stack walk (push children left to right), so build it and reverse the result."
+reads: [trees-from-scratch, tree-traversals]
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of an **N-ary tree**, where each node has a list of any number of children. Return its values in **post-order**: each node comes after everything below it, and a node's children are handled left to right, each child's whole subtree before the next child.
+
+The tree is given as one list: the root, a `null`, then for each node in level order its children, each group of children ended by a `null`. For example, `[1, null, 2, 3, 4, null, 5, 6, null, 7, null, 8, 9, 10]` is 1 with children 2, 3 and 4; 2 has children 5 and 6, 3 has 7, and 4 has 8, 9 and 10. (The [Trees from scratch](/concepts/trees-from-scratch/) read covers trees and these lists.) Its post-order is `[5, 6, 2, 7, 3, 8, 9, 10, 4, 1]`.
+
+## The key question
+
+> **With a stack, a node is popped before its children. How can it end up after them?**
+
+Build the order backwards. Write each node when popped, and push its children left to right so they come off right to left. The result is node, then children right to left; reversed, it's children left to right, then the node.
+
+## Approach 1: Recursive
+
+Call the same function on each child, left to right, and write the node only after all of them.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** One waiting call per level of the current path: **O(h)**.
+
+**What it wastes:** nothing in time, but a very tall tree can run out of call stack.
+</Complexity>
+
+## Approach 2: Iterative: mirrored pre-order, reversed
+
+Pop a node, write it, and push its children left to right, so they come off right to left. That builds the exact reverse of post-order; reverse it at the end.
+
+<Viz client:visible approach="stack" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** Each node is pushed and popped once, plus one reversal: **O(n)**.
+
+**Space.** The stack and the output: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Recursive | O(n) | O(h) | Each child, then node |
+| Iterative: mirrored pre-order, reversed | O(n) | O(n) | Reverse of node-then-children-right-to-left |
+
+Both approaches are O(n) time, so there's no growth chart. They differ in where the way back is remembered: the call stack or your own.
+
+## Common mistakes
+
+- **Pushing the children right to left, as in pre-order.** Before the reversal, children must come off right to left, so push them left to right.
+- **Forgetting the final reversal.** The list is built backwards.
+- **Reading the list as a binary tree's.** Here a null ends a group of children.
+
+## Check yourself
+
+<Quiz client:visible title="N-ary Tree Postorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Postorder Traversal](/dsa/binary-tree-postorder-traversal/). The same trick with two children.
+- [N-ary Tree Preorder Traversal](/dsa/n-ary-tree-preorder-traversal/). Each node before its children.
+- [N-ary Tree Level Order Traversal](/dsa/n-ary-tree-level-order-traversal/). Level by level instead.

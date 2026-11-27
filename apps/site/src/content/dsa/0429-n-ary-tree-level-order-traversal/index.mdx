@@ -1,0 +1,83 @@
+---
+title: N-ary Tree Level Order Traversal
+leetcode: { number: 429, url: "https://leetcode.com/problems/n-ary-tree-level-order-traversal/" }
+difficulty: Medium
+topics: [Tree, BFS]
+added: 2026-11-26
+summary: "Group a tree's values by level when nodes can have any number of children. Compares a queue taken one level per round with a depth-first walk that files each node under its depth."
+insight: "At the start of each round the queue holds exactly one level: take that many nodes and queue their children. Or walk depth-first and file each node under its depth, since children are still met left to right."
+reads: [trees-from-scratch, tree-traversals]
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of an **N-ary tree**, where each node has a list of any number of children. Return its values level by level: a list of lists, where list `d` holds the values at depth `d` from left to right (the root is depth 0).
+
+The tree is given as one list: the root, a `null`, then for each node in level order its children, each group of children ended by a `null`. For example, `[1, null, 2, 3, 4, null, 5, 6, null, 7, null, 8, 9, 10]` is 1 with children 2, 3 and 4; 2 has children 5 and 6, 3 has 7, and 4 has 8, 9 and 10. (The [Trees from scratch](/concepts/trees-from-scratch/) read covers trees and these lists.) Its levels are `[[1], [2, 3, 4], [5, 6, 7, 8, 9, 10]]`.
+
+## The key question
+
+> **How do you know where one level ends?**
+
+Count. When a round starts, every node in the queue is on the same level, and nothing else is: take exactly that many. Or skip the queue and pass each node its depth.
+
+## Approach 1: Breadth-first, one level at a time
+
+Start with the root in a queue. Each round, take as many nodes as the queue holds right now, which is one whole level, write their values as a list, and queue their children.
+
+<Viz client:visible approach="bfs" />
+
+<Complexity time="O(n)" space="O(w)">
+**Time.** Each node enters and leaves the queue once: **O(n)**.
+
+**Space.** The queue holds up to one level, the tree's width: **O(w)**.
+
+**What it wastes:** nothing in time. A very wide tree makes for a big queue.
+</Complexity>
+
+## Approach 2: Depth-first, filing each node by its depth
+
+Walk depth-first, children left to right, passing each node its depth. The first node seen at a new depth starts a new list; others are added to the end of their depth's list.
+
+<Viz client:visible approach="dfs" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** The recursion goes as deep as the tree: **O(h)**, besides the answer.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Breadth-first, one level at a time | O(n) | O(w) | One round per level |
+| Depth-first, filing each node by its depth | O(n) | O(h) | Depth as a filing key |
+
+Both approaches are O(n) time, so there's no growth chart. The breadth-first queue grows with the tree's width; the depth-first recursion grows with its height.
+
+## Common mistakes
+
+- **Checking the queue length after starting to take nodes.** Their children are being added, so read the length once, at the start of the round.
+- **Thinking depth-first gives the wrong order within a level.** Children are visited left to right, so each level's nodes are still met left to right.
+- **Reading the list as a binary tree's.** Here a null ends a group of children.
+
+## Check yourself
+
+<Quiz client:visible title="N-ary Tree Level Order Traversal" questions={questions} />
+
+## Related problems
+
+- [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). The same idea with two children.
+- [N-ary Tree Preorder Traversal](/dsa/n-ary-tree-preorder-traversal/). Depth-first, node first.
+- [Maximum Depth of Binary Tree](/dsa/maximum-depth-of-binary-tree/). Counting levels instead of listing them.
