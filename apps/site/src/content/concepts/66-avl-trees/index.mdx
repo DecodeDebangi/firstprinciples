@@ -79,7 +79,8 @@ You'll almost never write an AVL tree outside an exercise. Standard libraries sh
 `TreeMap` and C++'s `std::map` are **red-black trees**, which follow a looser rule (no path from a node down to a leaf
 is more than twice as long as another) and need fewer rotations on insert and delete. What interviews ask is that you
 know a balanced BST gives O(log n) inserts, deletes and lookups *in sorted order*, and when to reach for one: for
-example, [Contains Duplicate III](/dsa/contains-duplicate-iii/) keeps a window of values in an ordered set.
+example, [Contains Duplicate III](/dsa/contains-duplicate-iii/) keeps a window of values in an ordered set. [Ordered sets and maps](/concepts/ordered-sets/) covers
+that side.
 
 If you have all the values at once, you don't need rotations at all: [Balance a Binary Search
 Tree](/dsa/balance-a-binary-search-tree/) compares re-inserting into an AVL tree with rebuilding from the sorted list.

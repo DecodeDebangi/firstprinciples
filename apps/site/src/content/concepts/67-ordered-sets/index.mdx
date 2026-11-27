@@ -1,0 +1,87 @@
+---
+title: "Ordered sets and maps: floor, ceiling and the next value"
+topic: Trees
+kind: Explainer
+order: 7
+summary: A balanced binary search tree is what sits behind the ordered sets and maps that languages provide. Besides adding, removing and checking in O(log n), they answer what a hash set can't, the nearest value above or below x. How floor and ceiling work, what each language calls them, and the interview patterns that need them.
+added: 2026-11-27
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+You'll rarely write a [balanced BST](/concepts/avl-trees/) yourself. You'll use one: most languages ship an **ordered
+set** (values kept in sorted order) and an **ordered map** (keys kept in sorted order, each with a value), built on a
+self-balancing tree. This read is about when to reach for one and what it can do.
+
+## What sorted order buys you
+
+| | Hash set | Ordered set |
+|---|---|---|
+| Add, remove, check if present | O(1) on average | O(log n) |
+| Smallest or largest value | O(n) | O(log n) |
+| Nearest value above or below x | O(n) | O(log n) |
+| Walk the values in order | Sort first: O(n log n) | O(n) |
+
+A [hash set](/concepts/how-hash-maps-work/) is faster when you only ask "is x here?". It can't answer "what's the closest value
+to x?", because hashing scatters the values on purpose. An ordered set can, because its tree keeps them in order.
+
+## Floor and ceiling: one path down
+
+The **floor** of x is the largest value ≤ x; the **ceiling** is the smallest value ≥ x. Both follow the path a search
+for x would take, keeping the best candidate seen. For the floor, a value below x is a candidate, and a better one
+(bigger, still ≤ x) can only be in its right subtree; a value above x is too big, so go left.
+
+<Viz client:visible approach="floor" />
+
+The ceiling is the mirror image: a value above x is a candidate, and a better one (smaller, still ≥ x) can only be to
+its left.
+
+<Viz client:visible approach="ceiling" />
+
+Either way it's one path from the root: **O(h)**, which is O(log n) when the tree is balanced. "Strictly greater"
+(**higher**) and "strictly smaller" (**lower**) work the same way, with the equal case counted as not good enough.
+
+## What your language calls them
+
+| Language | Ordered set and map | Floor / ceiling |
+|---|---|---|
+| Java | `TreeSet`, `TreeMap` | `floor(x)`, `ceiling(x)`; also `lower(x)`, `higher(x)` |
+| C++ | `std::set`, `std::map` | `lower_bound(x)` is the ceiling; the floor is the element before `upper_bound(x)` |
+| Python | None built in. `SortedList` from the `sortedcontainers` package, which LeetCode provides | `bisect_left` / `bisect_right` on it give the positions |
+| JavaScript | None built in | Keep a sorted array and [binary search](/concepts/binary-search-invariants/) it, or write a balanced tree |
+
+If your values are all known up front and never change, you don't need any of these: sort once and binary search.
+The tree only earns its keep when values are added and removed between questions.
+
+## Patterns that need it
+
+- **The nearest value in a sliding window.** Keep the last k values in an ordered set; for each new value, its floor
+  and ceiling are the closest values in the window. That's [Contains Duplicate III](/dsa/contains-duplicate-iii/).
+- **Booking without overlaps.** Keep booked intervals in an ordered map by start time. A new booking only needs
+  checking against the booking that starts just before it (the floor of its start) and the one just after (the
+  ceiling).
+- **Always knowing the smallest and largest of a changing set.** A [heap](/concepts/heaps/) gives one end in O(1) and
+  can't remove arbitrary values cheaply; an ordered set gives both ends and removes anything in O(log n).
+
+## Interview theory
+
+<QA q="When do you choose an ordered set over a hash set?">
+When you need order: the nearest value above or below x, the smallest or largest, or the values in sorted order, while
+values are still being added and removed. Otherwise a hash set's O(1) checks are faster.
+</QA>
+
+<QA q="How do you find the floor of x in a BST?">
+Walk down as if searching for x. Each value below x is a candidate; remember it and go right for a bigger one. Each value
+above x is too big; go left. The last candidate is the floor. O(h).
+</QA>
+
+<QA q="What does C++'s lower_bound return?">
+The first element that is not less than x: the ceiling. upper_bound returns the first element greater than x, and the
+element just before it is the floor.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

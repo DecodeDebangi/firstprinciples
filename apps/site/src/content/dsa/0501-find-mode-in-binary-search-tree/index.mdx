@@ -1,0 +1,83 @@
+---
+title: Find Mode in Binary Search Tree
+leetcode: { number: 501, url: "https://leetcode.com/problems/find-mode-in-binary-search-tree/" }
+difficulty: Easy
+topics: [BST, Binary tree, DFS]
+added: 2026-11-27
+summary: "Find the most frequent values in a binary search tree that may repeat values. Goes from counting everything in a map to an in-order walk with a running count, using no map."
+insight: "An in-order walk visits equal values one right after another. So keep a running count of the current value, and compare it with the longest run so far."
+reads: [trees-from-scratch, binary-search-trees]
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { questions } from "./quiz";
+import { Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree whose values may repeat: everything in a node's left subtree is **≤** it and everything in its right subtree is **≥** it. Return every value that appears the most times (the **modes**), in any order.
+
+For the tree `[5, 3, 7, 3, 5, null, 7, null, null, null, null, null, 7]` the answer is `[7]`: 7 appears three times, 3 and 5 twice each.
+
+## The key question
+
+> **Where do the copies of a value sit in sorted order?**
+
+All together. The in-order walk visits them one right after another, so a running count of the current value tells you exactly how many copies it has when the run ends.
+
+## Approach 1: Count every value in a map
+
+Walk the tree in any order, counting each value in a map. Then return the values with the highest count.
+
+<Viz client:visible approach="count" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One walk and one pass over the map: **O(n)**.
+
+**Space.** The map holds every distinct value: **O(n)**.
+
+**What it wastes:** memory. Copies of a value are next to each other in order, so one counter is enough.
+</Complexity>
+
+## Approach 2: In-order walk with a running count (optimal)
+
+Walk in order. If the value equals the previous one, the run grows; otherwise it restarts at 1. A run longer than the best so far replaces the answer; a tie joins it.
+
+<Viz client:visible approach="inorder" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** Only the recursion and a few variables: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Count every value in a map | O(n) | O(n) | A count per value |
+| In-order walk with a running count | **O(n)** | O(h) | Runs of equal values |
+
+Both approaches are O(n) time, so there's no growth chart. The difference is memory: a map of every value against a single counter.
+
+## Common mistakes
+
+- **Resetting out on a tie.** A run equal to the best adds its value; only a longer run replaces the list.
+- **Assuming copies are parent and child.** Copies can be far apart in the tree; they're only adjacent in order.
+- **Checking the run only when it ends.** Updating on every node is simpler and handles the last run without a special case.
+
+## Check yourself
+
+<Quiz client:visible title="Find Mode in Binary Search Tree" questions={questions} />
+
+## Related problems
+
+- [Minimum Absolute Difference in BST](/dsa/minimum-absolute-difference-in-bst/). The same walk, comparing neighbours.
+- [Majority Element](/dsa/majority-element/). Another most-frequent value, in a list.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The walk behind it.

@@ -1,0 +1,84 @@
+---
+title: All Elements in Two Binary Search Trees
+leetcode: { number: 1305, url: "https://leetcode.com/problems/all-elements-in-two-binary-search-trees/" }
+difficulty: Medium
+topics: [BST, Binary tree, Sorting, Two pointers]
+added: 2026-11-27
+summary: "List every value from two binary search trees in increasing order. Goes from collecting everything and sorting to walking each tree in order and merging the two sorted lists."
+insight: "Each tree already gives its values sorted through an in-order walk. Two sorted lists merge in one pass by repeatedly taking the smaller front value."
+reads: [trees-from-scratch, binary-search-trees]
+best: { time: "O(m + n)", space: "O(m + n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the roots of two binary search trees. Return one list with every value from both, in increasing order.
+
+For the trees `[5, 2, 8, 1, 3]` and `[6, 4, 9, null, null, 7]` the answer is `[1, 2, 3, 4, 5, 6, 7, 8, 9]`.
+
+## The key question
+
+> **Each tree is already sorted. What's the cheapest way to combine two sorted lists?**
+
+Merge them: look at the front of each, take the smaller, repeat. That's one pass, with no sorting.
+
+## Approach 1: Collect everything, then sort
+
+Gather all values from both trees with any walk, then sort the whole list.
+
+<Viz client:visible approach="sort" />
+
+<Complexity time="O((m + n) log(m + n))" space="O(m + n)">
+**Time.** The sort dominates: **O((m + n) log(m + n))**.
+
+**Space.** The combined list: **O(m + n)**.
+
+**What it wastes:** the sort. Each tree could hand over its values already in order.
+</Complexity>
+
+## Approach 2: In-order both, then merge (optimal)
+
+Walk each tree in order to get two sorted lists. Then merge them with two pointers, always taking the smaller front value.
+
+<Viz client:visible approach="merge" />
+
+<Complexity time="O(m + n)" space="O(m + n)">
+**Time.** Two walks and one merge: **O(m + n)**.
+
+**Space.** The lists and the answer: **O(m + n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Collect everything, then sort | O((m + n) log(m + n)) | O(m + n) | Sort everything |
+| In-order both, then merge | **O(m + n)** | O(m + n) | Merge two sorted lists |
+
+<GrowthChart client:visible series={growth} caption="Operations for two balanced BSTs with n values in total." />
+
+## Common mistakes
+
+- **Stopping when one list runs out.** The rest of the other list still has to be copied over.
+- **Walking the trees in any order but in-order.** Only in-order gives sorted lists.
+- **Re-sorting after merging.** The merge already produces sorted output.
+
+## Check yourself
+
+<Quiz client:visible title="All Elements in Two Binary Search Trees" questions={questions} />
+
+## Related problems
+
+- [Merge Two Sorted Lists](/dsa/merge-two-sorted-lists/). The same merge on linked lists.
+- [Merge Sorted Array](/dsa/merge-sorted-array/). The same merge, in place.
+- [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/). An in-order walk one value at a time, which can merge without the full lists.

@@ -1,0 +1,84 @@
+---
+title: Minimum Absolute Difference in BST
+leetcode: { number: 530, url: "https://leetcode.com/problems/minimum-absolute-difference-in-bst/" }
+difficulty: Easy
+topics: [BST, Binary tree, DFS]
+added: 2026-11-27
+summary: "Find the smallest gap between any two values in a binary search tree. Goes from comparing every pair to an in-order walk that compares each value only with the one before it."
+insight: "An in-order walk of a BST visits the values in sorted order, and in a sorted list the closest two values are always neighbours. So compare each value with the previous one only."
+reads: [trees-from-scratch, binary-search-trees]
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree. Return the smallest difference between the values of any two different nodes.
+
+For the tree `[40, 20, 70, 10, 30, 60, 90, null, null, 25]` the answer is 5: 20 and 25 are 5 apart, and so are 25 and 30.
+
+## The key question
+
+> **In a sorted list, where can the two closest values be?**
+
+Next to each other. If a value sat between them, it would be closer to both. A BST's in-order walk is that sorted list, so each value only needs comparing with the one just before it.
+
+## Approach 1: Compare every pair
+
+Collect the values and compare every pair, keeping the smallest gap. It ignores that the tree is sorted.
+
+<Viz client:visible approach="pairs" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** n(n − 1)/2 pairs: **O(n²)**.
+
+**Space.** The list of values: **O(n)**.
+
+**What it wastes:** almost every comparison. Only neighbours in sorted order can be the closest pair.
+</Complexity>
+
+## Approach 2: In-order walk, comparing neighbours (optimal)
+
+Walk the tree in order, remembering the previous value. Each new value's gap to the previous one is a candidate.
+
+<Viz client:visible approach="inorder" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each node is visited once: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Compare every pair | O(n²) | O(n) | All pairs |
+| In-order walk, comparing neighbours | **O(n)** | O(h) | Sorted neighbours |
+
+<GrowthChart client:visible series={growth} caption="Operations for a balanced BST of n values." />
+
+## Common mistakes
+
+- **Comparing each node only with its children.** The closest value to a node can be far away in the tree, like a node and the smallest value of its right subtree.
+- **Forgetting the previous value between calls.** It must carry across the whole walk, not reset in each call.
+- **Using abs() and comparing in the wrong order.** In order, each value is bigger than the previous one, so node.val − prev is never negative.
+
+## Check yourself
+
+<Quiz client:visible title="Minimum Absolute Difference in BST" questions={questions} />
+
+## Related problems
+
+- [Kth Smallest Element in a BST](/dsa/kth-smallest-element-in-a-bst/). Another question answered by walking in order.
+- [Validate Binary Search Tree](/dsa/validate-binary-search-tree/). Checking that the in-order walk is increasing.
+- [Find Mode in Binary Search Tree](/dsa/find-mode-in-binary-search-tree/). Neighbours in order, counted instead of subtracted.

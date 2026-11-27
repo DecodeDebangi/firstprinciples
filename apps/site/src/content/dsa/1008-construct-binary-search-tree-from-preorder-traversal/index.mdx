@@ -1,0 +1,84 @@
+---
+title: Construct Binary Search Tree from Preorder Traversal
+leetcode: { number: 1008, url: "https://leetcode.com/problems/construct-binary-search-tree-from-preorder-traversal/" }
+difficulty: Medium
+topics: [BST, Binary tree, Stack]
+added: 2026-11-27
+summary: "Rebuild a binary search tree from its pre-order listing. Goes from inserting the values one by one to a single pass that places each value using an upper bound."
+insight: "Pre-order lists a node, then its whole left subtree (values below it), then its right subtree. Read the list once: a left subtree takes values while they're below its parent, a right subtree while they're below its parent's own bound."
+reads: [trees-from-scratch, binary-search-trees, trees-from-traversals]
+best: { time: "O(n)", space: "O(h)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `preorder` that is the pre-order walk of a binary search tree with distinct values (each node, then its left subtree, then its right subtree). Rebuild the tree and return its root.
+
+For `[8, 5, 1, 7, 10, 12]`: 8 is the root; 5, 1 and 7 are below 8, so they form its left subtree (5 with children 1 and 7); 10 and 12 form the right subtree.
+
+## The key question
+
+> **Where does each subtree's part of the list end?**
+
+At the first value that's too big for it. A left subtree ends at the first value above its parent; a right subtree at the first value above its parent's own limit. Passing that limit down lets each call stop on its own.
+
+## Approach 1: Insert the values one by one
+
+Pre-order puts every node before anything below it, so inserting the values in the given order into an empty BST rebuilds the same tree.
+
+<Viz client:visible approach="insert" />
+
+<Complexity time="O(n²)" space="O(h)">
+**Time.** Each insert walks down from the root; an increasing list makes a chain: **O(n²)** in the worst case.
+
+**Space.** The tree's own height for the walks: **O(h)**.
+
+**What it wastes:** walking down from the root for every value, when the list already says where each one goes.
+</Complexity>
+
+## Approach 2: One pass, with an upper bound (optimal)
+
+Read the list with one index. build(bound) makes a node from the next value if it's below bound, then builds its left subtree with the node's value as the new bound, and its right subtree with the old bound.
+
+<Viz client:visible approach="bounds" />
+
+<Complexity time="O(n)" space="O(h)">
+**Time.** Each value is read once: **O(n)**.
+
+**Space.** The recursion: **O(h)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Insert the values one by one | O(n²) | O(h) | BST inserts |
+| One pass, with an upper bound | **O(n)** | O(h) | An upper bound per subtree |
+
+<GrowthChart client:visible series={growth} caption="Operations for an increasing pre-order (a chain), the worst case for inserting one by one." />
+
+## Common mistakes
+
+- **Passing the node's value as the right subtree's bound.** The right subtree's values are above the node; their limit is the node's own bound.
+- **Searching the list for where the left part ends.** That's O(n) per node; the bound makes each call stop on its own.
+- **Forgetting that the index is shared.** Every call reads from the same position, which moves forward as nodes are made.
+
+## Check yourself
+
+<Quiz client:visible title="Construct Binary Search Tree from Preorder Traversal" questions={questions} />
+
+## Related problems
+
+- [Construct Binary Tree from Preorder and Inorder Traversal](/dsa/construct-binary-tree-from-preorder-and-inorder-traversal/). Without the BST order, a second listing is needed.
+- [Serialize and Deserialize BST](/dsa/serialize-and-deserialize-bst/). Saving a BST as its pre-order.
+- [Validate Binary Search Tree](/dsa/validate-binary-search-tree/). Bounds passed down again.

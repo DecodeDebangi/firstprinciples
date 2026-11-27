@@ -6,6 +6,7 @@ topics: [Sliding window, BST, Hash map]
 added: 2026-11-26
 summary: Decide whether two values at most k positions apart differ by at most t. Goes from comparing each value with the next k, to a sorted window kept in an ordered set (a balanced BST), to buckets of width t + 1 that answer in O(1).
 insight: "Bucket every value by floor(x / (t + 1)). Two values in one bucket always match, and a match can otherwise only be in the bucket on either side, so three lookups settle each value."
+reads: [sliding-window, ordered-sets]
 best: { time: "O(n)", space: "O(k)" }
 study: true
 ---
@@ -105,6 +106,7 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 
 ## Related problems
 
+- [Ordered sets and maps](/concepts/ordered-sets/). Floor, ceiling and what each language calls them.
 - [Contains Duplicate](/dsa/contains-duplicate/). Any repeated value at all, with a set.
 - [Inorder Successor in BST](/dsa/inorder-successor-in-bst/). The lookup an ordered set performs.
 - [Longest Substring Without Repeating Characters](/dsa/longest-substring-without-repeating-characters/). A window with a set inside.

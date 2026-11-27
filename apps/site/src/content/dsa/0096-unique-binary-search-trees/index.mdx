@@ -1,0 +1,84 @@
+---
+title: Unique Binary Search Trees
+leetcode: { number: 96, url: "https://leetcode.com/problems/unique-binary-search-trees/" }
+difficulty: Medium
+topics: [BST, Dynamic programming, Math]
+added: 2026-11-27
+summary: "Count how many differently shaped binary search trees hold the values 1 to n. Goes from trying every root recursively to filling a table of counts by size."
+insight: "With root r, the r − 1 smaller values form the left subtree and the n − r bigger ones the right, independently, so their counts multiply. The count only depends on how many values there are, so compute it for each size once, smallest first."
+reads: [trees-from-scratch, binary-search-trees, memoisation-vs-tabulation]
+best: { time: "O(n²)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Given a whole number `n`, return how many structurally different binary search trees hold exactly the values 1 to n.
+
+For `n = 3` the answer is 5: the root can be 1, 2 or 3, and roots 1 and 3 each allow two shapes below them. For `n = 4` it's 14.
+
+## The key question
+
+> **Once the root is chosen, what's left to decide?**
+
+Only the shapes of the two sides. The values below the root form the left subtree and the values above it the right, and any left shape can go with any right shape. So the count for a root is (shapes of the left values) × (shapes of the right values).
+
+## Approach 1: Try every root, recursively
+
+For each root r, count the shapes of r − 1 values and of n − r values by calling the same function, multiply, and add up over all roots.
+
+<Viz client:visible approach="recursive" />
+
+<Complexity time="O(3ⁿ) about" space="O(n)">
+**Time.** Each call makes calls for every smaller size, again and again: the number of calls roughly triples with each extra value, **exponential**.
+
+**Space.** The recursion goes n deep: **O(n)**.
+
+**What it wastes:** recounting. The shapes of, say, 2 values are counted from scratch every time they're needed.
+</Complexity>
+
+## Approach 2: Fill a table, smallest size first (optimal)
+
+Let c[k] be the number of shapes for k values, with c[0] = c[1] = 1. For each k from 2 to n, add up c[r − 1] × c[k − r] over every root r.
+
+<Viz client:visible approach="table" />
+
+<Complexity time="O(n²)" space="O(n)">
+**Time.** Size k adds k products: about n²/2 in all, **O(n²)**.
+
+**Space.** The table: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Try every root, recursively | O(3ⁿ) about | O(n) | Every root, from scratch |
+| Fill a table, smallest size first | **O(n²)** | O(n) | Count each size once |
+
+<GrowthChart client:visible series={growth} caption="Operations for n values: the recursion grows about 3× per extra value." />
+
+## Common mistakes
+
+- **Making c[0] zero.** An empty side is one shape (the empty tree), so c[0] = 1; otherwise every product with an empty side becomes 0.
+- **Adding the two sides instead of multiplying.** Every left shape pairs with every right shape.
+- **Thinking the actual values matter.** Only how many there are: 1, 2, 3 and 7, 8, 9 give the same shapes.
+
+## Check yourself
+
+<Quiz client:visible title="Unique Binary Search Trees" questions={questions} />
+
+## Related problems
+
+- [Unique Paths](/dsa/unique-paths/). Another count built from smaller counts.
+- [House Robber](/dsa/house-robber/). A one-dimensional table, filled smallest first.
+- [Memoisation vs tabulation](/concepts/memoisation-vs-tabulation/). Why the recursion repeats work, and the two cures.

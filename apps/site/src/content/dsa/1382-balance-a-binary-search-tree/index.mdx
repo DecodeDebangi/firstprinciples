@@ -3,7 +3,7 @@ title: Balance a Binary Search Tree
 leetcode: { number: 1382, url: "https://leetcode.com/problems/balance-a-binary-search-tree/" }
 difficulty: Medium
 topics: [BST, Binary tree, Divide and conquer]
-added: 2026-11-26
+added: 2026-11-27
 summary: "Turn any binary search tree into a height-balanced one with the same values. Goes from re-inserting every value into a self-balancing AVL tree to listing the values in order and rebuilding from the middle."
 insight: "An in-order walk lists a BST's values already sorted. Make the middle value the root and build each half the same way: every node's two sides then differ by at most one value, so the tree is as short as possible."
 reads: [trees-from-scratch, balanced-trees, avl-trees]

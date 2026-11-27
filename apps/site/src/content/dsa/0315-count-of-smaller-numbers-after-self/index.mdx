@@ -3,7 +3,7 @@ title: Count of Smaller Numbers After Self
 leetcode: { number: 315, url: "https://leetcode.com/problems/count-of-smaller-numbers-after-self/" }
 difficulty: Hard
 topics: [Fenwick tree, Tree, Sorting, Binary search]
-added: 2026-11-26
+added: 2026-11-27
 summary: "For each number, count how many later numbers are smaller. Goes from checking every pair to walking from the right and keeping counts of seen values in a Fenwick tree."
 insight: "Walking from the right, 'smaller numbers after me' becomes 'smaller numbers already seen'. Number the values by size, and keep how many of each have been seen in a Fenwick tree, so that count is a prefix total in O(log n)."
 reads: [range-query-trees]

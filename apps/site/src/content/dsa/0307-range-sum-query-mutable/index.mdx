@@ -3,7 +3,7 @@ title: Range Sum Query - Mutable
 leetcode: { number: 307, url: "https://leetcode.com/problems/range-sum-query-mutable/" }
 difficulty: Medium
 topics: [Segment tree, Tree, Design, Prefix sum]
-added: 2026-11-26
+added: 2026-11-27
 summary: "Answer range sums on a list that keeps changing. Goes from prefix sums, which make sums instant but every change slow, to a segment tree, where both take O(log n)."
 insight: "Store the totals of halves, quarters, eighths and so on in a tree. Any range is made of at most about two stored totals per level, and a change touches one total per level."
 reads: [range-query-trees]

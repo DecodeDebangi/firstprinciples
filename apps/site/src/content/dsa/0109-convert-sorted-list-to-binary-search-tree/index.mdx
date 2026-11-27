@@ -1,0 +1,84 @@
+---
+title: Convert Sorted List to Binary Search Tree
+leetcode: { number: 109, url: "https://leetcode.com/problems/convert-sorted-list-to-binary-search-tree/" }
+difficulty: Medium
+topics: [BST, Linked list, Divide and conquer]
+added: 2026-11-27
+summary: "Build a height-balanced BST from a sorted linked list. Goes from walking to the middle of each part with slow and fast pointers to building the tree in in-order while reading the list once."
+insight: "The finished tree's in-order walk is exactly the list's order. So build in in-order: the left part first, then a node from the next list value, then the right part. Positions decide the shape; the list just supplies values one after another."
+reads: [trees-from-scratch, balanced-trees, linked-list-basics]
+best: { time: "O(n)", space: "O(log n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the head of a linked list whose values are in increasing order. Build a **height-balanced** binary search tree with the same values (at every node, the two subtrees' heights differ by at most 1) and return its root.
+
+For the list `1 → 3 → 4 → 6 → 7 → 8 → 10`, one answer has 6 at the root, 3 and 8 below it, and 1, 4, 7, 10 as leaves.
+
+## The key question
+
+> **A linked list can't jump to its middle. Can you build the tree without ever looking for the middle?**
+
+Yes, if you build in the order the list gives you values. In-order (left subtree, node, right subtree) visits a BST smallest first, just like the list. Count the list, decide each node's position by index, and hand out list values as nodes are made.
+
+## Approach 1: Find the middle with slow and fast pointers, every time
+
+As with a sorted array, make the middle value the root and build each half below it. To find a part's middle, walk a slow pointer one step and a fast pointer two steps until the fast one reaches the end.
+
+<Viz client:visible approach="middle" />
+
+<Complexity time="O(n log n)" space="O(log n)">
+**Time.** Each level of the recursion walks over the whole list again to find its middles: about n/2 steps per level, over log n levels: **O(n log n)**.
+
+**Space.** The recursion: **O(log n)**.
+
+**What it wastes:** walks. Every level re-walks the list just to find middles.
+</Complexity>
+
+## Approach 2: Build in in-order, reading the list once (optimal)
+
+Count the list. Then build(lo, hi) builds positions lo to hi: it builds the left part first, then makes a node from the current list value and moves on, then builds the right part. By the time a node is made, the list has reached exactly its value.
+
+<Viz client:visible approach="inorder" />
+
+<Complexity time="O(n)" space="O(log n)">
+**Time.** One pass to count and one to build: **O(n)**.
+
+**Space.** The recursion: **O(log n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Find the middle with slow and fast pointers, every time | O(n log n) | O(log n) | Re-walk to each middle |
+| Build in in-order, reading the list once | **O(n)** | O(log n) | In-order follows the list |
+
+<GrowthChart client:visible series={growth} caption="Operations for a list of n values. Both curves look close at this size, but the slow-and-fast walks add about n/2 per level of the tree." />
+
+## Common mistakes
+
+- **Copying the list into an array.** It works, in O(n) extra memory; the in-order build needs none beyond the recursion.
+- **Making the node before building its left part.** Then the list isn't at the right value yet.
+- **Stopping the slow and fast walk at the list's real end.** Each part has its own end, which must be passed in.
+
+## Check yourself
+
+<Quiz client:visible title="Convert Sorted List to Binary Search Tree" questions={questions} />
+
+## Related problems
+
+- [Convert Sorted Array to Binary Search Tree](/dsa/convert-sorted-array-to-binary-search-tree/). The same task when you can jump to the middle.
+- [Linked List Cycle](/dsa/linked-list-cycle/). Slow and fast pointers again.
+- [Balance a Binary Search Tree](/dsa/balance-a-binary-search-tree/). Rebuilding from sorted values.
