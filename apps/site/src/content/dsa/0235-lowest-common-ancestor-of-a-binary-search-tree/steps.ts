@@ -62,7 +62,51 @@ const split: Approach<Input> = {
   },
 };
 
-export const approaches = { onePass: general.onePass as Approach<Input>, split };
+const splitRec: Approach<Input> = {
+  id: "splitRec",
+  name: "Split point, recursively",
+  code: `function lca(node, p, q)  // lowest common ancestor
+    if node = none
+        return none
+    if p.val < node.val and q.val < node.val
+        return lca(node.left, p, q)  // both left
+    if p.val > node.val and q.val > node.val
+        return lca(node.right, p, q)  // both right
+    return node  // split here, or node is p or q
+`,
+  run({ root: vals, p, q }, t) {
+    const tr = build(vals);
+    const lo = Math.min(p, q), hi = Math.max(p, q);
+    const ids = tr.nodes.filter((n) => n.val === p || n.val === q).map((n) => n.id);
+    const mark = Object.fromEntries(ids.map((k) => [k, "active" as Tone]));
+    const tones: Record<string, Tone> = {}, calls: string[] = [];
+    let id = tr.root, asked = 0;
+    t.step({ line: 1, array: [], trees: viewOf(tr, mark), stack: [], stackTitle: "calls waiting", vars: { p, q },
+      message: `Let the values pick the side: if p (${p}) and q (${q}) are both smaller than the node, the answer is in its left subtree, so ask that subtree; both bigger, ask the right one; otherwise this node is the answer.` });
+    while (id) {
+      const n = tr.by.get(id)!, v = num(n);
+      t.op();
+      calls.push(`lca(${v})`);
+      const where = hi < v ? "left" : lo > v ? "right" : "here";
+      const qz = asked < 2 ? (asked++, { ask: { q: `This call is at ${v}, with p = ${p} and q = ${q}. What does it do?`, options: [`Return lca(node.left, …)`, `Return lca(node.right, …)`, `Return this node, ${v}`], answer: where === "left" ? 0 : where === "right" ? 1 : 2 } }) : {};
+      if (where === "here") {
+        t.step({ ...qz, line: 8, array: [], trees: viewOf(tr, { ...tones, ...mark, [id]: "found" }, { node: id }), stack: [...calls], stackTitle: "calls waiting", vars: { p, q, node: v, returns: v },
+          message: `${lo} ≤ ${v} ≤ ${hi}: ${v === lo || v === hi ? `${v} is one of the two nodes, and the other is below it` : `${lo} is on ${v}'s left and ${hi} on its right`}. This call returns ${v}.` });
+        t.step({ line: 8, array: [], trees: viewOf(tr, { ...tones, ...mark, [id]: "found" }), stack: [], stackTitle: "calls waiting", vars: { p, q, answer: v }, done: "found",
+          message: `${calls.length > 1 ? `Each of the ${calls.length - 1} waiting call${calls.length === 2 ? "" : "s"} just returns what the call below it returned, so ${v} goes straight to the top.` : `The root was the answer, so no calls were waiting.`} Same path and O(h) time as the loop, but those waiting calls take O(h) memory. Because no call does anything after its recursive call, the loop can drop them: that's Approach 3.` });
+        return;
+      }
+      tones[id] = "visited";
+      subtree(tr, where === "left" ? n.right : n.left).forEach((k) => (tones[k] = "discard"));
+      const next = where === "left" ? n.left : n.right;
+      t.step({ ...qz, line: where === "left" ? 5 : 7, array: [], trees: viewOf(tr, { ...tones, ...mark }, { node: next }), stack: [...calls], stackTitle: "calls waiting", vars: { p, q, node: v },
+        message: where === "left" ? `${p} and ${q} are both smaller than ${v}: return whatever lca(${v}'s left child) returns. This call waits for it.` : `${p} and ${q} are both bigger than ${v}: return whatever lca(${v}'s right child) returns. This call waits for it.` });
+      id = next;
+    }
+  },
+};
+
+export const approaches = { onePass: general.onePass as Approach<Input>, splitRec, split };
 
 /** A balanced BST of n nodes; p and q are the two largest values, deep on the right. */
 export const growth = measureGrowth(

@@ -46,9 +46,27 @@ first node that hears from both sides is the answer.
 **What it wastes:** it searches subtrees that the values already rule out.
 </Complexity>
 
-## Approach 2: Walk down to the split point (optimal)
+## Approach 2: Split point, recursively
 
-While both values are smaller than the node, go left; while both are bigger, go right. The first node that isn't on the
+Use the order directly: if `p` and `q` are both smaller than the node, both are in its left subtree, so return whatever
+the left subtree's call returns. Both bigger: the same with the right subtree. Otherwise they split here (or the node is
+one of them), so the node is the answer.
+
+<Viz client:visible approach="splitRec" />
+
+<Complexity time="O(h)" space="O(h)">
+**Time.** One path down: **O(h)**.
+
+**Space.** One waiting call per level: **O(h)**.
+
+**What it wastes:** memory. Each call returns its child's answer unchanged and does nothing after it, so there's nothing
+to come back for.
+</Complexity>
+
+## Approach 3: Walk down to the split point with a loop (optimal)
+
+The same walk as Approach 2 without the waiting calls: a call that only returns another call's answer can become a step
+of a loop. While both values are smaller than the node, go left; while both are bigger, go right. The first node that isn't on the
 same side of both is between them, so it's the lowest common ancestor. The [binary search
 trees](/concepts/binary-search-trees/) read shows more uses of the order.
 
@@ -69,9 +87,13 @@ Race two approaches on the same input. Both share one clock that ticks once per 
 | Approach | Time | Space | Idea |
 |---|---|---|---|
 | General one-pass search | O(n) | O(h) | Works on any tree |
-| Walk to the split point | **O(h)** | **O(1)** | The values pick the side |
+| Split point, recursively | **O(h)** | O(h) | The values pick the side |
+| Split point with a loop | **O(h)** | **O(1)** | Same walk, no waiting calls |
 
 <GrowthChart client:visible series={growth} caption="Operations in a balanced tree of n nodes, with p and q deep on the right." />
+
+The recursive split-point walk takes exactly the same steps as the loop, so its line would sit on top of the loop's.
+They differ only in memory.
 
 ## Common mistakes
 
