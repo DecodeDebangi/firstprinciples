@@ -30,7 +30,7 @@ const sumUp: Approach<TreeInput> = {
     return node.val + left + right
 `,
   run({ root: vals }, t) {
-    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [];
+    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [], waitIds: string[] = [];
     const done = () => Object.fromEntries(Object.keys(notes).map((id) => [id, "settled" as Tone]));
     t.step({ line: 2, array: [], trees: view(tr), stack: [], vars: {},
       message: "Each call answers a question about its own subtree, here \"what do your values add up to?\", using the answers its two children send back. A missing child answers 0." });
@@ -39,7 +39,18 @@ const sumUp: Approach<TreeInput> = {
       if (!id) return 0;
       const n = tr.by.get(id)!;
       stack.push(`sum(${n.val})`);
-      const l = go(n.left), r = go(n.right);
+      // Show the call waiting on its children, so the call stack fills one call at a time.
+      const waitTones = (): Record<string, Tone> => Object.fromEntries(stack.slice(0, -1).map((_, k) => [waitIds[k], "compare" as Tone]));
+      waitIds.push(id);
+      if (n.left || n.right) {
+        const first = (n.left ?? n.right)!, fv = tr.by.get(first)!.val;
+        t.step({ line: n.left ? 4 : 5, array: [], trees: view(tr, { ...done(), ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val },
+          message: `${stack.length === 1 ? `sum(${n.val}) is called. It needs its children's answers before it can return, so it waits on the call stack and calls` : `sum(${n.val}) is called and has to wait too: it calls`} sum(${fv}) for its ${n.left ? "left" : "right"} side${n.left ? "" : " (its left side is empty)"}.` });
+      }
+      const l = go(n.left);
+      if (n.left && n.right) t.step({ line: 5, array: [], trees: view(tr, { ...done(), ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val, left: String(l) },
+        message: `Back in sum(${n.val}): its left side answered ${String(l)}. Now it calls sum(${tr.by.get(n.right)!.val}) for its right side.` });
+      const r = go(n.right);
       t.op();
       const s = Number(n.val) + l + r;
       const opts = [...new Set([s, l + r, n.val].map(String))];
@@ -48,6 +59,7 @@ const sumUp: Approach<TreeInput> = {
       t.step({ ...ask, line: 6, array: [], trees: view(tr, { ...done(), [id]: "found" }, notes, id), stack: [...stack], vars: { node: n.val, left: l, right: r },
         message: isLeaf(n) ? `${n.val} is a leaf: both children answer 0, so it returns ${n.val}.` : `At ${n.val}: left sends ${l}, right sends ${r}. Return ${n.val} + ${l} + ${r} = ${s}.` });
       stack.pop();
+      waitIds.pop();
       return s;
     };
     const ans = go(tr.root);

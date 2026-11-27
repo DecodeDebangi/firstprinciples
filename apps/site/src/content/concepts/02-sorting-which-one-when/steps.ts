@@ -151,7 +151,12 @@ const merge: Approach<Input> = {
       if (hi - lo <= 1) return;
       const mid = (lo + hi) >> 1;
       stack.push(`sort[${lo}:${hi}]`);
+      const part = (x: number, y: number) => `[${a.slice(x, y).join(", ")}]`;
+      t.step({ line: 6, array: [...a], range: [lo, hi - 1], tones: { ...span(lo, mid - 1, "side-a"), ...span(mid, hi - 1, "side-b") }, stack: [...stack], vars: { lo, mid, hi },
+        message: `${stack.length === 1 ? "Sort the whole list: " : `sort[${lo}:${hi}] is called: `}split ${part(lo, hi)} at ${mid} into ${part(lo, mid)} and ${part(mid, hi)}. It waits on the call stack while the left half is sorted first.` });
       go(lo, mid);
+      if (hi - mid > 1) t.step({ line: 7, array: [...a], range: [lo, hi - 1], tones: { ...span(lo, mid - 1, "found"), ...span(mid, hi - 1, "side-b") }, stack: [...stack], vars: { lo, mid, hi },
+        message: `Back in sort[${lo}:${hi}]: the left half is now ${part(lo, mid)}. Next, sort the right half ${part(mid, hi)}.` });
       go(mid, hi);
       const L = a.slice(lo, mid), R = a.slice(mid, hi), out: number[] = [];
       let i = 0, j = 0;

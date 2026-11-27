@@ -67,7 +67,7 @@ const once: Approach<Input> = {
     return best
 `,
   run({ root: vals }, t) {
-    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [];
+    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [], waiting: string[] = [];
     let best = 0, bestAt = tr.root!, asked = false;
     const done = () => Object.fromEntries(Object.keys(notes).map((x) => [x, "settled" as Tone]));
     t.step({ line: 2, array: [], trees: view(tr), stack: [], vars: { best },
@@ -76,7 +76,20 @@ const once: Approach<Input> = {
       if (!id) return 0;
       const n = tr.by.get(id)!;
       stack.push(`height(${n.val})`);
-      const l = go(n.left), r = go(n.right);
+      waiting.push(id);
+      const waitTones = () => Object.fromEntries(waiting.map((x) => [x, "compare" as Tone]));
+      // A call that has children can't answer yet: show it waiting, and the call it makes next.
+      if (n.left || n.right) {
+        const first = n.left ?? n.right!;
+        t.step({ line: n.left ? 6 : 7, array: [], trees: view(tr, { ...done(), ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val, best },
+          message: `${stack.length === 1 ? `height(${n.val}) is called. It can't answer until it knows its children's heights, so it waits on the call stack and calls` : `height(${n.val}) is called and has to wait too: it calls`} height(${tr.by.get(first)!.val}) for its ${n.left ? "left" : "right"} side${n.left ? "" : " (its left side is empty: height 0)"}.` });
+      }
+      const l = go(n.left);
+      if (n.left && n.right) {
+        t.step({ line: 7, array: [], trees: view(tr, { ...done(), ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val, left: l, best },
+          message: `Back in height(${n.val}): its left side has height ${l}. Now it calls height(${tr.by.get(n.right)!.val}) for its right side.` });
+      }
+      const r = go(n.right);
       t.op();
       const before = best;
       if (l + r > best) { best = l + r; bestAt = id; }
@@ -84,9 +97,10 @@ const once: Approach<Input> = {
       notes[id] = `h${ret}`;
       const opts = [...new Set([ret, l + r, Math.max(l, r)].map(String))];
       const ask = !asked && n.left && n.right && opts.length > 1 ? (asked = true, { ask: { q: `At ${n.val}: left height ${l}, right height ${r}. What does it return to its parent?`, options: opts, answer: 0 } }) : {};
-      t.step({ ...ask, line: best > before ? 8 : 9, array: [], trees: view(tr, { ...done(), [id]: "found" }, notes, id), stack: [...stack], vars: { node: n.val, left: l, right: r, best },
-        message: isLeaf(n) ? `${n.val} is a leaf: height 1, and a path bending here has 0 edges.` : `At ${n.val}: a path bending here has ${l} + ${r} = ${l + r} edge${l + r === 1 ? "" : "s"}${best > before ? `, a new best` : `, not more than ${best}`}. Return height 1 + max(${l}, ${r}) = ${ret}.` });
+      t.step({ ...ask, line: best > before ? 8 : 9, array: [], trees: view(tr, { ...done(), ...waitTones(), [id]: "found" }, notes, id), stack: [...stack], vars: { node: n.val, left: l, right: r, best },
+        message: isLeaf(n) ? `height(${n.val}): ${n.val} is a leaf, so both sides are 0. It returns 1, and a path bending here has 0 edges. Its call leaves the stack.` : `At ${n.val}: a path bending here has ${l} + ${r} = ${l + r} edge${l + r === 1 ? "" : "s"}${best > before ? `, a new best` : `, not more than ${best}`}. Return height 1 + max(${l}, ${r}) = ${ret}.` });
       stack.pop();
+      waiting.pop();
       return ret;
     };
     go(tr.root);

@@ -67,7 +67,7 @@ const onePass: Approach<Input> = {
     return left if left ≠ none, else right
 `,
   run({ root: vals, p, q }, t) {
-    const tr = build(vals), notes: Record<string, string> = {}, tones: Record<string, Tone> = {}, stack: string[] = [];
+    const tr = build(vals), notes: Record<string, string> = {}, tones: Record<string, Tone> = {}, stack: string[] = [], waitIds: string[] = [];
     t.step({ line: 2, array: [], trees: view(tr), stack: [], vars: { p, q },
       message: `Each call reports up what it found in its subtree: ${p} or ${q} if it found one, the answer if it found both, or nothing. The first node to hear about both from different sides is the answer.` });
     let asked = false;
@@ -82,7 +82,18 @@ const onePass: Approach<Input> = {
         return id;
       }
       stack.push(`lca(${n.val})`);
-      const l = go(n.left), r = go(n.right);
+      // Show the call waiting on its children, so the call stack fills one call at a time.
+      const waitTones = (): Record<string, Tone> => Object.fromEntries(stack.slice(0, -1).map((_, k) => [waitIds[k], "compare" as Tone]));
+      waitIds.push(id);
+      if (n.left || n.right) {
+        const first = (n.left ?? n.right)!, fv = tr.by.get(first)!.val;
+        t.step({ line: n.left ? 4 : 5, array: [], trees: view(tr, { ...{ ...tones }, ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val },
+          message: `${stack.length === 1 ? `lca(${n.val}) is called. It needs its children's answers before it can return, so it waits on the call stack and calls` : `lca(${n.val}) is called and has to wait too: it calls`} lca(${fv}) for its ${n.left ? "left" : "right"} side${n.left ? "" : " (its left side is empty)"}.` });
+      }
+      const l = go(n.left);
+      if (n.left && n.right) t.step({ line: 5, array: [], trees: view(tr, { ...{ ...tones }, ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val, left: (l ? String(tr.by.get(l)!.val) : "nothing") },
+        message: `Back in lca(${n.val}): its left side answered ${(l ? String(tr.by.get(l)!.val) : "nothing")}. Now it calls lca(${tr.by.get(n.right)!.val}) for its right side.` });
+      const r = go(n.right);
       const ret = l && r ? id : l ?? r;
       const nm = (x: string | null) => (x ? String(tr.by.get(x)!.val) : "nothing");
       const both = !!(l && r);
@@ -92,6 +103,7 @@ const onePass: Approach<Input> = {
       t.step({ ...(ask.ask && ask.ask.options.length > 1 ? ask : {}), line: both ? 7 : 8, array: [], trees: view(tr, { ...tones, [id]: both ? "found" : "active" }, notes, id), stack: [...stack], vars: { node: n.val, left: nm(l), right: nm(r) },
         message: both ? `At ${n.val}: one target was found on each side, so ${n.val} is the lowest node above both. Report ${n.val}.` : ret ? `At ${n.val}: only one side found something (${nm(ret)}). Pass it up.` : `At ${n.val}: neither side found anything. Report nothing.` });
       stack.pop();
+      waitIds.pop();
       return ret;
     };
     const ans = go(tr.root)!;

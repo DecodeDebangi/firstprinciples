@@ -61,7 +61,7 @@ function check(node)  // height, or -1 if unbalanced
     return 1 + max(l, r)
 `,
   run({ root: vals }, t) {
-    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [];
+    const tr = build(vals), notes: Record<string, string> = {}, stack: string[] = [], waitIds: string[] = [];
     let asked = false;
     const tones: Record<string, Tone> = {};
     t.step({ line: 2, array: [], trees: view(tr), stack: [], vars: {},
@@ -70,7 +70,18 @@ function check(node)  // height, or -1 if unbalanced
       if (!id) return 0;
       const n = tr.by.get(id)!;
       stack.push(`check(${n.val})`);
-      const l = go(n.left), r = go(n.right);
+      // Show the call waiting on its children, so the call stack fills one call at a time.
+      const waitTones = (): Record<string, Tone> => Object.fromEntries(stack.slice(0, -1).map((_, k) => [waitIds[k], "compare" as Tone]));
+      waitIds.push(id);
+      if (n.left || n.right) {
+        const first = (n.left ?? n.right)!, fv = tr.by.get(first)!.val;
+        t.step({ line: n.left ? 6 : 7, array: [], trees: view(tr, { ...{ ...tones }, ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val },
+          message: `${stack.length === 1 ? `check(${n.val}) is called. It needs its children's answers before it can return, so it waits on the call stack and calls` : `check(${n.val}) is called and has to wait too: it calls`} check(${fv}) for its ${n.left ? "left" : "right"} side${n.left ? "" : " (its left side is empty)"}.` });
+      }
+      const l = go(n.left);
+      if (n.left && n.right) t.step({ line: 7, array: [], trees: view(tr, { ...{ ...tones }, ...waitTones(), [id]: "active" }, notes, id), stack: [...stack], vars: { node: n.val, left: String(l) },
+        message: `Back in check(${n.val}): its left side answered ${String(l)}. Now it calls check(${tr.by.get(n.right)!.val}) for its right side.` });
+      const r = go(n.right);
       t.op();
       const childBad = l === -1 || r === -1, gap = !childBad && Math.abs(l - r) > 1;
       const ret = childBad || gap ? -1 : 1 + Math.max(l, r);
@@ -81,6 +92,7 @@ function check(node)  // height, or -1 if unbalanced
       t.step({ ...ask, line: ret === -1 ? 9 : 10, array: [], trees: view(tr, { ...tones, [id]: ret === -1 ? "miss" : "found" }, notes, id), stack: [...stack], vars: { node: n.val, left: l, right: r, returns: ret },
         message: childBad ? `At ${n.val}: a child returned −1, so pass −1 up without comparing anything.` : gap ? `At ${n.val}: heights ${l} and ${r} differ by ${Math.abs(l - r)}. Unbalanced: return −1.` : isLeaf(n) ? `${n.val} is a leaf: height 1.` : `At ${n.val}: heights ${l} and ${r} differ by at most 1. Return height ${ret}.` });
       stack.pop();
+      waitIds.pop();
       return ret;
     };
     const res = go(tr.root) !== -1;
