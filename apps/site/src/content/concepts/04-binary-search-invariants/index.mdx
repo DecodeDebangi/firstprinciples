@@ -3,13 +3,40 @@ title: "Binary search invariants: avoiding off-by-one bugs"
 topic: Binary search
 kind: Explainer
 order: 1
-summary: Why binary search is easy to describe and easy to get wrong, the one idea (an invariant) that makes it correct every time, two templates that never go wrong, and a one-character bug that loops forever.
+summary: What binary search is and why it needs only about log₂ n looks, then why it's easy to get wrong, the one idea (an invariant) that makes it correct every time, two templates that never go wrong, and a one-character bug that loops forever.
 added: 2026-11-13
 ---
-import Viz from "./Viz.tsx";
+import Viz, { Race } from "./Viz.tsx";
 import { Quiz } from "@firstprinciples/ui";
 import QA from "../../../components/QA.astro";
 import { questions } from "./quiz";
+
+## The idea: halve what's left
+
+Think of a number from 1 to 100 and have someone guess it, telling them only "higher" or "lower". A good guesser starts
+at 50: whatever the answer, half the numbers are ruled out in one go. Then 25 or 75, and so on. They never need more
+than 7 guesses.
+
+**Binary search** does the same with a **sorted** list. Look at the middle item. If it's the target, you're done. If the
+target is bigger, it can only be to the right of the middle, so throw away the left half; if it's smaller, throw away
+the right half. Each look halves what's left.
+
+The list must be sorted: that's what makes "bigger, so it's to the right" true. On an unsorted list, the middle item
+says nothing about where the target is.
+
+| Items | Checking each one (worst case) | Binary search (worst case) |
+|---|---|---|
+| 10 | 10 | 4 |
+| 1,000 | 1,000 | 10 |
+| 1,000,000 | 1,000,000 | 20 |
+| 1,000,000,000 | 1,000,000,000 | 30 |
+
+Halving a million down to one item takes only 20 halvings, because 2²⁰ is about a million. That's **O(log n)**. Race the
+two below, on the same sorted list; press Run with a bigger list to see the gap grow.
+
+<Race client:visible />
+
+The rest of this read is about writing it correctly, which is harder than the idea.
 
 ## Why it's easy to get wrong
 
