@@ -1,0 +1,87 @@
+---
+title: Range Sum Query - Mutable
+leetcode: { number: 307, url: "https://leetcode.com/problems/range-sum-query-mutable/" }
+difficulty: Medium
+topics: [Segment tree, Tree, Design, Prefix sum]
+added: 2026-11-26
+summary: "Answer range sums on a list that keeps changing. Goes from prefix sums, which make sums instant but every change slow, to a segment tree, where both take O(log n)."
+insight: "Store the totals of halves, quarters, eighths and so on in a tree. Any range is made of at most about two stored totals per level, and a change touches one total per level."
+reads: [range-query-trees]
+best: { time: "O(log n) per operation", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Build a class around a list `nums` that supports two operations, called many times in any mix:
+
+- `update(i, val)`: change `nums[i]` to `val`.
+- `sumRange(l, r)`: return the total of `nums[l..r]`, both ends included.
+
+In the animation, write the operations as `sum l r` and `set i v`. For `nums = [3, 1, 4, 1, 5, 9, 2, 6]`, `sum 1 5` is 20; after `set 3 7` the same sum is 26.
+
+## The key question
+
+> **What can you store so that both a change and a range total touch only a few numbers?**
+
+Totals of fixed blocks that nest: the whole list, each half, each quarter, and so on. A range is covered by a few of these blocks, and a change only affects the blocks containing its position, one per level.
+
+## Approach 1: Prefix sums, rebuilt after each set
+
+Keep `pre[k]`, the total of the first k values. A range sum is `pre[r + 1] − pre[l]`, one subtraction. But changing one value changes every total after it.
+
+<Viz client:visible approach="prefix" />
+
+<Complexity time="O(n) per set" space="O(n)">
+**Time.** `sumRange` is O(1). `update` fixes up to n totals: **O(n)**.
+
+**Space.** The prefix list: **O(n)**.
+
+**What it wastes:** work on every set. Each total covers everything before it, so one change spreads to all later totals.
+</Complexity>
+
+## Approach 2: Segment tree: totals for halves, quarters, … (optimal)
+
+Build a tree where each node holds the total of a stretch of positions: the root covers everything, each child half its parent's stretch. For a sum, use the total of every node that fits completely inside the range and skip nodes outside it. For a set, fix the leaf and every total on the way back up.
+
+<Viz client:visible approach="segment" />
+
+<Complexity time="O(log n) per operation" space="O(n)">
+**Time.** The tree is about log₂ n levels tall, and both operations touch at most a few nodes per level: **O(log n)** each. Building it is O(n).
+
+**Space.** About 2n nodes: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Prefix sums, rebuilt after each set | O(n) per set | O(n) | Fast sums, slow sets |
+| Segment tree: totals for halves, quarters, … | **O(log n) per operation** | O(n) | Nested block totals |
+
+<GrowthChart client:visible series={growth} caption="Operations for n values followed by n operations, half sets and half sums." />
+
+## Common mistakes
+
+- **Going into children of a node that's completely inside the range.** Its total already covers them; stop there, or the query becomes O(n).
+- **Updating only the leaf.** Every total above it includes the old value; recompute them on the way back up.
+- **Rebuilding the prefix sums from scratch on each set.** Even done well, prefix sums can't make sets faster than O(n).
+
+## Check yourself
+
+<Quiz client:visible title="Range Sum Query - Mutable" questions={questions} />
+
+## Related problems
+
+- [Segment trees and Fenwick trees](/concepts/range-query-trees/). The same operations with a Fenwick tree, side by side.
+- [Count of Smaller Numbers After Self](/dsa/count-of-smaller-numbers-after-self/). Counting with a Fenwick tree.
+- [Range Sum Query - Immutable](/dsa/range-sum-query-immutable/). Without changes, prefix sums alone are best.

@@ -1,0 +1,123 @@
+---
+title: "Segment trees and Fenwick trees: range totals that stay fast under changes"
+topic: Trees
+kind: Explainer
+order: 10
+summary: Prefix sums answer any range total in one step, until a value changes and every total after it has to be fixed. Segment trees and Fenwick trees store totals for nested blocks instead, so both a change and a range total take O(log n). How each one works, and which to pick.
+added: 2026-11-27
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./growth";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+Some problems ask two things of a list, over and over, in any order: **change one value**, and **add up a range**
+of positions. Each is easy alone. Doing both fast is the problem, and two structures built from trees solve it.
+
+The animations here take a list and a few operations: `sum l r` adds up positions `l` to `r`, and `set i v` changes
+position `i` to `v`. Try your own in the boxes under each one.
+
+## The trade-off with prefix sums
+
+[Prefix sums](/concepts/prefix-sums/) store `pre[k]`, the total of the first `k` values. A range total is then one
+subtraction, `pre[r + 1] − pre[l]`. But every `pre[k]` after a changed position includes the old value, so a change
+means fixing up to `n` totals.
+
+<Viz client:visible approach="prefix" />
+
+Keeping the plain list has the opposite problem: a change is one step, but a sum walks the whole range. Either way,
+one of the two operations is O(n). The fix is to store totals that each cover **some** of the list, so a change only
+touches a few of them and a range is made of a few of them.
+
+## Segment trees: totals for halves, quarters, eighths…
+
+A **segment tree** is a binary tree where each node holds the total of a stretch of positions. The root covers the
+whole list, its children each cover half, their children a quarter, down to leaves that cover one position each. The
+small label under each node in the animation is its stretch.
+
+- **A range total** starts at the root. A node completely **inside** the range contributes its total and stops; one
+  completely **outside** contributes 0 and stops; one that's partly inside asks both children. At most about two
+  nodes per level end up used.
+- **A change** fixes the leaf, then recomputes each total on the way back up: one node per level.
+
+<Viz client:visible approach="segment" />
+
+The tree is about log₂ n levels tall, so both operations are **O(log n)**. It has about `2n` nodes. The same shape
+works for any way of combining two halves where the combined answer comes from the halves' answers: the minimum,
+the maximum, a greatest common divisor, a count.
+
+## Fenwick trees: the same speed in one list
+
+A **Fenwick tree** (also called a binary indexed tree) stores the totals in a plain list, `tree[1..n]`, with positions
+counted from 1. `tree[k]` holds the total of a stretch that **ends** at position `k` and is `lowbit(k)` long, where
+`lowbit(k)` is the value of k's last 1 bit:
+
+| k | binary | lowbit(k) | tree[k] covers |
+|---|---|---|---|
+| 5 | 101 | 1 | 5 |
+| 6 | 110 | 2 | 5–6 |
+| 8 | 1000 | 8 | 1–8 |
+| 12 | 1100 | 4 | 9–12 |
+
+- **The total of the first `k` values** adds `tree[k]`, then jumps to `k − lowbit(k)`, the position just before that
+  stretch, and repeats until 0. Each jump clears one 1 bit, so there are at most log₂ n jumps.
+- **A change at position `k`** adds the difference to `tree[k]`, then jumps to `k + lowbit(k)`, the next stretch that
+  reaches back over `k`, until past the end.
+- **A range total** is the total of the first `r + 1` values minus the total of the first `l`.
+
+<Viz client:visible approach="fenwick" />
+
+In code, `lowbit(k)` is `k & −k`: in a number and its negative, the last 1 bit is the only bit that is 1 in both.
+
+## Racing all three
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Operations for n values followed by n operations, half sets and half sums." />
+
+## Which one to use
+
+| | Prefix sums | Segment tree | Fenwick tree |
+|---|---|---|---|
+| Change one value | O(n) | O(log n) | O(log n) |
+| Range total | O(1) | O(log n) | O(log n) |
+| Memory | n | about 2n nodes | n |
+| Works for min or max | No | Yes | Not for any range |
+| Code | 3 lines | 25 lines | 10 lines |
+
+- The list **never changes**: prefix sums.
+- **Sums or counts** with changes: a Fenwick tree. It's short and quick to write in an interview. It also counts
+  things: [Count of Smaller Numbers After Self](/dsa/count-of-smaller-numbers-after-self/) keeps how many of each
+  value have been seen.
+- **Minimums, maximums**, or anything a subtraction can't undo: a segment tree. A Fenwick tree gets a range by
+  subtracting two prefixes, which can't work for a minimum.
+
+Problems: [Range Sum Query - Mutable](/dsa/range-sum-query-mutable/) and [Count of Smaller Numbers After
+Self](/dsa/count-of-smaller-numbers-after-self/).
+
+## Interview theory
+
+<QA q="How do you answer range sums on an array that also gets point updates?">
+A segment tree or a Fenwick tree: O(log n) per update and per query, O(n) to build. Prefix sums make updates O(n).
+</QA>
+
+<QA q="How does a segment tree answer a range query in O(log n)?">
+Starting at the root, nodes fully inside the range return their stored total and nodes fully outside return nothing;
+only nodes that overlap the range's edges recurse. At most about two nodes per level are used.
+</QA>
+
+<QA q="What does tree[k] hold in a Fenwick tree?">
+The total of the lowbit(k) positions ending at k, where lowbit(k) = k & −k is k's last 1 bit. A prefix query jumps
+k ← k − lowbit(k); an update jumps k ← k + lowbit(k).
+</QA>
+
+<QA q="Segment tree or Fenwick tree?">
+Fenwick for sums and counts: less code and memory. Segment tree when the combine step can't be undone by subtraction
+(min, max, gcd) or when whole ranges are updated at once (with lazy propagation: a node records a pending change and passes it to its
+children only when a later operation goes below it).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

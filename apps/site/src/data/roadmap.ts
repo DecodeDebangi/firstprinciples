@@ -50,7 +50,7 @@ export const roadmap: RoadmapStep[] = [
   {
     title: "Recursion and structure",
     topics: [
-      { name: "Trees", blurb: "Solve the left and right halves, then combine.", tags: ["Tree", "Binary tree", "BST"] },
+      { name: "Trees", blurb: "Solve the left and right halves, then combine.", tags: ["Tree", "Binary tree", "BST", "Segment tree", "Fenwick tree"] },
       { name: "Tries", blurb: "Store words letter by letter, so shared beginnings are stored once.", tags: ["Trie"] },
       { name: "Heaps", blurb: "Always know the smallest or largest so far.", tags: ["Heap", "Priority queue"] },
       { name: "Backtracking", blurb: "Try a choice, recurse, then undo it.", tags: ["Backtracking", "Recursion"] },

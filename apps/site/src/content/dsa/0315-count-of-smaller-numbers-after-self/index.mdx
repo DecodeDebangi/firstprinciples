@@ -1,0 +1,84 @@
+---
+title: Count of Smaller Numbers After Self
+leetcode: { number: 315, url: "https://leetcode.com/problems/count-of-smaller-numbers-after-self/" }
+difficulty: Hard
+topics: [Fenwick tree, Tree, Sorting, Binary search]
+added: 2026-11-26
+summary: "For each number, count how many later numbers are smaller. Goes from checking every pair to walking from the right and keeping counts of seen values in a Fenwick tree."
+insight: "Walking from the right, 'smaller numbers after me' becomes 'smaller numbers already seen'. Number the values by size, and keep how many of each have been seen in a Fenwick tree, so that count is a prefix total in O(log n)."
+reads: [range-query-trees]
+best: { time: "O(n log n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list `nums`. Return a list `out` of the same length, where `out[i]` is how many numbers to the right of position `i` are strictly smaller than `nums[i]`.
+
+For `nums = [4, 9, 2, 7, 2, 5, 1]` the answer is `[3, 5, 1, 3, 1, 1, 0]`. For example, after 7 come 2, 5 and 1, all smaller, so its count is 3.
+
+## The key question
+
+> **If you walk from the right, what does "smaller numbers after me" become?**
+
+"Smaller numbers I've already seen." That's a running count by value: how many seen values have a smaller rank. A Fenwick tree answers that prefix count, and takes each new value, in O(log n).
+
+## Approach 1: Check every later number
+
+For each position, look at every position after it and count the smaller values.
+
+<Viz client:visible approach="brute" />
+
+<Complexity time="O(n²)" space="O(1)">
+**Time.** Every pair is compared once: n(n − 1)/2 checks, **O(n²)**.
+
+**Space.** Only the answer list: **O(1)** extra.
+
+**What it wastes:** comparisons repeated across positions. Each number re-scans the same tail the previous one already scanned.
+</Complexity>
+
+## Approach 2: Walk right to left, counting with a Fenwick tree (optimal)
+
+Sort the distinct values and give each a rank from 1. Walk from the right. For each number, its answer is how many seen values have a smaller rank: a prefix total in the Fenwick tree. Then add 1 at its own rank.
+
+<Viz client:visible approach="fenwick" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** Sorting is O(n log n), then each number does one prefix and one add of O(log n): **O(n log n)**.
+
+**Space.** The ranks and the tree: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every later number | O(n²) | O(1) | Every pair |
+| Walk right to left, counting with a Fenwick tree | **O(n log n)** | O(n) | Count seen values by rank |
+
+<GrowthChart client:visible series={growth} caption="Operations for n distinct numbers in a scrambled order." />
+
+## Common mistakes
+
+- **Counting equal values as smaller.** Ask for the prefix up to rank − 1, not rank.
+- **Walking left to right.** Then the counts describe numbers before each position, not after.
+- **Using the values themselves as positions.** Values can be negative or huge; ranks keep the tree as small as the number of distinct values.
+
+## Check yourself
+
+<Quiz client:visible title="Count of Smaller Numbers After Self" questions={questions} />
+
+## Related problems
+
+- [Segment trees and Fenwick trees](/concepts/range-query-trees/). How the Fenwick tree's jumps work.
+- [Range Sum Query - Mutable](/dsa/range-sum-query-mutable/). Range totals under changes.
+- [Sorting algorithms: which one when](/concepts/sorting-which-one-when/). Merge sort, which can also count these pairs while merging.

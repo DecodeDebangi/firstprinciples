@@ -65,6 +65,7 @@ equal.
 | `abs(x)` | The size of `x` without its sign: `abs(-4)` and `abs(4)` are both 4. |
 | `B^k` | `B` multiplied by itself `k` times: `31^2` is 961. `B^0` is 1. |
 | `a & b`, `a \| b` | Bitwise AND and OR: compare two numbers bit by bit. `&` gives 1 where both bits are 1; `\|` gives 1 where either is. `6 & 3` is 2. |
+| `k & −k` | The value of `k`'s last 1 bit: `12 & −12` is 4, because 12 is 1100 in binary. (In a number and its negative, that is the only bit that is 1 in both.) |
 | `a xor b` | Bitwise XOR: 1 where exactly one of the two bits is 1. `x xor x` is 0, and `x xor 0` is `x`. |
 | `~x` | Bitwise NOT: flip every bit of `x`. |
 | `x << k`, `x >> k` | Shift the bits `k` places left (the same as × 2^k) or right (÷ 2^k, rounding down). `5 << 1` is 10. |
