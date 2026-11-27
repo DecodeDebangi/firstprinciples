@@ -86,7 +86,8 @@ enough to fit a phone (lines under about 36 characters, 4-space indents).
 
 Trees: use the `"tree"` input kind (LeetCode's level order with `null`), build with `treeFromLevelOrder`, and
 draw with `trees: [{ root, nodes, tones, notes, pointers }]` on a step. For a recursion's call tree, set
-`layout: "compact"` (columns only for leaves, parents centred), which is far narrower than the default in-order layout. If an approach changes the tree, snapshot
+`layout: "compact"` (columns only for leaves, parents centred), which is far narrower than the default in-order layout. `threads: [[from, to]]` draws temporary extra links as
+dashed curves (Morris traversal's borrowed pointers) without changing the layout. If an approach changes the tree, snapshot
 the nodes for every step (`nodes.map((n) => ({ ...n }))`). Linked lists use `lists`, 2D answers use `grid` (optional
 `rowLabels`/`colLabels` draw headers; empty-string cells are invisible, which suits triangular tables; `dense: true`
 narrows the cells, e.g. for a timeline).
@@ -105,6 +106,10 @@ Values that are compared by size (temperatures, heights, prices) can be drawn as
 under them, and `pile` is a stack drawn as blocks as wide as their value (bar indexes, bottom first). A block keeps its
 identity, so it slides from its bar into the pile and down into its answer. Keep `array` (and its tones) on the same
 step: the race lanes still draw cells. Mark key moments with `key: true`; study mode shows them on the slider.
+
+**Read first:** `reads: [trees-from-scratch, balanced-trees]` in a problem's frontmatter lists the reads (concept ids)
+shown under "New to this?", most useful first; keep it to two to four. Without it the page shows up to three reads
+from the problem's topics, its main topic first.
 
 **Study mode (pilot, Daily Temperatures):** `study: true` in a problem's frontmatter adds the lesson path beside the
 article (sections that tick themselves off), and `<ArrayPlayer study … />` in its `Viz.tsx` starts with predict mode on
