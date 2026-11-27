@@ -1,0 +1,84 @@
+---
+title: Prefix and Suffix Search
+leetcode: { number: 745, url: "https://leetcode.com/problems/prefix-and-suffix-search/" }
+difficulty: Hard
+topics: [Trie, Design, String, Hash map]
+added: 2026-11-27
+summary: "Answer queries for the largest index of a word with a given beginning and ending. Goes from checking every word on each query to one trie of ending#word keys, where both conditions become a single prefix walk."
+insight: "For every word, store keys made of one of its endings, a #, then the whole word, keeping the largest index on each node. A query with prefix p and suffix s is then one walk of s#p."
+reads: [tries, reversed-tries]
+best: { time: "O(L) per query", space: "O(n · L²)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+Design a class built from a list of `words`. Its query `f(pref, suff)` returns the largest index of a word that starts with `pref` and ends with `suff`, or −1 if there is none.
+
+In the animation, write queries as `prefix suffix`. For the words `ape, apple, maple`: `ap e` gives 1 (both ape and apple fit; apple is later), `ma le` gives 2, and `a x` gives −1.
+
+## The key question
+
+> **A trie follows a word from its beginning. How can one walk check its beginning and its ending?**
+
+Change what's stored so both appear at the front. A key like "le#maple" starts with an ending, then the whole word, so "le#ma" is a prefix of it exactly when maple ends with le and starts with ma.
+
+## Approach 1: Check every word, from the last
+
+For each query, look at the words from the last one back, and return the first that starts with the prefix and ends with the suffix.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n · L) per query" space="O(1) extra">
+**Time.** A query may check every word, comparing up to L letters at each end: **O(n · L)**.
+
+**Space.** Nothing beyond the words: **O(1)**.
+
+**What it wastes:** rechecking all the words on every query.
+</Complexity>
+
+## Approach 2: One trie of suffix#word keys (optimal)
+
+For each word w at index i, and each of its endings e (including the empty one), insert the key e + "#" + w, writing i on every node along the way. Later words overwrite, so each node holds the largest index. A query walks suff + "#" + pref and returns the index there.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(L) per query" space="O(n · L²)">
+**Time.** Building inserts L + 1 keys of up to 2L + 1 letters per word: O(L²). Each query is one walk: **O(L)**.
+
+**Space.** All those keys: **O(n · L²)** letters.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every word, from the last | O(n · L) per query | O(1) extra | Check every word |
+| One trie of suffix#word keys | **O(L) per query** | O(n · L²) | Ending first, then the word |
+
+<GrowthChart client:visible series={growth} caption="Operations for n three-letter words and n queries that match nothing." />
+
+## Common mistakes
+
+- **Walking pref#suff.** The key starts with the ending, so the walk is suff + "#" + pref.
+- **Keeping the first index instead of the largest.** Insert in order and overwrite, so later words win.
+- **Forgetting the empty ending.** Without "#word", nothing would answer an empty suffix.
+
+## Check yourself
+
+<Quiz client:visible title="Prefix and Suffix Search" questions={questions} />
+
+## Related problems
+
+- [Stream of Characters](/dsa/stream-of-characters/). Endings handled with a reversed trie.
+- [Map Sum Pairs](/dsa/map-sum-pairs/). Another value kept on every trie node.
+- [Reversed tries](/concepts/reversed-tries/). Endings, and both ends at once.

@@ -1,0 +1,60 @@
+---
+title: "Reversed tries: asking about word endings"
+topic: Tries
+kind: Explainer
+order: 3
+summary: A trie is built for questions about how words begin. Store the words backwards and the same trie answers questions about how they end, like whether a word ends where a stream of letters has got to, or which words are endings of others. With the key trick that handles a beginning and an ending at once.
+added: 2026-11-27
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+A [trie](/concepts/tries/) is fast at one kind of question: which words **begin** with these letters? Some problems
+ask about **endings** instead. The fix is to turn them around: write every word backwards before inserting it. A
+word's ending is then the beginning of its reversed form, and the ordinary trie walk answers the question.
+
+## Does a word end here?
+
+Letters arrive one at a time, and after each one you must say whether some word ends exactly at the latest letter.
+Read the letters so far **backwards**, newest first, through a trie of reversed words. Reaching a ✓ means a word ends
+here; falling off the trie means none does. The walk never reads more letters than the longest word has.
+
+<Viz client:visible approach="stream" />
+
+That's [Stream of Characters](/dsa/stream-of-characters/).
+
+## Which words are endings of others?
+
+In a trie of reversed words, a word that is the ending of a longer word lies **on that word's path**: "me" reversed is
+"em", which is how "game" reversed ("emag") begins. So the words that are nobody's ending are exactly the ones at the
+**leaves**.
+
+<Viz client:visible approach="encoding" />
+
+That's [Short Encoding of Words](/dsa/short-encoding-of-words/), where only the leaf words need space of their own.
+
+## A beginning and an ending at once
+
+What about words that start with p **and** end with s? One trie can't follow both ends of a word. The trick is to
+change what's stored: for each word, insert keys made of one of its endings, a separator, then the whole word, like
+`e#ape`, `pe#ape`, `ape#ape` and `#ape`. A query for ending s and beginning p becomes the single prefix `s#p`. It costs
+O(L²) keys' worth of letters per word, in exchange for O(L) queries. That's [Prefix and Suffix
+Search](/dsa/prefix-and-suffix-search/).
+
+## Interview theory
+
+<QA q="How do you check suffixes quickly with a trie?">
+Insert every word reversed. A suffix question about a string becomes a prefix question about the string reversed, which
+is one walk down the trie.
+</QA>
+
+<QA q="How do you search by prefix and suffix together?">
+Store, for every word, each suffix + "#" + the whole word in one trie, keeping on each node the best index that reaches
+it. A query walks suffix + "#" + prefix. Building is O(L²) per word; each query is O(L).
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

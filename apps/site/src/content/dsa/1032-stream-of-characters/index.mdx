@@ -1,0 +1,84 @@
+---
+title: Stream of Characters
+leetcode: { number: 1032, url: "https://leetcode.com/problems/stream-of-characters/" }
+difficulty: Hard
+topics: [Trie, Design, String]
+added: 2026-11-27
+summary: "Letters arrive one at a time; after each, say whether some word from a list ends at the latest letter. Goes from comparing every word with the end of the stream to walking the stream backwards through a trie of reversed words."
+insight: "A word ends at the end of the stream exactly when the stream, read backwards, begins with the word backwards. Store the words reversed and walk the stream from its newest letter until the trie runs out or a word ends."
+reads: [tries, reversed-tries]
+best: { time: "O(longest word) per letter", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of `words`. Then letters arrive one at a time. After each letter, return true if some word in the list is exactly the last few letters received (the word ends at the newest letter), otherwise false.
+
+For the words `at, sea, plan` and the letters `s, e, a, t`, the answers are false, false, true ("sea" just ended), true ("at").
+
+## The key question
+
+> **A trie answers questions about beginnings. How can it answer one about endings?**
+
+Turn everything around. Store each word reversed, and read the stream newest letter first. The stream's ending, read backwards, is a beginning, and the reversed words are beginnings too.
+
+## Approach 1: Check every word against the end of the stream
+
+Keep every letter received. After each new one, compare each word with the stream's last letters.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(total length of words) per letter" space="O(letters received)">
+**Time.** Every letter compares every word: **O(Σ word lengths)** per letter.
+
+**Space.** The stream: **O(letters received)**.
+
+**What it wastes:** comparing words that can't match, like every word whose last letter isn't the newest one.
+</Complexity>
+
+## Approach 2: A trie of the words written backwards (optimal)
+
+Insert every word reversed. After each letter, start at the root and read the stream backwards, newest letter first, following the trie. Stop with true at a ✓, or with false when there's no child for the next letter.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(longest word) per letter" space="O(total letters)">
+**Time.** The backwards walk can't go deeper than the longest word: **O(longest word)** per letter, however many words.
+
+**Space.** The trie: **O(total letters)**. Only the last (longest word) letters of the stream ever need keeping.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Check every word against the end of the stream | O(total length of words) per letter | O(letters received) | Compare every word |
+| A trie of the words written backwards | **O(longest word) per letter** | O(total letters) | Endings become beginnings |
+
+<GrowthChart client:visible series={growth} caption="Operations for n four-letter words and a stream of 16 letters." />
+
+## Common mistakes
+
+- **Reading the stream oldest first.** Words end at the newest letter, so the walk must start there.
+- **Storing the words forwards.** Then the walk would need to know where a word starts, which it can't.
+- **Keeping the whole stream forever.** Only the last as-many-letters-as-the-longest-word matter.
+
+## Check yourself
+
+<Quiz client:visible title="Stream of Characters" questions={questions} />
+
+## Related problems
+
+- [Short Encoding of Words](/dsa/short-encoding-of-words/). Another trie of reversed words.
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie being walked.
+- [Reversed tries](/concepts/reversed-tries/). Questions about endings, turned into beginnings.

@@ -1,0 +1,84 @@
+---
+title: Short Encoding of Words
+leetcode: { number: 820, url: "https://leetcode.com/problems/short-encoding-of-words/" }
+difficulty: Medium
+topics: [Trie, String, Hash map]
+added: 2026-11-27
+summary: "Write a list of words into the shortest single string, each followed by a #, where a word may be read from the end of another. Goes from removing every word's endings from a set to counting the leaves of a trie of reversed words."
+insight: "A word that is the ending of another word needs no space: it can be read from inside that word's entry. In a trie of the words written backwards, those words lie on longer words' paths, so only the leaf words count."
+reads: [tries, reversed-tries]
+best: { time: "O(total letters)", space: "O(total letters)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+All the words must be written into one string, each word followed by a `#`. A word is allowed to be read from inside another word's entry, starting partway and running to its `#`. Return the length of the shortest such string.
+
+For `same, me, game, ame, toy` the answer is 14: the string `same#game#toy#` contains everything, since "ame" and "me" can be read from the end of "same#" (or "game#").
+
+## The key question
+
+> **Which words never need an entry of their own?**
+
+Those that are the ending of some other word: they can be read from inside that word's entry, up to its #. Only the words that are nobody's ending need space.
+
+## Approach 1: A set, removing every word's endings
+
+Put the words in a set. For each word, remove each of its shorter endings from the set. What's left are the words that are nobody's ending; add up their lengths plus one # each.
+
+<Viz client:visible approach="set" />
+
+<Complexity time="O(Σ L²)" space="O(Σ L)">
+**Time.** A word of length L has L − 1 shorter endings, and copying each out to look it up costs up to L letters: **O(L²)** per word.
+
+**Space.** The set: **O(Σ L)**.
+
+**What it wastes:** copying. Each ending is built letter by letter just to look it up.
+</Complexity>
+
+## Approach 2: A trie of the reversed words: count its leaves (optimal)
+
+Insert every distinct word reversed. A word that is another's ending ends partway down that word's path, so only the leaves are nobody's ending. Add up each leaf's depth plus one.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(total letters)" space="O(total letters)">
+**Time.** One step per letter to insert, and one pass over the trie: **O(total letters)**.
+
+**Space.** The trie: **O(total letters)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| A set, removing every word's endings | O(Σ L²) | O(Σ L) | Remove endings |
+| A trie of the reversed words: count its leaves | **O(total letters)** | O(total letters) | Leaves need space |
+
+<GrowthChart client:visible series={growth} caption="Operations for a word of n letters plus two of its endings." />
+
+## Common mistakes
+
+- **Counting a repeated word twice.** Use each distinct word once.
+- **Looking at beginnings instead of endings.** "me" fits inside "game#" only because it's at the end, followed by #.
+- **Counting every ✓ in the trie.** Only words at the leaves need space; the others are inside a longer word.
+
+## Check yourself
+
+<Quiz client:visible title="Short Encoding of Words" questions={questions} />
+
+## Related problems
+
+- [Stream of Characters](/dsa/stream-of-characters/). Another trie of reversed words.
+- [Longest Word in Dictionary](/dsa/longest-word-in-dictionary/). Another answer read off a trie's shape.
+- [Reversed tries](/concepts/reversed-tries/). Why reversing turns endings into beginnings.
