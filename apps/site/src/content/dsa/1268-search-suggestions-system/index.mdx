@@ -1,0 +1,102 @@
+---
+title: Search Suggestions System
+leetcode: { number: 1268, url: "https://leetcode.com/problems/search-suggestions-system/" }
+difficulty: Medium
+topics: [Trie, Binary search, Sorting, String]
+added: 2026-11-27
+summary: "As a word is typed letter by letter, suggest the three alphabetically smallest products that start with what's typed so far. Compares scanning every product, binary searching a sorted list, and a trie whose nodes keep their top three."
+insight: "Sorted, the products that start with a prefix sit in one block, beginning where the prefix would be inserted. Binary search finds that spot, and the answer is the next three items if they match."
+reads: [tries, trie-counts, binary-search-invariants]
+best: { time: "O(n log n + L · log n · L)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get a list of `products` and a `word` that someone types one letter at a time. After each letter, suggest at most three products that start with the letters typed so far, the alphabetically smallest ones. Return one list of suggestions per typed letter.
+
+For products `bank, bag, cab, band, banana, bat` and the word `ban`: after `b` the suggestions are bag, banana, band; after `ba` the same; after `ban` they're banana, band, bank.
+
+## The key question
+
+> **After sorting, where are all the products that start with a given prefix?**
+
+Together, in one block, starting exactly where the prefix itself would be inserted into the sorted list. So you don't need to scan: find that position, and look at the next three.
+
+## Approach 1: Sort, then scan every product for each prefix
+
+Sort the products so matches come out in alphabetical order. For each prefix of the word, check every product and keep the first three that start with it.
+
+<Viz client:visible approach="scan" />
+
+<Complexity time="O(n log n + L · n · L)" space="O(n)">
+**Time.** Sorting is O(n log n) comparisons. Then each of the L typed prefixes checks all n products, comparing up to L letters: **O(L · n · L)**.
+
+**Space.** The sorted list: **O(n)**.
+
+**What it wastes:** checking products far away from the prefix in sorted order, which can't match.
+</Complexity>
+
+## Approach 2: Sort, then binary search to each prefix (optimal)
+
+Sort the products. For each prefix, binary search for the first position whose product is ≥ the prefix. The products starting with the prefix begin there, so check at most the next three.
+
+<Viz client:visible approach="binary" />
+
+<Complexity time="O(n log n + L · log n · L)" space="O(n)">
+**Time.** After sorting, each prefix costs a binary search of log n comparisons of up to L letters, plus three checks: **O(L · log n · L)**.
+
+**Space.** The sorted list: **O(n)**.
+</Complexity>
+
+## Approach 3: A trie whose nodes keep their top three
+
+Insert the sorted products into a trie, and give every node a short list: the first three products that pass through
+it. Because the products arrive sorted, each list fills with the smallest ones. Then typing a letter is one step: move
+to that child and read its list.
+
+<Viz client:visible approach="trie" />
+
+<Complexity time="O(n log n + total letters)" space="O(total letters)">
+**Time.** Sorting, then one step per stored letter to build. After that, each typed letter is **O(1)**.
+
+**Space.** One node per stored letter, each holding up to three products: **O(total letters)**.
+
+**When to use it:** a real search box, where the same products answer many typed words. For a single word, as in this
+problem, building the trie costs more than it saves, so the binary search is the better answer.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Sort, then scan every product for each prefix | O(n log n + L · n · L) | O(n) | Check everything |
+| Sort, then binary search to each prefix | **O(n log n + L · log n · L)** | O(n) | Jump to the block |
+| A trie whose nodes keep their top three | O(n log n + total letters) | O(total letters) | Built once, O(1) per letter after |
+
+<GrowthChart client:visible series={growth} caption="Operations for n products and one 6-letter word. The trie pays to be built; it wins when many words are typed against the same products." />
+
+## Common mistakes
+
+- **Not sorting first.** Without it, the first three matches found aren't the three smallest.
+- **Checking more than three after the binary search.** The block may be long; only its first three items matter.
+- **Rebuilding for each prefix.** Each typed letter extends the last prefix: the trie walk continues from the previous node, and the binary search can only move right.
+
+## Check yourself
+
+<Quiz client:visible title="Search Suggestions System" questions={questions} />
+
+## Related problems
+
+- [Implement Trie (Prefix Tree)](/dsa/implement-trie-prefix-tree/). The trie the suggestions are stored on.
+- [Binary search beyond sorted arrays](/concepts/binary-search-on-answers/). Finding the first position that passes a test.
+- [Tries that count](/concepts/trie-counts/). Other things worth storing on every node.
