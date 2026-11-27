@@ -88,7 +88,7 @@ function Tree({ tree }: { tree: TreeData }) {
             const ptr = labels.get(id);
             return (
               <div className="fp-tnode" key={id} style={{ left: `${xp(id)}%`, top: yp(id) }}>
-                <div className={`fp-cell fp-tnode__circle${tone ? ` fp-cell--${tone}` : ""}`}>
+                <div className={`fp-cell fp-tnode__circle${String(n.val).length > 3 ? " fp-tnode__circle--wide" : ""}${tone ? ` fp-cell--${tone}` : ""}`}>
                   <span className="fp-val" key={String(n.val)}>{n.val}</span>
                 </div>
                 {(note || ptr) && (

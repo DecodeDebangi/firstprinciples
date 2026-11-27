@@ -1,0 +1,63 @@
+---
+title: "Compressed tries: one node per branch, not per letter"
+topic: Tries
+kind: Explainer
+order: 5
+summary: A plain trie spends a node on every letter, even along long stretches where nothing branches. A compressed trie, also called a radix tree, merges each such stretch into one node holding a whole string, so it has at most about two nodes per word. How compressing works, and how inserting splits a label where words part.
+added: 2026-11-27
+---
+import Viz from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+A [trie](/concepts/tries/) has one node per letter. With long words that share little, most of those nodes have a
+single child and mark no word: they're just a chain of letters on the way to somewhere. A **compressed trie** (also
+called a **radix tree** or **Patricia trie**) stores each such chain as one node labelled with the whole string.
+
+## Compressing a trie
+
+Walk the trie, and whenever a node has exactly one child and ends no word, merge it with that child, joining their
+labels. The left drawing is the plain trie; the right one fills in as chains are merged.
+
+<Viz client:visible approach="compress" />
+
+Every node left either **branches** or **ends a word**. A tree where every inner node branches has fewer inner nodes
+than leaves, so a compressed trie has **at most about two nodes per word**, however long the words are. A plain trie
+can need one node per letter.
+
+## Inserting into a compressed trie
+
+You don't need to build the plain trie first. Insert each word by matching whole labels. If the word parts from a
+label partway through, **split** the label there: the shared start becomes its own node, with the rest of the old
+label hanging below it, and the new word branches off beside that rest.
+
+<Viz client:visible approach="insert" />
+
+Looking up a word works the same way: compare whole labels instead of single letters. The steps are fewer, but each
+one compares a string, so the total work is still about the length of the word.
+
+## Where they're used
+
+- **Routers and IP tables**, which match addresses by their longest known prefix.
+- **Storing many long keys with shared beginnings**, like file paths or URLs, where a plain trie would be mostly chains.
+- **Suffix trees**: a compressed trie of every suffix of a text, which answers substring questions quickly.
+
+In interviews, the plain trie is almost always what's asked. Compression is worth knowing as the answer to "can you
+make it use less memory?".
+
+## Interview theory
+
+<QA q="What is a radix tree?">
+A trie where every chain of nodes that have one child and end no word is merged into a single node labelled with the
+whole string. Every node then branches or ends a word, so there are O(number of words) nodes.
+</QA>
+
+<QA q="How does inserting into a radix tree differ from a plain trie?">
+It matches whole labels. When the word parts from a label partway through, the label is split at that point into a
+shared node and the remainder, and the word's remaining letters become a new child.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />
