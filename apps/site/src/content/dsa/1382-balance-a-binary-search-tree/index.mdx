@@ -1,0 +1,84 @@
+---
+title: Balance a Binary Search Tree
+leetcode: { number: 1382, url: "https://leetcode.com/problems/balance-a-binary-search-tree/" }
+difficulty: Medium
+topics: [BST, Binary tree, Divide and conquer]
+added: 2026-11-26
+summary: "Turn any binary search tree into a height-balanced one with the same values. Goes from re-inserting every value into a self-balancing AVL tree to listing the values in order and rebuilding from the middle."
+insight: "An in-order walk lists a BST's values already sorted. Make the middle value the root and build each half the same way: every node's two sides then differ by at most one value, so the tree is as short as possible."
+reads: [trees-from-scratch, balanced-trees, avl-trees]
+best: { time: "O(n)", space: "O(n)" }
+study: true
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./steps";
+import { questions } from "./quiz";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import Complexity from "../../../components/Complexity.astro";
+
+## The problem
+
+You get the root of a binary search tree, which may be badly lopsided. Return a **height-balanced** binary search tree with the same values: at every node, the heights of the two subtrees differ by at most 1. Any balanced answer is accepted.
+
+The example is the chain `[1, null, 2, null, 3, null, 4, null, 5, null, 6, null, 7]`, which is 7 levels tall; a balanced version is 3 levels tall, with 4 at the root. (New to balance? [Balanced trees](/concepts/balanced-trees/) explains it.)
+
+## The key question
+
+> **You have every value at once. Do you need to fix the tree one rotation at a time?**
+
+No. An in-order walk gives the values sorted, and from a sorted list you can build the shortest possible tree directly: the middle value at the root, each half built the same way below it.
+
+## Approach 1: Re-insert every value into an AVL tree
+
+Walk the tree in order and insert each value into a new, empty AVL tree, which rotates whenever a node's sides differ by 2. The [Rotations and AVL trees](/concepts/avl-trees/) read explains the rotations.
+
+<Viz client:visible approach="avl" />
+
+<Complexity time="O(n log n)" space="O(n)">
+**Time.** n inserts, each walking a path of O(log n): **O(n log n)**.
+
+**Space.** The new tree: **O(n)**.
+
+**What it wastes:** rotations. The values are already sorted, so the balanced shape can be built directly instead of repaired insert by insert.
+</Complexity>
+
+## Approach 2: List the values in order, rebuild from the middle (optimal)
+
+Walk the tree in order to get its values sorted. Then build: the middle value becomes the root, the values before it build the left subtree and the ones after it the right, each the same way.
+
+<Viz client:visible approach="middle" />
+
+<Complexity time="O(n)" space="O(n)">
+**Time.** One walk to list the values, and one node made per value: **O(n)**.
+
+**Space.** The list of values and the new tree: **O(n)**.
+</Complexity>
+
+## Comparing the approaches
+
+Race two approaches on the same input. Both share one clock that ticks once per operation, so the one doing extra work visibly falls behind.
+
+<Compare client:visible />
+
+| Approach | Time | Space | Idea |
+|---|---|---|---|
+| Re-insert every value into an AVL tree | O(n log n) | O(n) | Self-balancing inserts |
+| List the values in order, rebuild from the middle | **O(n)** | O(n) | Sorted list, middle as root |
+
+<GrowthChart client:visible series={growth} caption="Operations to balance a chain of n values." />
+
+## Common mistakes
+
+- **Taking the values in any order other than in-order.** Only the in-order walk gives them sorted, which the middle-as-root build needs.
+- **Copying the halves.** Pass positions (lo, hi) instead; copying makes the build O(n log n).
+- **Rotating the old tree into shape.** It works but is much harder to get right than rebuilding.
+
+## Check yourself
+
+<Quiz client:visible title="Balance a Binary Search Tree" questions={questions} />
+
+## Related problems
+
+- [Convert Sorted Array to Binary Search Tree](/dsa/convert-sorted-array-to-binary-search-tree/). The middle-as-root build on its own.
+- [Balanced Binary Tree](/dsa/balanced-binary-tree/). Checking the result is balanced.
+- [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The walk that lists the values sorted.

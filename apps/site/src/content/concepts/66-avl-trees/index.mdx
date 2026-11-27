@@ -1,0 +1,111 @@
+---
+title: "Rotations and AVL trees: staying balanced as values arrive"
+topic: Trees
+kind: Explainer
+order: 6
+summary: A binary search tree's shape depends on the order values arrive in, and sorted input turns it into a chain. An AVL tree checks each node's balance after every insert and fixes it with one or two rotations, which lift a child above its parent without changing the order. Every insert stays O(log n).
+added: 2026-11-27
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { growth } from "./growth";
+import { GrowthChart, Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[Balanced trees](/concepts/balanced-trees/) shows why a [binary search tree](/concepts/binary-search-trees/) needs to
+stay short: every search and insert walks one path, so it costs the tree's height. It also shows how to build a balanced
+tree when you have all the values up front. This read is about the harder case: values arrive **one at a time**, and the
+tree must stay balanced after each.
+
+## The problem: the order decides the shape
+
+A plain BST puts each new value at the bottom and never changes its shape afterwards. Insert values that happen to be
+increasing and each one goes right of everything before it.
+
+<Viz client:visible approach="plain" />
+
+Try `1, 2, 3, 4, 5, 6, 7` in the box: a chain of 7. The same values in the order `4, 2, 6, 1, 3, 5, 7` give a perfect
+tree of height 3. The tree has no say in which it gets.
+
+## Rotations: changing the top without changing the order
+
+A **rotation** lifts a child above its parent. Rotating **right** at `y` lifts y's left child `x`:
+
+- `x` takes `y`'s place in the tree,
+- `y` becomes `x`'s right child,
+- `x`'s old right subtree, everything between `x` and `y`, moves across to be `y`'s left subtree.
+
+Every value is still in the right place: the in-order walk reads the same before and after. Only three links change, so
+it's O(1). Rotating **left** is the mirror image. Watch the nodes slide in the animation below whenever a rotation
+happens.
+
+## AVL trees: rotate when a side gets 2 taller
+
+An **AVL tree** stores each node's height. A node's **balance** is its left subtree's height minus its right's. The rule
+is that every balance stays **−1, 0 or +1**.
+
+After inserting as usual, walk back up the path to the root, updating heights. The first node whose balance reaches
+**±2** gets fixed, and there are only four ways it can happen. Say the node is 2 taller on the left (balance +2), with
+left child `c`:
+
+| New value went… | Case | Fix |
+|---|---|---|
+| left of `c` | left-left | Rotate right at the node |
+| right of `c` | left-right | Rotate left at `c` (straightening the bend), then right at the node |
+
+The right-heavy cases (balance −2) are the mirror image. After the fix, that subtree is back to the height it had before
+the insert, so nothing above it needs changing: **at most two rotations per insert**.
+
+<Viz client:visible approach="avl" />
+
+Under each node: its height, then its balance. The example inserts `10, 20, 30, 25, 28, 5, 3` and meets three of the
+four cases.
+
+## What it costs
+
+Each insert walks one path down and back up, and the path is short because the tree stays balanced: an AVL tree with
+`n` nodes has height at most about 1.44 log₂ n. So every insert is **O(log n)**, whatever order the values arrive in.
+
+<Compare client:visible />
+
+<GrowthChart client:visible series={growth} caption="Operations to insert 1, 2, …, n in increasing order." />
+
+Deleting works the same way: delete as in a BST, then walk back up and rotate where a balance reaches ±2. A delete can
+need rotations at several levels, but each one is O(1), so it's still O(log n).
+
+## In practice
+
+You'll almost never write an AVL tree outside an exercise. Standard libraries ship balanced BSTs already: Java's
+`TreeMap` and C++'s `std::map` are **red-black trees**, which follow a looser rule (no path from a node down to a leaf
+is more than twice as long as another) and need fewer rotations on insert and delete. What interviews ask is that you
+know a balanced BST gives O(log n) inserts, deletes and lookups *in sorted order*, and when to reach for one: for
+example, [Contains Duplicate III](/dsa/contains-duplicate-iii/) keeps a window of values in an ordered set.
+
+If you have all the values at once, you don't need rotations at all: [Balance a Binary Search
+Tree](/dsa/balance-a-binary-search-tree/) compares re-inserting into an AVL tree with rebuilding from the sorted list.
+
+## Interview theory
+
+<QA q="What is a rotation in a binary search tree?">
+A local change that lifts a child above its parent: rotating right at y makes y's left child x the subtree's root, y
+becomes x's right child, and x's old right subtree becomes y's left. The in-order order is unchanged; it's O(1).
+</QA>
+
+<QA q="What are the four AVL imbalance cases?">
+Left-left and right-right (fixed by one rotation at the unbalanced node), and left-right and right-left (first rotate the
+child to straighten the bend, then rotate the node). Which one depends on which way the new value went at the
+unbalanced node and at its child.
+</QA>
+
+<QA q="How many rotations can one AVL insert need?">
+At most two, at one node. The fixed subtree returns to its old height, so no ancestor changes.
+</QA>
+
+<QA q="AVL or red-black?">
+AVL trees are more strictly balanced, so lookups are slightly faster; red-black trees allow more slack, so inserts and
+deletes rotate less. Most standard libraries use red-black trees.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

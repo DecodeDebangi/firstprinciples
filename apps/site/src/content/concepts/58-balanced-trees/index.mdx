@@ -69,7 +69,8 @@ Rebuilding after every insert would cost O(n) each time. **Self-balancing** BSTs
 - **Red-black trees** follow a looser rule (no path is more than twice as long as another), which needs fewer rotations.
   Java's `TreeMap` and C++'s `std::map` are red-black trees.
 
-Every insert and delete then stays O(log n). In interviews you're rarely asked to write one; you're expected to know they
+Every insert and delete then stays O(log n). [Rotations and AVL trees](/concepts/avl-trees/) animates the rotations
+and all four AVL cases. In interviews you're rarely asked to write one; you're expected to know they
 exist and to reach for your language's ordered set or map: `TreeMap`/`TreeSet` in Java, `std::map`/`std::set` in C++.
 Python has no built-in one; the `sortedcontainers` package is the usual choice.
 
