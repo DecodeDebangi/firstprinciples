@@ -76,6 +76,10 @@ function Tree({ tree }: { tree: TreeData }) {
             {edges.map(({ a, b }) => (
               <line key={`${a}-${b}`} x1={xp(a)} y1={yp(a)} x2={xp(b)} y2={yp(b)} vectorEffect="non-scaling-stroke" />
             ))}
+            {(tree.threads ?? []).filter(([a, b]) => pos.has(a) && pos.has(b)).map(([a, b]) => (
+              // Bends out sideways from the lower node, then rises to the target, so it never lies on a real edge.
+              <path key={`th-${a}-${b}`} className="fp-tree__thread" d={`M ${xp(a)} ${yp(a)} Q ${xp(b)} ${yp(a) + 8} ${xp(b)} ${yp(b)}`} vectorEffect="non-scaling-stroke" />
+            ))}
           </svg>
           {[...pos.keys()].map((id) => {
             const n = byId.get(id)!;

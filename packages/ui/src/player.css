@@ -277,6 +277,7 @@
 .fp-tree__canvas { position: relative; }
 .fp-tree__edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .fp-tree__edges line { stroke: var(--border); stroke-width: 2; }
+.fp-tree__edges .fp-tree__thread { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
 .fp-tnode {
   position: absolute; width: 0; height: 0; z-index: 1;
   transition: left .55s var(--lift-ease), top .55s var(--lift-ease);

@@ -1,0 +1,89 @@
+---
+title: "Morris traversal: in-order with O(1) memory"
+topic: Trees
+kind: Explainer
+order: 9
+summary: Recursion and the stack version of in-order both need memory as deep as the tree to remember the way back up. Morris traversal stores the way back in the tree itself, by borrowing empty right pointers for a moment and putting them back afterwards. Same O(n) time, O(1) extra memory.
+added: 2026-11-27
+---
+import Viz, { Compare } from "./Viz.tsx";
+import { Quiz } from "@firstprinciples/ui";
+import QA from "../../../components/QA.astro";
+import { questions } from "./quiz";
+
+[In-order](/concepts/tree-traversals/) visits a node's left side, then the node, then its right side. The hard part is
+coming **back up** to the node once the left side is done. The recursive version remembers the way back in the call
+stack, and the iterative version in a stack of its own. Either way it costs memory as deep as the tree: O(h), which is
+O(n) for a tall, thin tree.
+
+Some problems ask for O(1) extra memory, such as the follow-up in [Recover Binary Search
+Tree](/dsa/recover-binary-search-tree/). Morris traversal manages it.
+
+## Where the way back can live
+
+Look at the node that comes just **before** `cur` in order. It's the last node of cur's left side: go left once, then
+right as far as possible. Being the rightmost node there, its right pointer is **always empty**.
+
+That empty pointer is free space. Before going down into the left side, point it at `cur`. When the walk later
+finishes the left side, it reaches that node, follows its right pointer as if it were a child, and arrives back at
+`cur`. The dashed curve in the animation is that borrowed pointer.
+
+<Viz client:visible approach="morris" />
+
+## How each node is handled
+
+Every node with a left side is reached twice, and the borrowed pointer tells the two visits apart:
+
+| What `cur` finds | What it means | What to do |
+|---|---|---|
+| No left side | Nothing comes before it | Write it down, go right |
+| The node before it points nowhere | First visit: the left side hasn't been walked | Borrow the pointer, go left |
+| The node before it points back at `cur` | Second visit: the left side is done | Remove the pointer, write `cur`, go right |
+
+"Go right" may follow a real child or a borrowed pointer. The walk doesn't need to know which: either way it lands on
+the next node in order.
+
+Removing the pointer on the second visit matters. It's what leaves the tree exactly as it was found, so the caller
+never notices.
+
+## What it costs
+
+Finding the node before `cur` walks down part of the left side, and it happens twice per node. That looks like it could
+add up, but each of those short walks runs along a path that only that node's two visits use. So every edge is crossed
+a small fixed number of times: **O(n)** time, as for the other versions. The extra memory is just `cur` and `pre`:
+**O(1)**.
+
+<Compare client:visible />
+
+On the same tree, compare the stack version's stack with Morris's variables. The step counts come out close; the
+memory doesn't.
+
+## Pre-order, and when not to use it
+
+Moving one line gives **pre-order**: write `cur` on the **first** visit, when the pointer is borrowed, instead of the
+second. Post-order also works but needs extra steps to reverse paths, and it's rarely asked.
+
+Morris changes the tree while it runs. Don't use it when other code might read the tree at the same time, or when the
+tree must not be modified even briefly (for example, if it's shared or read-only). In an interview, mention that limit
+when you offer it.
+
+## Interview theory
+
+<QA q="How do you do an in-order traversal with O(1) extra space?">
+Morris traversal: before going left from a node, make the rightmost node of its left side point back to it. When the
+walk returns along that pointer, remove it, visit the node and go right. O(n) time, O(1) space.
+</QA>
+
+<QA q="Why is the node before cur guaranteed to have an empty right pointer?">
+It's the rightmost node of cur's left side, so it has no right child. The only right pointer it can have is one Morris
+set earlier, pointing back at cur.
+</QA>
+
+<QA q="Is Morris traversal still O(n) with the extra walks to find the node before cur?">
+Yes. Each such walk follows a path that belongs to one node's left side, and it's done twice per node, so every edge
+is crossed a constant number of times.
+</QA>
+
+## Check yourself
+
+<Quiz client:visible questions={questions} />

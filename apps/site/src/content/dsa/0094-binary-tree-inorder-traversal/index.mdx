@@ -6,7 +6,7 @@ topics: [Binary tree, Tree, Stack, DFS]
 added: 2026-11-26
 summary: "Return a binary tree's values in in-order: each node's left subtree, then the node, then its right subtree. Goes from the natural recursive walk to an explicit stack that pushes the whole left path."
 insight: "Go left as far as possible, pushing each node. Pop one, write it down, and repeat from its right child."
-reads: [trees-from-scratch, tree-traversals]
+reads: [trees-from-scratch, tree-traversals, morris-traversal]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---
@@ -81,6 +81,7 @@ running out of call depth.
 
 ## Related problems
 
+- [Morris traversal](/concepts/morris-traversal/). The same order with O(1) extra memory, by borrowing empty right pointers.
 - [Binary Tree Preorder Traversal](/dsa/binary-tree-preorder-traversal/). The same walk, writing each node before its subtrees.
 - [Binary Tree Postorder Traversal](/dsa/binary-tree-postorder-traversal/). The same walk, writing each node after its subtrees.
 - [Binary Search Tree Iterator](/dsa/binary-search-tree-iterator/). This stack, paused between values.

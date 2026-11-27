@@ -6,7 +6,7 @@ topics: [Binary tree, Tree, Stack, DFS]
 added: 2026-11-26
 summary: "Return a binary tree's values in pre-order: each node before its left subtree, then its right subtree. Goes from the natural recursive walk to an explicit stack that pushes the right child before the left."
 insight: "Write a node down the moment you reach it. With a stack, pop a node, write it, then push its right child before its left so the left comes out first."
-reads: [trees-from-scratch, tree-traversals]
+reads: [trees-from-scratch, tree-traversals, morris-traversal]
 best: { time: "O(n)", space: "O(h)" }
 study: true
 ---
@@ -81,6 +81,7 @@ running out of call depth.
 
 ## Related problems
 
+- [Morris traversal](/concepts/morris-traversal/). Pre-order with O(1) extra memory, by borrowing empty right pointers.
 - [Binary Tree Inorder Traversal](/dsa/binary-tree-inorder-traversal/). The same walk, writing each node between its subtrees.
 - [Binary Tree Postorder Traversal](/dsa/binary-tree-postorder-traversal/). The same walk, writing each node after its subtrees.
 - [Binary Tree Level Order Traversal](/dsa/binary-tree-level-order-traversal/). Breadth-first instead, with a queue.

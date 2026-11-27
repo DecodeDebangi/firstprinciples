@@ -66,6 +66,8 @@ export interface TreeData {
   layout?: "inorder" | "compact";
   /** A forest: several roots drawn side by side in one canvas, with the compact layout (e.g. union-find). Overrides `root`. */
   roots?: string[];
+  /** Temporary extra links drawn as dashed curves, [from, to] (e.g. Morris traversal's borrowed right pointers). */
+  threads?: [string, string][];
 }
 
 /** Build a tree from LeetCode's level-order list, e.g. [3, 9, 20, null, null, 15, 7]. Ids are "t0", "t1", … */
